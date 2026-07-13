@@ -1,19 +1,20 @@
 # Deployment Report
 
 Reviewed: 2026-07-12 (Asia/Seoul); migration status amended: 2026-07-13 (Asia/Seoul)
-Deployment status: **healthy loopback origin deployment**
+Deployment status: **healthy LAN-bound origin deployment**
 External reachability: **Cloudflare Tunnel pending account token and public hostname**
 
 ## Current endpoints
 
 | Purpose | URL | Evidence |
 |---|---|---|
-| Loopback URL | `http://127.0.0.1:18080` | After migration to `/home/cgma/apps/web_service`, `GET /health/ready` and `/api/v1/meta` returned 200 on 2026-07-13. |
-| Origin binding | `127.0.0.1:18080` | `ss -ltn 'sport = :18080'` showed only the loopback listener after the Compose recreation. |
+| LAN URL | `http://192.168.219.121:18080` | After the operator requested LAN access, `/settings` returned 200 and the service listener was bound to this host IP on 2026-07-13. |
+| Loopback URL | `http://127.0.0.1:18080` | Intentionally unavailable in the current LAN-bound mode; use the LAN URL from the host and other Wi-Fi devices. |
+| Origin binding | `192.168.219.121:18080` | The ignored local `.env` selects this LAN IP. `ss -ltn 'sport = :18080'` verifies the listener. |
 | Prior mobile layout verification | `http://192.168.219.121:18080/items/inventory-reconciliation` | Before loopback migration, Chromium at 390px reported `scrollWidth === clientWidth` and found the validation action. |
 | Cloudflare public status | Public hostname not configured | No Cloudflare account token or hostname is in the workspace; public HTTPS is not claimed. |
 
-The isolated review stack on `:18081` was verified and then promoted into the main `overnight-web-agent-kit` Compose project on `:18080`. The review stack was removed after promotion. The project was then moved to `/home/cgma/apps/web_service`; only the main project containers were recreated there. Both API and frontend remain Docker-network internal; Caddy is the only port-published container and now binds the host loopback address.
+The isolated review stack on `:18081` was verified and then promoted into the main `overnight-web-agent-kit` Compose project on `:18080`. The review stack was removed after promotion. The project was then moved to `/home/cgma/apps/web_service`; only the main project containers were recreated there. Both API and frontend remain Docker-network internal; Caddy is the only port-published container and currently binds the requested host LAN address.
 
 ```text
 LAN / loopback → Caddy host :18080 → frontend :3000
@@ -40,7 +41,7 @@ The first normal Compose build encountered repeated Corepack/Node `fetch` timeou
 
 ## Security boundary and Cloudflare promotion decision
 
-The deployed high port is plain HTTP and no authentication/authorization model has been approved. A prior 5G observation showed that an earlier origin was publicly reachable. The current Compose recreation binds `:18080` to `127.0.0.1`, so direct external access is no longer provided by this application deployment. Existing system Caddy owns ports 80/443 and was read only; it was neither restarted nor reloaded.
+The deployed high port is plain HTTP and no authentication/authorization model has been approved. The current Compose deployment binds `:18080` to the requested LAN IP. A prior 5G observation showed that an earlier origin was publicly reachable; 5G/public reachability has not been re-tested after this LAN rebinding. Existing system Caddy owns ports 80/443 and was read only; it was neither restarted nor reloaded.
 
 Before normal public use, create a remotely managed Cloudflare Tunnel with the origin `http://caddy:18080`, provide an approved public hostname, and choose an identity mechanism. Follow the exact build/deploy/verification procedure in `docs/skipped-actions.md`. This is a material product/security decision, not a deployment detail that can safely be invented.
 

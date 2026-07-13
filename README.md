@@ -44,11 +44,11 @@ For detailed evidence, see [the improvement report](docs/production-improvement-
 
 The running Compose service publishes Caddy on port `18080`:
 
-- Local machine: `http://127.0.0.1:18080`
-- The origin is intentionally bound to loopback; direct Wi-Fi/LAN/5G access is disabled after the 2026-07-13 migration.
-- A prior deployment was reported reachable over 5G. Use the Cloudflare Tunnel profile below for the replacement public HTTPS path.
+- Current local-LAN mode: `http://192.168.219.121:18080` (including `/settings`). This address is set in the ignored local `.env` file.
+- In this LAN-bound mode, `127.0.0.1:18080` intentionally does not listen. Use the LAN URL even from the host machine.
+- The supplied `.env.example` remains loopback-only for the future Cloudflare Tunnel path. Before enabling the Cloudflare profile, change the local `HOST_BIND_ADDRESS` back to `127.0.0.1`.
 
-Important: a direct origin still has **no HTTPS and no login/access-control layer**. Do not enter sensitive or real user data, and do not treat a direct host port as a secure public production site. Cloudflare Tunnel supplies the public HTTPS path, but an approved authentication design is still required before handling sensitive data. The system Caddy on ports 80/443 is unrelated and is not managed by this Compose project.
+Important: the direct LAN origin has **no HTTPS and no login/access-control layer**. Do not enter sensitive or real user data, and do not treat it as a secure public production site. Cloudflare Tunnel supplies the planned public HTTPS path, but an approved authentication design is still required before handling sensitive data. The system Caddy on ports 80/443 is unrelated and is not managed by this Compose project.
 
 ## Module Guide
 
@@ -165,7 +165,7 @@ If the screen requires either value, go back and create a **Cloudflare Zero Trus
 
 1. In Cloudflare Zero Trust, create a **remotely managed** tunnel and public hostname. Set its service to `http://caddy:18080` because `cloudflared` and Caddy share Docker's `app_net` network.
 2. Copy `.env.example` to `.env`; set `CLOUDFLARE_TUNNEL_TOKEN` to the tunnel token. It is a secret and must never be committed.
-3. Keep `HOST_BIND_ADDRESS=127.0.0.1` so the origin cannot be reached directly from the internet.
+3. Change the local `.env` value to `HOST_BIND_ADDRESS=127.0.0.1` before activating the Tunnel profile so the origin cannot be reached directly from the network.
 
 ### Build command for the application host or CI runner
 

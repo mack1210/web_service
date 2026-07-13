@@ -2,7 +2,7 @@
 
 Reviewed: 2026-07-12 (Asia/Seoul)
 
-Each entry records the attempted step, observed result, reason for not proceeding, impact, and exact follow-up verification. None of these items stopped application development, test execution, Docker packaging, or the isolated review deployment. An earlier deployment was reported reachable over 5G on 2026-07-13; after relocation to `/home/cgma/apps/web_service`, the Compose origin was recreated as loopback-only and Cloudflare Tunnel activation became the public-access path.
+Each entry records the attempted step, observed result, reason for not proceeding, impact, and exact follow-up verification. None of these items stopped application development, test execution, Docker packaging, or the isolated review deployment. An earlier deployment was reported reachable over 5G on 2026-07-13; after relocation to `/home/cgma/apps/web_service`, the operator requested the Compose origin be LAN-bound at `192.168.219.121:18080`. Cloudflare Tunnel activation remains the intended public-HTTPS path.
 
 ## 1. Existing reverse-proxy route, public DNS, TLS, and authentication
 
@@ -12,7 +12,7 @@ Each entry records the attempted step, observed result, reason for not proceedin
 
 **Why skipped**: Replacing, restarting, or editing an unrelated reverse proxy would violate the preservation rule. More importantly, choosing an identity mechanism changes product authentication behavior and cannot be inferred.
 
-**Impact**: The earlier `:18080` origin was reported publicly reachable over 5G, but the current origin binds only `127.0.0.1:18080`. Do not restore direct public forwarding or put sensitive data on the service. A Cloudflare hostname/TLS path and identity boundary remain required before normal public use.
+**Impact**: The earlier `:18080` origin was reported publicly reachable over 5G, and the current origin binds the requested LAN IP. Do not add direct public forwarding or put sensitive data on the service. A Cloudflare hostname/TLS path and identity boundary remain required before normal public use.
 
 **Exact follow-up (after choosing a domain and authentication design)**:
 
@@ -43,13 +43,13 @@ sudo systemctl status caddy --no-pager
 
 ## 2. Host firewall and router/NAT public forwarding
 
-**Attempted**: Original high-port self-probe and firewall inspection during preflight; later, the operator accessed the deployed URL over 5G with Wi-Fi disabled. The service was subsequently recreated with a loopback-only bind.
+**Attempted**: Original high-port self-probe and firewall inspection during preflight; later, the operator accessed the deployed URL over 5G with Wi-Fi disabled. The service was subsequently recreated with a LAN-only bind at the operator's request.
 
 **Evidence / error**: The host has LAN address `192.168.219.121` and observed public address `115.137.9.228`, indicating NAT. Non-interactive sudo is unavailable; cloud-firewall changes are unauthorized. An earlier self-probe to the public high port did not connect, while the operator later reported a successful 5G browser access. The latter has not been independently re-probed by this workspace.
 
 **Why skipped**: The review determined public plain HTTP without authentication is a P1 security risk. Further opening, forwarding, or modifying firewall/NAT state would increase the risk and is outside the approved safe deployment work.
 
-**Impact**: Direct external reachability is no longer expected from the current loopback-only bind. The service is not secure for sensitive use, and Cloudflare public activation remains blocked until the TLS/identity work and token/hostname setup are complete.
+**Impact**: Direct LAN reachability is expected from the current bind, but public 5G reachability was not re-tested. The service is not secure for sensitive use, and Cloudflare public activation remains blocked until the TLS/identity work and token/hostname setup are complete.
 
 **Exact safe verification commands**:
 

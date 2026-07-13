@@ -69,3 +69,9 @@ Captured: 2026-07-10T22:25:41+09:00
 - Only the `overnight-web-agent-kit` Compose project's API, frontend, and Caddy containers were recreated. All reported healthy, and the readiness and metadata endpoints returned 200.
 - The new Compose default binds Caddy to `127.0.0.1:18080`; `ss -ltn 'sport = :18080'` confirmed that no direct LAN/public listener remains.
 - `compose.cloudflare.yaml` adds an optional Cloudflare Tunnel container that reaches Caddy on Docker's internal network. The external tunnel was not started because its token and public hostname are absent.
+
+## 2026-07-13 local LAN access restoration
+
+- The operator requested direct access from `http://192.168.219.121:18080/settings`. The local ignored `.env` now sets `HOST_BIND_ADDRESS=192.168.219.121`.
+- Only the main Compose project's containers were recreated. API, frontend, and Caddy all became healthy; the LAN `/settings` route returned 200 and exposed the Settings page heading.
+- `ss -ltn 'sport = :18080'` now reports `192.168.219.121:18080`. Loopback is intentionally not a listener in this mode. Before starting the Cloudflare Tunnel profile, return the local setting to `127.0.0.1`.

@@ -7,7 +7,7 @@ Outcome: **Ready with documented limitations**
 
 This was a stabilization pass on the existing Next.js/FastAPI application, not a rewrite. The representative workflow remains `Overview → Collection → Detail → Validate`. The review fixed the highest actionable issues found in the baseline: mobile page overflow, overlay keyboard behavior, duplicate action submission risk, form-control contrast, API validation-contract drift, request-ID reflection, missing basic security headers, missing robots/icon routes, and known dependency advisories.
 
-The improved build was first verified as an isolated review deployment. An earlier deployment was available at `http://192.168.219.121:18080` and `http://127.0.0.1:18080`; on 2026-07-13 the operator reported successful 5G access with Wi-Fi disabled. The project was then moved to `/home/cgma/apps/web_service` and recreated with a loopback-only `127.0.0.1:18080` origin. A Cloudflare Tunnel is now the documented public-HTTPS path, but it has not been activated because no tunnel token or hostname was supplied.
+The improved build was first verified as an isolated review deployment. An earlier deployment was available at `http://192.168.219.121:18080` and `http://127.0.0.1:18080`; on 2026-07-13 the operator reported successful 5G access with Wi-Fi disabled. The project was then moved to `/home/cgma/apps/web_service`. At the operator's request, its current local configuration binds the origin to `192.168.219.121:18080` so the notebook can reach `/settings`; loopback is intentionally not used in this mode. A Cloudflare Tunnel is the documented public-HTTPS path, but it has not been activated because no tunnel token or hostname was supplied.
 
 ## 2. Scope and assumptions
 
@@ -31,7 +31,7 @@ The improved build was first verified as an isolated review deployment. An earli
 
 ## 4. Prioritized issue list
 
-No unmitigated P0 was found. All implementation-owned P1 findings above are resolved in the review build. The current origin is loopback-only. Cloudflare public activation and an authentication decision remain a documented P1 deployment gate rather than an unverified claim. Remaining P2/P3 items are in section 19.
+No unmitigated P0 was found. All implementation-owned P1 findings above are resolved in the review build. The current origin is LAN-bound at the operator's request. Cloudflare public activation and an authentication decision remain a documented P1 deployment gate rather than an unverified claim. Remaining P2/P3 items are in section 19.
 
 ## 5. UI and UX improvements
 
@@ -128,7 +128,7 @@ No policy issue was detected within the reviewed code, content, and test scope a
 - Added `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), geolocation=(), microphone=()`, and `X-Frame-Options: SAMEORIGIN` at Caddy; disabled Next's `X-Powered-By` header. Verified by `curl -I` against the review deployment.
 - No secrets, credentials, real-user data, database, CORS configuration, or user-code execution was found. The action endpoint is deterministic and uses typed request data.
 - Development-only synthetic `q=__error__` behavior is disabled when `APP_ENV=production`.
-- Authentication and TLS remain absent at the origin. The current origin is loopback-only; do not activate the Cloudflare public hostname for sensitive or real-user data until a domain/TLS path and approved authentication model are in place.
+- Authentication and TLS remain absent at the origin. The current origin is LAN-bound; do not activate the Cloudflare public hostname or use sensitive or real-user data until a domain/TLS path and approved authentication model are in place.
 - A strict CSP/HSTS were not added: CSP needs a production script/style audit, and HSTS is inappropriate before a verified HTTPS hostname.
 
 ## 15. Automated and manual testing results
@@ -174,7 +174,7 @@ At the start, lint, typecheck, existing unit tests, backend checks, baseline pro
 
 | Priority | Limitation | Impact / next action |
 |---|---|---|
-| P1 public-security gate | No public domain, Cloudflare Tunnel token/hostname, TLS path, or authentication/authorization decision. | The origin is loopback-only. Complete the documented Cloudflare Tunnel and identity work in `docs/skipped-actions.md` before normal public use. |
+| P1 public-security gate | No public domain, Cloudflare Tunnel token/hostname, TLS path, or authentication/authorization decision. | The current origin is LAN-bound. Complete the documented Cloudflare Tunnel and identity work in `docs/skipped-actions.md` before normal public use. |
 | P2 | A missing detail renders the correct browser not-found state, but Next 16 streams the server `notFound()` fallback with HTTP 200 in this dynamic route. | User-visible recovery is verified; a future public SEO implementation should use a server/edge strategy that can guarantee a 404 status before streaming. |
 | P2 | No canonical URL, sitemap, public content strategy, privacy notice, consent flow, or business identity is defined. | Correctly no-indexed; needs product/legal decisions before public search or ads. |
 | P2 | UI language is English while sample fixture data is intentionally bilingual. | Choose localization policy before translating global UI. |
@@ -199,5 +199,5 @@ At the start, lint, typecheck, existing unit tests, backend checks, baseline pro
 | Dependency security | 3 advisories across audits | Existing packages patched/overridden | `pnpm audit` | Pass |
 | Browser headers | Missing baseline headers | Caddy headers, powered-by disabled | `curl -I :18080` | Pass |
 | SEO basics | icon/robots 404; generic metadata | icon, robots, no-index metadata | HTTP 200 routes | Pass |
-| Production package | Old deployment only | Verified review Compose, promoted main stack, then relocated it to `~/apps/web_service` with a loopback origin | Docker healthy checks, endpoint probes, `ss` listener check | Pass; Cloudflare pending |
-| Public reachability | Earlier 5G observation was user-reported | New deployment is loopback-only; Cloudflare Tunnel prepared but not activated | Loopback listener check; no token/hostname in workspace | Documented P1 limitation |
+| Production package | Old deployment only | Verified review Compose, promoted main stack, then relocated it to `~/apps/web_service` with a LAN origin | Docker healthy checks, endpoint probes, `ss` listener check | Pass; Cloudflare pending |
+| Public reachability | Earlier 5G observation was user-reported | New deployment is LAN-bound; Cloudflare Tunnel prepared but not activated | LAN listener check; no token/hostname in workspace | Documented P1 limitation |
