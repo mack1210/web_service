@@ -144,17 +144,30 @@ HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile pr
 
 See [deployment-report.md](docs/deployment-report.md) for the deployed state and [skipped-actions.md](docs/skipped-actions.md) for the public-security limitations.
 
-## Cloudflare Deployment: Recommended Full-Stack Path
+## Cloudflare Deployment
 
 This application has a server-rendered Next.js frontend **and** a FastAPI API behind the same `/api/*` origin. The supported no-rewrite path is Cloudflare Tunnel in front of the existing Docker stack: Cloudflare supplies the public hostname and HTTPS, while `cloudflared` reaches Caddy over the internal Docker network. The application code and the `/api/*` contract remain unchanged.
 
 Do not deploy only `frontend/` to Cloudflare Workers or Pages as a substitute for this command: that would leave the current FastAPI API unavailable. Cloudflare supports Next.js through OpenNext and FastAPI through Python Workers, but converting this two-runtime service into independently deployed Workers would add dependencies and change the deployment topology; it is intentionally not part of this stabilization project.
 
+### Cloudflare “Set up your application” screen
+
+The **Build command** and **Deploy command** fields on that screen belong to Cloudflare Workers Builds. They do not run this Docker Compose application or a persistent Tunnel, so this is not the correct Cloudflare product for the current full-stack deployment.
+
+| Field | Value for this project |
+| --- | --- |
+| Build command | Leave unset; do not connect this repository as a Workers Build. |
+| Deploy command | Leave unset; do not use the Workers Builds deployment flow. |
+
+If the screen requires either value, go back and create a **Cloudflare Zero Trust → Networks → Tunnels** remotely managed tunnel instead. The Docker commands in the next section run on the application host or its CI runner; they are **not** values to paste into the Workers Builds screen.
+
+### Tunnel setup
+
 1. In Cloudflare Zero Trust, create a **remotely managed** tunnel and public hostname. Set its service to `http://caddy:18080` because `cloudflared` and Caddy share Docker's `app_net` network.
 2. Copy `.env.example` to `.env`; set `CLOUDFLARE_TUNNEL_TOKEN` to the tunnel token. It is a secret and must never be committed.
 3. Keep `HOST_BIND_ADDRESS=127.0.0.1` so the origin cannot be reached directly from the internet.
 
-Build command for the host or CI runner:
+### Build command for the application host or CI runner
 
 ```bash
 HOST_BIND_ADDRESS=127.0.0.1 HOST_PORT=18080 \
@@ -162,7 +175,7 @@ HOST_BIND_ADDRESS=127.0.0.1 HOST_PORT=18080 \
   --profile production --profile cloudflare build
 ```
 
-Deploy command for the host or CI runner:
+### Deploy command for the application host or CI runner
 
 ```bash
 HOST_BIND_ADDRESS=127.0.0.1 HOST_PORT=18080 \
@@ -170,7 +183,7 @@ HOST_BIND_ADDRESS=127.0.0.1 HOST_PORT=18080 \
   --profile production --profile cloudflare up -d --wait
 ```
 
-Verify the private origin and then the configured public hostname:
+### Verification
 
 ```bash
 curl --fail --show-error http://127.0.0.1:18080/health/ready
