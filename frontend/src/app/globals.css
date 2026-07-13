@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 244 247 251;
+  --surface: 255 255 255;
+  --surface-muted: 235 240 247;
+  --foreground: 15 23 42;
+  --muted: 71 85 105;
+  --border: 100 116 139;
+  --border-subtle: 203 213 225;
+  --primary: 29 78 216;
+  --primary-strong: 30 64 175;
+  --primary-soft: 219 234 254;
+  --primary-foreground: 255 255 255;
+  --success: 22 163 74;
+  --warning: 217 119 6;
+  --danger: 220 38 38;
+  --info: 8 145 178;
+  --ring: 37 99 235;
+  --radius: 1rem;
+  --radius-sm: 0.75rem;
+  --shadow-color: 15 23 42;
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+}
+
+.dark {
+  --background: 10 17 31;
+  --surface: 24 35 54;
+  --surface-muted: 40 54 76;
+  --foreground: 241 245 249;
+  --muted: 203 213 225;
+  --border: 148 163 184;
+  --border-subtle: 71 85 105;
+  --primary: 147 197 253;
+  --primary-strong: 191 219 254;
+  --primary-soft: 30 58 138;
+  --primary-foreground: 15 23 42;
+  --success: 74 222 128;
+  --warning: 251 191 36;
+  --danger: 248 113 113;
+  --info: 103 232 249;
+  --ring: 147 197 253;
+}
+
+* {
+  border-color: rgb(var(--border-subtle));
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 82% -12%, rgb(var(--primary) / 0.14), transparent 30rem),
+    radial-gradient(circle at 0% 100%, rgb(var(--info) / 0.08), transparent 28rem),
+    rgb(var(--background));
+  color: rgb(var(--foreground));
+  font-family: "Avenir Next", "Segoe UI Variable", Pretendard, "Noto Sans KR", ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(var(--ring));
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgb(var(--primary) / 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-xl border bg-[rgb(var(--surface))] shadow-panel;
+    border-color: rgb(var(--border-subtle));
+  }
+
+  .control {
+    @apply min-h-11 rounded-lg border bg-[rgb(var(--surface))] px-3 text-[rgb(var(--foreground))] shadow-sm transition;
+    border-color: rgb(var(--border));
+  }
+
+  .control:hover {
+    border-color: rgb(var(--primary));
+  }
+
+  .control:focus-visible {
+    border-color: rgb(var(--primary));
+  }
+
+  .text-muted {
+    color: rgb(var(--muted));
+  }
+
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] -translate-y-24 rounded-md bg-[rgb(var(--primary))] px-4 py-2 text-sm font-semibold text-[rgb(var(--primary-foreground))] transition-transform focus:translate-y-0;
+  }
+}

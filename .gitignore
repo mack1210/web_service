@@ -1,0 +1,36 @@
+# Environment and local state
+.env
+.env.local
+.env.*.local
+/deployment-inputs.env
+
+# Local operator inputs; retained on the host but never published with the app.
+/START-OVERNIGHT-AI.md
+/overnight-web-build-agent-brief-v2.md
+/ux-first-fullstack-frame-plan.md
+
+# JavaScript
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# Python
+backend/.venv/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.mypy_cache/
+backend/**/__pycache__/
+backend/**/*.py[cod]
+
+# Docker/runtime artifacts
+data/
+artifacts/screenshots/*.png
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

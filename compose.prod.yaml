@@ -1,0 +1,5 @@
+# Production overlay. It intentionally exposes only the Caddy ingress port.
+services:
+  caddy:
+    environment:
+      CADDY_HTTP_PORT: "18080"

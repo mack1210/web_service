@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+node_modules
+frontend/node_modules
+frontend/.next
+frontend/coverage
+frontend/playwright-report
+frontend/test-results
+backend/.venv
+backend/.pytest_cache
+backend/.ruff_cache
+**/__pycache__
+docs
+artifacts
+MORNING.md

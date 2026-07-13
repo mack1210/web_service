@@ -1,0 +1,23 @@
+{
+	# A high port is intentional: the host Caddy service already owns 80/443.
+	auto_https off
+}
+
+:18080 {
+	encode zstd gzip
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), geolocation=(), microphone=()"
+		X-Frame-Options "SAMEORIGIN"
+	}
+
+	@api path /api/* /health/*
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

@@ -1,0 +1,21 @@
+# Optional Cloudflare Tunnel overlay for the complete Next.js + FastAPI stack.
+# Create a remotely managed tunnel in Cloudflare and configure its public hostname
+# service as http://caddy:18080. Keep the token in an untracked .env file.
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles:
+      - cloudflare
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - "${CLOUDFLARE_TUNNEL_TOKEN:-}"
+    restart: unless-stopped
+    init: true
+    depends_on:
+      caddy:
+        condition: service_healthy
+    networks:
+      - app_net
