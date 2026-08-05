@@ -70,3 +70,8 @@ its health check and both the source and generated solver-route checks on port 1
 field. The frontend now sends the legacy answer-only payload for ordinary choices and adds the flag
 only for an explicit image evaluation. The frontend-only promotion is healthy on port 18080, and a
 live Q01 answer-feedback request returned a scored result.
+
+**2026-08-05 SOURCE CHOICE RECOVERY:** Repaired 63 placeholder choice groups across source rounds
+02–05 from their reviewed OCR transcriptions, including all affected Q01–Q30 choices in rounds 03
+and 05. The live API now returns zero placeholder choices; the repair/validation tool is documented
+as the one-source maintenance path for future source sets.

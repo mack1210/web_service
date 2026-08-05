@@ -155,3 +155,10 @@ Captured: 2026-07-10T22:25:41+09:00
   the currently deployed API. Image evaluation adds `confirm_media` only when explicitly requested.
 - Frontend unit tests cover both payload forms. A live answer-only Q01 request returned `200` with a
   scored response after the frontend-only promotion.
+
+## 2026-08-05 source-choice recovery coverage
+
+- `pnpm aipot:content:check` scans every source-round learner manifest and fails if an unrecovered
+  `원본 페이지 참조` placeholder exists; the repair tool derives replacements from reviewed OCR.
+- The live API was queried for source rounds 02–05 after recovery: every response contained 40
+  questions and zero placeholders. A round-03 answer-feedback request returned recovered choices.

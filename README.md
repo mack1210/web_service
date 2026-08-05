@@ -78,6 +78,10 @@ Every photographed source round uses one rendering contract, which new sets must
   begin at the actual question stem. If a final numbered/circled choice run is also supplied in
   `choices`, omit that run from the stem so each choice appears exactly once, in the answer
   controls. This rule applies to every source and generated set.
+- The reviewed OCR transcription is the source of truth for source-round choices. Never substitute
+  a label such as `선택지 1 (원본 페이지 참조)`. After changing OCR or source-round learner data,
+  run `pnpm aipot:content:check`; the checked-in repair tool derives any missing source choices
+  from the final OCR choice block and fails if a placeholder remains.
 - Use a declared visual segment for diagrams, screenshots, and quote-image material. Do not append
   a generic “source” caption, expose whole photographed pages, or duplicate an image as a raw
   Markdown table. For example, source round 01 Q16 replaces its concept-diagram table with the
@@ -284,6 +288,8 @@ Run these before handing off a change:
 pnpm --dir frontend lint
 pnpm --dir frontend typecheck
 pnpm --dir frontend test
+
+pnpm aipot:content:check
 pnpm --dir frontend build
 pnpm --dir frontend audit
 

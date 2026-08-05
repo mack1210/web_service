@@ -179,3 +179,12 @@ The currently running API validates the original answer-only feedback payload an
 and non-image practical feedback, sending it only when an image evaluation is explicitly confirmed.
 The frontend was rebuilt/recreated; its health check, source solver route, and a live Q01 feedback
 request all passed on port 18080. API and Caddy were unchanged.
+
+## AI-POT source-choice recovery — 2026-08-05
+
+The learner manifests for source rounds 02–05 contained 63 placeholder choice groups, including all
+affected theory choices in rounds 03 and 05. The reviewed OCR transcription was used as the single
+source of truth to recover the corresponding final numbered and table choice blocks. A validation
+tool now fails if `원본 페이지 참조` remains. Because the API reads the mounted content on each
+request, no container recreation was necessary: live checks for all four source rounds returned
+40 questions and zero placeholders, and a round-03 feedback response used the recovered choice text.
