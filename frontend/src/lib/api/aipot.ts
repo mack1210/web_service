@@ -47,7 +47,9 @@ const httpApi: AipotApi = {
   }),
   getAttempt: (attemptId) => request<AipotAttempt>(`/api/v1/aipot/attempts/${encodeURIComponent(attemptId)}`),
   feedback: (examId, number, answer, confirmMedia = false) => request<AipotImmediateFeedback>(`/api/v1/aipot/exams/${encodeURIComponent(examId)}/questions/${number}/feedback`, {
-    method: "POST", body: JSON.stringify({ answer, confirm_media: confirmMedia }),
+    // Existing API deployments accept the original answer-only contract. Send
+    // the evaluator-specific confirmation flag only when an image run needs it.
+    method: "POST", body: JSON.stringify(confirmMedia ? { answer, confirm_media: true } : { answer }),
   }),
 };
 

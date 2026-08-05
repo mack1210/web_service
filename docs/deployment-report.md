@@ -171,3 +171,11 @@ instructions through the objective-section heading. They also remove a final com
 circled choice run when the same choices are already supplied to answer controls. This keeps the
 question stem focused and prevents duplicate answer text in every set. The frontend-only service
 was rebuilt/recreated successfully; both source and generated solve routes and API readiness passed.
+
+## AI-POT choice-feedback compatibility correction — 2026-08-05
+
+The currently running API validates the original answer-only feedback payload and rejects an unused
+`confirm_media: false` field. The frontend now omits that field for ordinary choice, short-answer,
+and non-image practical feedback, sending it only when an image evaluation is explicitly confirmed.
+The frontend was rebuilt/recreated; its health check, source solver route, and a live Q01 feedback
+request all passed on port 18080. API and Caddy were unchanged.

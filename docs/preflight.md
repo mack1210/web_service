@@ -148,3 +148,10 @@ Captured: 2026-07-10T22:25:41+09:00
   controls. The frontend and backend test suites each exercise this contract.
 - `README.md` is the one-source policy for current and future source/generated sets. The frontend
   promotion is limited to the UI; the same API sanitizer is ready for the next secure API release.
+
+## 2026-08-05 choice-feedback compatibility coverage
+
+- Ordinary feedback requests now send exactly `{ "answer": "..." }`, retaining compatibility with
+  the currently deployed API. Image evaluation adds `confirm_media` only when explicitly requested.
+- Frontend unit tests cover both payload forms. A live answer-only Q01 request returned `200` with a
+  scored response after the frontend-only promotion.

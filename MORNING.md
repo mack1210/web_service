@@ -65,3 +65,8 @@ numbered choice lines are now removed by the shared frontend renderer and API ma
 Only the actual question stem is shown above the selectable choices. The README records this as a
 one-source rendering contract for every current and future set. The frontend-only promotion passed
 its health check and both the source and generated solver-route checks on port 18080.
+
+**2026-08-05 CHOICE-FEEDBACK COMPATIBILITY:** The live API rejects an unused `confirm_media: false`
+field. The frontend now sends the legacy answer-only payload for ordinary choices and adds the flag
+only for an explicit image evaluation. The frontend-only promotion is healthy on port 18080, and a
+live Q01 answer-feedback request returned a scored result.
