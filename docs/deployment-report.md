@@ -57,3 +57,80 @@ HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile pr
 Do not use `down -v`, Docker prune, or any command that removes unrelated containers, networks, or volumes.
 
 Detailed product, accessibility, security, policy, and testing evidence is in [production-improvement-report.md](production-improvement-report.md).
+
+## AI-POT study module — 2026-08-03
+
+`/aipot` is deployed through the existing Next.js and FastAPI services; Caddy was not changed or recreated. The API container has a read-only mount from `/home/cgma/cgma_git/study/aipot/실전모의고사` at `/aipot-content` and a dedicated `aipot_history` Compose volume at `/app/data` for local submitted-attempt history.
+
+| Check | Result |
+| --- | --- |
+| `GET /aipot` | 200; Korean-first AI-POT dashboard is present |
+| `GET /api/v1/aipot/exams` | 200; 10 sets, from `source-round-01` to `generated-mock-05` |
+| Public exam payload | 40 questions; no answer-key fields in question objects |
+| Source asset allow-list | required question page 200; source answer page 404 |
+| API/frontend container health | both healthy after an API/frontend-only rebuild; Caddy remained healthy and unchanged |
+
+The route is intentionally a single-user personal-study feature. It has no authentication, and the existing LAN/plain-HTTP security limits remain in force.
+
+The 2026-08-03 `pnpm audit` reports existing dependency advisories (15 total, including Next.js `16.2.10` fixes available at `16.2.11`). No dependency update was included in this feature deployment because upgrades require an approved, separate compatibility pass.
+
+## AI-POT OCR, visual prompts, and answer-board scroll — 2026-08-04
+
+Only the API and frontend services were rebuilt/recreated; Caddy, its routes, and the published port remained unchanged. The source-round API now exposes reviewed OCR text for Q01–Q40 and withholds full source-page assets. It exposes only declared, focused source crops where a table, graph, or image is needed. Every generated mock now includes a visual prompt asset for Q36–Q40: a policy notice, reference photo, code brief, sales chart, and customer email.
+
+The answer drawer focus lock was also adjusted so routine timer/answer rerenders do not refocus its close button and force the drawer back to its top. The new hook regression test, frontend lint/typecheck/build, backend API tests/Ruff, and live `/aipot` smoke check all passed.
+
+The same deployment now parses all 150 source multiple-choice OCR records into a question stem plus four actual option values. Final numbered/circled option blocks and table-form option rows are removed from the stem and rendered in the answer area. Questions whose original answer format permits multiple selections use checkboxes; single-answer questions retain radio buttons. Live checks confirmed source Q01's text options and source round 2 Q04's table-derived multi-select options.
+
+## AI-POT current-technology depth rounds — 2026-08-04
+
+The mounted study corpus now includes generated rounds 11–15, for a 15-set catalog. Each round retains the original exam pattern (30 multiple-choice, 5 short-answer, 5 practical prompts) and includes visual/data material for every practical prompt. The new tracks cover agents/MCP, multimodal document AI, RAG evaluation, inference/operations, and AI safety/governance. Their manifests record the primary-source review links and date; the hosting API discovers the new files automatically. The frontend catalog label was rebuilt/recreated to show the dynamic count; the API and Caddy were not recreated.
+
+### OCR reading-density adjustment
+
+OCR passage quote markers are now rendered as compact normal text instead of indented blockquotes. This was a frontend-only recreation; no draft key, submission history, API record, or source OCR file was changed, so existing browser-local temporary answers—including source round 1—remain intact.
+
+OCR tables are rendered through a narrow, local parser into React table elements. The renderer recognizes only table delimiters, line breaks, bold text, and inline code; it never injects raw HTML and deliberately renders OCR link labels as text rather than following any URL. Bare quote markers (`>`) are discarded. This keeps untrusted source OCR from becoming executable content.
+
+### Inline original visual crops
+
+A full review of source rounds 1–5 identified 38 visual-dependent prompts. Each now replaces its OCR-only description with a focused crop from the original photographed page, placed at each marker's original location. This includes source round 1 Q21, Q18's gradient-descent graph, Q34–Q35's shared Google Flow settings/result visual, RLHF post-its, activation plots, prompting diagrams, heatmaps, UI screenshots, image evidence, and visual short-answer questions. The manifest explicitly declares the crop filename, marker, and alt text; the API serves source assets only when declared for that question, so arbitrary mounted files remain unavailable. Live manifest checks report 13, 10, 5, 2, and 8 visual questions for source rounds 1–5 respectively. Browser-local draft storage and submitted-history data were not changed.
+
+The same audit added 14 focused visual crops to Q36–Q40 across the five source rounds. These practical prompts now retain their OCR instructions and show only their relevant image, graph, or table region; text/code-only practical prompts show no camera page. Full `page-*.jpg` source images are no longer exposed by the API.
+
+## AI-POT evidence evaluator — 2026-08-05 (implemented, not yet deployed)
+
+The AI-POT practical evaluator is implemented as a separate FastAPI capability backed by SQLite
+inside the existing `aipot_history` volume. A submitted prompt is executed, the resulting text,
+image, or sandboxed code output is retained as evidence, and a rubric judge scores that evidence.
+The same stored evidence is returned by immediate feedback and final review; it is not recomputed
+or replaced by a keyword-match score.
+
+The added `aipot-sandbox` Compose service has no network, no host port, a read-only root
+filesystem, a temporary writable `/tmp`, dropped Linux capabilities, and communicates with the API
+only through a named-volume Unix socket. Image generation requires an explicit browser confirmation
+before the billable request. Questions whose required original input file is unavailable fail
+closed and receive no score.
+
+This change has not recreated the currently running API/frontend containers. The ignored local
+environment did not contain an evaluator credential at verification time, so a live provider call
+and production promotion were intentionally not attempted. The implementation checks are recorded
+in the current handoff; deployment must first place the credential in the secret-managed or ignored
+environment and then run the documented Compose promotion command.
+
+### Current listener correction — 2026-08-05
+
+The running Compose Caddy listener was rechecked during this evaluator work and is healthy at
+`http://192.168.219.130:18080`; `/health/ready` and `/aipot` returned 200. Earlier `.121` references
+above record the historical host binding and should not be used as the current access URL.
+
+## AI-POT finish and practical retry correction — 2026-08-05
+
+Only the frontend Compose service was rebuilt/recreated on the existing `:18080` stack. After all
+40 answers are locked, the active study screen now exposes `시험 종료 및 답안 제출` in both the main
+content and floating answer navigator instead of leaving a disabled “no unanswered questions”
+message. Each locked Q36–Q40 also exposes `서술형 다시풀기`; it clears only that local prompt answer,
+lock, and feedback for a fresh evaluation.
+
+The API and Caddy services were not recreated. Frontend health, `/health/ready`, and the live
+`/aipot/solve/generated-mock-01` page were checked successfully after promotion.

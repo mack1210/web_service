@@ -96,6 +96,59 @@ PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm test:e2e --project=webkit
 pnpm dlx lighthouse http://127.0.0.1:18080/ --output html --output-path ../artifacts/lighthouse-review.html
 ```
 
+### 2026-08-03 AI-POT Chromium regression attempt
+
+**Attempted**: `pnpm --dir frontend test:e2e`, including the new AI-POT flow that checks five-question pagination, the mobile answer board, final-page-only submission, and review navigation.
+
+**Observed result**: All browser projects stopped before executing because Playwright's Chromium executable was absent at `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/`.
+
+**Impact**: Frontend lint, strict typecheck, unit tests, and production build passed; backend API tests and live `/aipot` smoke checks passed. The Playwright coverage is present but has not been executed in this host environment.
+
+**2026-08-04 update**: The answer-drawer scroll regression has a focused unit test and its frontend build/live smoke check passed. Full browser validation remains blocked by the same missing Chromium executable.
+
+**Exact follow-up**:
+
+```bash
+cd /home/cgma/apps/web_service/frontend
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+### 2026-08-04 AI-POT immediate-feedback browser check
+
+**Attempted**: `pnpm --dir frontend test:e2e` after deploying the 17-set AI-POT feedback/timer update to port 18080.
+
+**Observed result**: Playwright could not launch either desktop or mobile Chromium because `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-linux64/chrome-headless-shell` is absent.
+
+**Impact**: API behavior, TypeScript, lint, unit tests, production build, Compose validation, and live HTTP checks pass. The browser interaction check for locking, green/red feedback, and timer phase transition still needs a local Chromium installation.
+
+**Exact follow-up after approval to download a browser binary**:
+
+```bash
+cd /home/cgma/apps/web_service/frontend
+pnpm exec playwright install chromium
+PLAYWRIGHT_BASE_URL=http://192.168.219.121:18080 pnpm test:e2e
+```
+
+## 7. Dependency-audit remediation
+
+**Attempted**: `pnpm --dir frontend audit` after the AI-POT implementation checks.
+
+**Observed result**: The existing lockfile reports 19 advisories: 13 high and 6 moderate. These include Next.js `16.2.10` advisories patched in `16.2.11`, plus transitive `postcss`, `js-yaml`, `sharp`, and `brace-expansion` paths.
+
+**Why skipped**: Updating dependencies changes the application supply chain and lockfile. The project policy and active task both require explicit approval before dependency changes, so no package or lockfile was modified.
+
+**Impact**: The AI-POT feature has no new dependencies, and its code/API/deployment checks pass. The application still carries the pre-existing dependency-audit risk until an approved upgrade pass is completed.
+
+**Exact follow-up after approval**:
+
+```bash
+cd /home/cgma/apps/web_service/frontend
+pnpm up next@16.2.11 postcss@8.5.18
+pnpm audit
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
+```
+
 ## 5. Public SEO, localization, privacy, and ads decisions
 
 **Attempted**: Code and runtime inventory for public metadata, ads, analytics, consent, and language handling.
@@ -143,4 +196,49 @@ curl --fail --show-error http://127.0.0.1:18080/health/ready
 curl --fail --show-error --max-time 15 https://app.example.com/health/ready
 docker compose -f compose.yaml -f compose.prod.yaml -f compose.cloudflare.yaml \
   --profile production --profile cloudflare ps
+```
+
+## 8. AI-POT evaluator provider verification and promotion
+
+**Implemented locally**: The API has transactional SQLite evidence storage, an internal
+network-isolated code runner, question execution modes, explicit image-generation confirmation,
+and provider clients configured for OpenRouter. Unit and integration-style application checks use
+a fake provider and do not make billable network calls.
+
+**Why live verification and deployment are pending**: The ignored local environment did not have
+`OPENROUTER_API_KEY` configured. A real execution/judging request cannot be truthfully verified
+without a secret, and deploying an unconfigured evaluator would only turn practical submissions
+into explicit 503 failures. No provider request was made and no supplied credential was copied into
+the repository or command history.
+
+**Operator steps after placing the key in ignored `.env` or the deployment secret manager**:
+
+```bash
+cd /home/cgma/apps/web_service
+HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production up --build -d --wait
+docker compose -f compose.yaml -f compose.prod.yaml --profile production ps
+```
+
+Then use `/aipot` to submit one text practical prompt and inspect the immediate Korean rubric
+evidence and final review. Submit one image practical only after the confirmation dialog and check
+that the returned evidence contains the generated image. Verify a code practical displays the
+sandbox stdout/stderr evidence. Do not put the secret in curl commands, screenshots, commits, or
+the study answer field.
+
+**Current local listener note (2026-08-05)**: use `http://192.168.219.130:18080`; the earlier `.121`
+address in historical deployment notes no longer accepts the current service.
+
+## 9. AI-POT browser-interaction regression
+
+**Implemented and unit-tested**: completing all 40 locked answers now presents the final submission
+action, and locked Q36–Q40 expose a per-question retry control. Frontend lint/typecheck/unit/build,
+backend checks, and the live route/content probe passed after the frontend-only promotion.
+
+**Remaining browser check**: Playwright Chromium is still not installed locally, so the exact click
+sequence (lock Q40 → submit; retry Q36 → edit → re-lock) was not automated against a real browser.
+The existing environment limitation remains; after Chromium is available, run:
+
+```bash
+cd /home/cgma/apps/web_service/frontend
+PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ```

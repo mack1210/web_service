@@ -8,6 +8,62 @@ The main user journey is:
 Overview → Collection → Detail → Validate → result → return to filtered collection
 ```
 
+The additional personal-study journey is:
+
+```text
+AI-POT 학습 → 세트 선택 → 5문제씩 풀이 → 마지막 페이지 제출 → 정답·약점 복습
+```
+
+## AI-POT private study
+
+`/aipot` discovers every source round and generated mock held in the local study workspace.
+Each 40-question set is split into eight pages of five. Source-round Q01–Q35 use reviewed OCR
+transcription; visual-dependent prompts expose only declared, focused assets. Practical prompts
+can now be evaluated from the learner's submitted prompt and the generated execution result:
+
+- Text prompts are executed and judged against a question-specific rubric.
+- Image prompts require an explicit confirmation before a paid generation request; the generated
+  image is retained as evidence.
+- Code prompts are generated first, then run in an internal, network-isolated Unix-socket runner
+  with bounded CPU, memory, files, and output.
+- Missing required source material and unavailable evaluation configuration fail closed: the
+  answer is not scored as correct and the UI reports the actionable failure.
+
+Submitted attempts and evaluator evidence are stored transactionally in SQLite in this Compose
+project's local `aipot_history` volume. The site has no login, so do not put sensitive or real
+work data in an answer.
+
+The production API receives the source material through a read-only Compose mount at
+`/aipot-content`. It deliberately returns neither answer keys nor source solution images until
+after a submission is scored. The deployed project expects the study material at:
+
+```text
+/home/cgma/cgma_git/study/aipot/실전모의고사
+```
+
+For host-run API development, set the same location explicitly before starting FastAPI:
+
+```bash
+AIPOT_CONTENT_ROOT=/home/cgma/cgma_git/study/aipot/실전모의고사 \
+  uv --directory backend run uvicorn app.main:app --reload --port 8000
+```
+
+### Practical evaluator configuration
+
+The evaluator is intentionally a separate backend capability, not browser-side scoring. It needs
+an OpenRouter key in an ignored `.env` file or a deployment secret manager:
+
+```bash
+OPENROUTER_API_KEY=your-secret
+```
+
+The defaults use `anthropic/claude-haiku-4.5` for text execution and rubric judging, and
+`openai/gpt-image-1` for image execution. Override `AIPOT_JUDGE_MODEL`, `AIPOT_TEXT_MODEL`, or
+`AIPOT_IMAGE_MODEL` only when the selected model supports the required structured output or image
+operation. Without a configured key, practical evaluation returns a clear 503 response rather
+than silently awarding a keyword-match score. Do not commit keys, generated learner artifacts, or
+the `aipot_history` volume.
+
 ## What Changed Recently
 
 This project was improved without replacing its framework, routes, API paths, or representative workflow.
@@ -20,7 +76,7 @@ This project was improved without replacing its framework, routes, API paths, or
 - Missing items have a recoverable browser screen; copy feedback reports failure honestly.
 - The API rejects unexpected action fields, documents its real error envelopes, validates reflected request IDs, and disables the demo failure query in production.
 - Caddy now sends basic browser security headers; the app has an icon, `robots.txt`, and an intentional no-index policy.
-- Playwright, PostCSS, and Vitest were patched; `pnpm audit` is clean.
+- The dependency audit is checked before handoff; see `docs/skipped-actions.md` for the current upgrade decision when advisories require dependency changes.
 
 For detailed evidence, see [the improvement report](docs/production-improvement-report.md).
 
@@ -44,7 +100,7 @@ For detailed evidence, see [the improvement report](docs/production-improvement-
 
 The running Compose service publishes Caddy on port `18080`:
 
-- Current local-LAN mode: `http://192.168.219.121:18080` (including `/settings`). This address is set in the ignored local `.env` file.
+- Current local-LAN mode: `http://192.168.219.130:18080` (including `/settings`). This address is set in the ignored local `.env` file.
 - In this LAN-bound mode, `127.0.0.1:18080` intentionally does not listen. Use the LAN URL even from the host machine.
 - The supplied `.env.example` remains loopback-only for the future Cloudflare Tunnel path. Before enabling the Cloudflare profile, change the local `HOST_BIND_ADDRESS` back to `127.0.0.1`.
 
@@ -56,6 +112,7 @@ Important: the direct LAN origin has **no HTTPS and no login/access-control laye
 | --- | --- | --- |
 | `frontend/` | Next.js App Router UI, Tailwind styles, browser tests, generated types | Page, component, UX, or frontend contract work |
 | `backend/` | FastAPI/Pydantic API, service logic, backend tests | API behavior, validation, health, or error-contract work |
+| `/aipot` | Korean-first private AI-POT set selector, solver, answer board, and review | Personal exam practice and weakness analysis |
 | `infra/caddy/Caddyfile` | Reverse-proxy and response-header policy | Ingress routing or browser-header work |
 | `compose*.yaml` | Development and production Docker topology | Local containers, build, restart, or deployment work |
 | `docs/` | UX, preflight, deployment, limitations, and verification evidence | Operations and product handoff |

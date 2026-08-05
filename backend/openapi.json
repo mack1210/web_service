@@ -82,6 +82,1016 @@
         "title": "ActionResponse",
         "type": "object"
       },
+      "AipotAttemptDetail": {
+        "properties": {
+          "answered_count": {
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "title": "Answered Count",
+            "type": "integer"
+          },
+          "chapters": {
+            "items": {
+              "$ref": "#/components/schemas/AipotChapterResult"
+            },
+            "title": "Chapters",
+            "type": "array"
+          },
+          "elapsed_seconds": {
+            "minimum": 0.0,
+            "title": "Elapsed Seconds",
+            "type": "integer"
+          },
+          "exam_id": {
+            "title": "Exam Id",
+            "type": "string"
+          },
+          "exam_title": {
+            "title": "Exam Title",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/AipotQuestionReview"
+            },
+            "title": "Reviews",
+            "type": "array"
+          },
+          "score": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "title": "Submitted At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "exam_id",
+          "exam_title",
+          "submitted_at",
+          "score",
+          "answered_count",
+          "elapsed_seconds",
+          "reviews",
+          "chapters"
+        ],
+        "title": "AipotAttemptDetail",
+        "type": "object"
+      },
+      "AipotAttemptSummary": {
+        "properties": {
+          "answered_count": {
+            "maximum": 40.0,
+            "minimum": 0.0,
+            "title": "Answered Count",
+            "type": "integer"
+          },
+          "exam_id": {
+            "title": "Exam Id",
+            "type": "string"
+          },
+          "exam_title": {
+            "title": "Exam Title",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "score": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "title": "Submitted At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "exam_id",
+          "exam_title",
+          "submitted_at",
+          "score",
+          "answered_count"
+        ],
+        "title": "AipotAttemptSummary",
+        "type": "object"
+      },
+      "AipotChapterResult": {
+        "properties": {
+          "chapter": {
+            "title": "Chapter",
+            "type": "string"
+          },
+          "chapter_title": {
+            "title": "Chapter Title",
+            "type": "string"
+          },
+          "earned": {
+            "minimum": 0.0,
+            "title": "Earned",
+            "type": "number"
+          },
+          "percent": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Percent",
+            "type": "number"
+          },
+          "possible": {
+            "exclusiveMinimum": 0.0,
+            "title": "Possible",
+            "type": "number"
+          },
+          "recommendation": {
+            "title": "Recommendation",
+            "type": "string"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Topics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "chapter",
+          "chapter_title",
+          "earned",
+          "possible",
+          "percent",
+          "recommendation"
+        ],
+        "title": "AipotChapterResult",
+        "type": "object"
+      },
+      "AipotChoiceFeedback": {
+        "properties": {
+          "correct": {
+            "title": "Correct",
+            "type": "boolean"
+          },
+          "definition": {
+            "title": "Definition",
+            "type": "string"
+          },
+          "differences": {
+            "title": "Differences",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "purpose": {
+            "title": "Purpose",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "similarities": {
+            "title": "Similarities",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "definition",
+          "purpose",
+          "reason",
+          "similarities",
+          "differences",
+          "correct"
+        ],
+        "title": "AipotChoiceFeedback",
+        "type": "object"
+      },
+      "AipotEvaluationArtifact": {
+        "properties": {
+          "asset_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Url"
+          },
+          "exit_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Code"
+          },
+          "kind": {
+            "enum": [
+              "text",
+              "image",
+              "code",
+              "unavailable"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "media_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Type"
+          },
+          "stderr": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stderr"
+          },
+          "stdout": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stdout"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "AipotEvaluationArtifact",
+        "type": "object"
+      },
+      "AipotEvaluationCriterion": {
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "earned": {
+            "minimum": 0.0,
+            "title": "Earned",
+            "type": "number"
+          },
+          "evidence": {
+            "title": "Evidence",
+            "type": "string"
+          },
+          "met": {
+            "title": "Met",
+            "type": "boolean"
+          },
+          "possible": {
+            "minimum": 0.0,
+            "title": "Possible",
+            "type": "number"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "criterion",
+          "possible",
+          "earned",
+          "met",
+          "rationale",
+          "evidence"
+        ],
+        "title": "AipotEvaluationCriterion",
+        "type": "object"
+      },
+      "AipotEvaluationEvidence": {
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/AipotEvaluationArtifact"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/components/schemas/AipotEvaluationCriterion"
+            },
+            "title": "Criteria",
+            "type": "array"
+          },
+          "executor_model": {
+            "title": "Executor Model",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "input_summary": {
+            "title": "Input Summary",
+            "type": "string"
+          },
+          "judge_model": {
+            "title": "Judge Model",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "text",
+              "image",
+              "code",
+              "unavailable"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "submitted_prompt": {
+            "title": "Submitted Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "submitted_prompt",
+          "input_summary",
+          "executor_model",
+          "judge_model",
+          "criteria",
+          "artifact"
+        ],
+        "title": "AipotEvaluationEvidence",
+        "type": "object"
+      },
+      "AipotExamDetail": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "image_first": {
+            "title": "Image First",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "generated",
+              "public"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "known_limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Known Limitations",
+            "type": "array"
+          },
+          "question_count": {
+            "minimum": 1.0,
+            "title": "Question Count",
+            "type": "integer"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/AipotQuestion"
+            },
+            "title": "Questions",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "question_count",
+          "image_first",
+          "questions"
+        ],
+        "title": "AipotExamDetail",
+        "type": "object"
+      },
+      "AipotExamHistory": {
+        "properties": {
+          "attempts": {
+            "minimum": 0.0,
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "image_first": {
+            "title": "Image First",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "generated",
+              "public"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_attempt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AipotAttemptSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "question_count": {
+            "minimum": 1.0,
+            "title": "Question Count",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "question_count",
+          "image_first",
+          "attempts"
+        ],
+        "title": "AipotExamHistory",
+        "type": "object"
+      },
+      "AipotExamSummary": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "image_first": {
+            "title": "Image First",
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "source",
+              "generated",
+              "public"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_count": {
+            "minimum": 1.0,
+            "title": "Question Count",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "question_count",
+          "image_first"
+        ],
+        "title": "AipotExamSummary",
+        "type": "object"
+      },
+      "AipotHistoryResponse": {
+        "properties": {
+          "exams": {
+            "items": {
+              "$ref": "#/components/schemas/AipotExamHistory"
+            },
+            "title": "Exams",
+            "type": "array"
+          },
+          "recent_attempts": {
+            "items": {
+              "$ref": "#/components/schemas/AipotAttemptSummary"
+            },
+            "title": "Recent Attempts",
+            "type": "array"
+          },
+          "weaknesses": {
+            "items": {
+              "$ref": "#/components/schemas/AipotWeakness"
+            },
+            "title": "Weaknesses",
+            "type": "array"
+          }
+        },
+        "required": [
+          "exams",
+          "recent_attempts",
+          "weaknesses"
+        ],
+        "title": "AipotHistoryResponse",
+        "type": "object"
+      },
+      "AipotImmediateFeedback": {
+        "properties": {
+          "choice_feedback": {
+            "items": {
+              "$ref": "#/components/schemas/AipotChoiceFeedback"
+            },
+            "title": "Choice Feedback",
+            "type": "array"
+          },
+          "correct": {
+            "title": "Correct",
+            "type": "boolean"
+          },
+          "correct_answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correct Answer"
+          },
+          "earned": {
+            "minimum": 0.0,
+            "title": "Earned",
+            "type": "number"
+          },
+          "evaluation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AipotEvaluationEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "number": {
+            "maximum": 40.0,
+            "minimum": 1.0,
+            "title": "Number",
+            "type": "integer"
+          },
+          "possible": {
+            "exclusiveMinimum": 0.0,
+            "title": "Possible",
+            "type": "number"
+          }
+        },
+        "required": [
+          "number",
+          "earned",
+          "possible",
+          "correct"
+        ],
+        "title": "AipotImmediateFeedback",
+        "type": "object"
+      },
+      "AipotImmediateFeedbackRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "maxLength": 20000,
+            "title": "Answer",
+            "type": "string"
+          },
+          "confirm_media": {
+            "default": false,
+            "title": "Confirm Media",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "answer"
+        ],
+        "title": "AipotImmediateFeedbackRequest",
+        "type": "object"
+      },
+      "AipotQuestion": {
+        "properties": {
+          "asset_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Url"
+          },
+          "chapter": {
+            "title": "Chapter",
+            "type": "string"
+          },
+          "choice_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Choice Ids",
+            "type": "array"
+          },
+          "choices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Choices",
+            "type": "array"
+          },
+          "evaluation_available": {
+            "default": true,
+            "title": "Evaluation Available",
+            "type": "boolean"
+          },
+          "evaluation_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "text",
+                  "image",
+                  "code",
+                  "unavailable"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Kind"
+          },
+          "multiple_selection": {
+            "default": false,
+            "title": "Multiple Selection",
+            "type": "boolean"
+          },
+          "number": {
+            "maximum": 40.0,
+            "minimum": 1.0,
+            "title": "Number",
+            "type": "integer"
+          },
+          "ocr_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ocr Text"
+          },
+          "points": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Points",
+            "type": "integer"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "single_concept_explanation": {
+            "default": false,
+            "title": "Single Concept Explanation",
+            "type": "boolean"
+          },
+          "source_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Page"
+          },
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "multiple_choice",
+              "multiple_select",
+              "choice_bank",
+              "short_answer",
+              "practical_prompt"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "visual_assets": {
+            "items": {
+              "$ref": "#/components/schemas/AipotVisualAsset"
+            },
+            "title": "Visual Assets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "number",
+          "type",
+          "chapter",
+          "topic",
+          "prompt",
+          "points"
+        ],
+        "title": "AipotQuestion",
+        "type": "object"
+      },
+      "AipotQuestionReview": {
+        "properties": {
+          "chapter": {
+            "title": "Chapter",
+            "type": "string"
+          },
+          "correct_answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correct Answer"
+          },
+          "evaluation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AipotEvaluationEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "possible_score": {
+            "exclusiveMinimum": 0.0,
+            "title": "Possible Score",
+            "type": "number"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          },
+          "score": {
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "submitted_answer": {
+            "default": "",
+            "title": "Submitted Answer",
+            "type": "string"
+          },
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "chapter",
+          "topic",
+          "score",
+          "possible_score",
+          "result"
+        ],
+        "title": "AipotQuestionReview",
+        "type": "object"
+      },
+      "AipotSubmissionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Answers",
+            "type": "object"
+          },
+          "client_submission_id": {
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Client Submission Id",
+            "type": "string"
+          },
+          "elapsed_seconds": {
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Elapsed Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_submission_id",
+          "elapsed_seconds"
+        ],
+        "title": "AipotSubmissionRequest",
+        "type": "object"
+      },
+      "AipotVisualAsset": {
+        "properties": {
+          "alt": {
+            "minLength": 1,
+            "title": "Alt",
+            "type": "string"
+          },
+          "asset_url": {
+            "title": "Asset Url",
+            "type": "string"
+          },
+          "keep_marker_text": {
+            "default": false,
+            "title": "Keep Marker Text",
+            "type": "boolean"
+          },
+          "marker": {
+            "minLength": 1,
+            "title": "Marker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "marker",
+          "asset_url",
+          "alt"
+        ],
+        "title": "AipotVisualAsset",
+        "type": "object"
+      },
+      "AipotWeakness": {
+        "properties": {
+          "attempts": {
+            "minimum": 1.0,
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "chapter": {
+            "title": "Chapter",
+            "type": "string"
+          },
+          "chapter_title": {
+            "title": "Chapter Title",
+            "type": "string"
+          },
+          "earned": {
+            "minimum": 0.0,
+            "title": "Earned",
+            "type": "number"
+          },
+          "percent": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Percent",
+            "type": "number"
+          },
+          "possible": {
+            "exclusiveMinimum": 0.0,
+            "title": "Possible",
+            "type": "number"
+          },
+          "recommendation": {
+            "title": "Recommendation",
+            "type": "string"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Topics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "chapter",
+          "chapter_title",
+          "earned",
+          "possible",
+          "percent",
+          "recommendation",
+          "attempts"
+        ],
+        "title": "AipotWeakness",
+        "type": "object"
+      },
       "ErrorEnvelope": {
         "properties": {
           "code": {
@@ -453,6 +1463,694 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/aipot/attempts/{attempt_id}": {
+      "get": {
+        "operationId": "attempt_api_v1_aipot_attempts__attempt_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attempt_id",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Attempt Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AipotAttemptDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Attempt",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/evaluations/{evaluation_id}/artifact": {
+      "get": {
+        "operationId": "evaluation_artifact_api_v1_aipot_evaluations__evaluation_id__artifact_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evaluation_id",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Evaluation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Evaluation Artifact",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/exams": {
+      "get": {
+        "operationId": "exams_api_v1_aipot_exams_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AipotExamSummary"
+                  },
+                  "title": "Response Exams Api V1 Aipot Exams Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Exams",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/exams/{exam_id}": {
+      "get": {
+        "operationId": "exam_api_v1_aipot_exams__exam_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Exam Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AipotExamDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Exam",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/exams/{exam_id}/assets/{asset_name}": {
+      "get": {
+        "operationId": "asset_api_v1_aipot_exams__exam_id__assets__asset_name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Exam Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "asset_name",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Asset Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Asset",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/exams/{exam_id}/questions/{number}/feedback": {
+      "post": {
+        "operationId": "answer_feedback_api_v1_aipot_exams__exam_id__questions__number__feedback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Exam Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "maximum": 40,
+              "minimum": 1,
+              "title": "Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AipotImmediateFeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AipotImmediateFeedback"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Answer Feedback",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/exams/{exam_id}/submissions": {
+      "post": {
+        "operationId": "submit_api_v1_aipot_exams__exam_id__submissions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exam_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Exam Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AipotSubmissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AipotAttemptDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Submit",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
+    "/api/v1/aipot/history": {
+      "get": {
+        "operationId": "study_history_api_v1_aipot_history_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AipotHistoryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Study History",
+        "tags": [
+          "AI-POT study"
+        ]
+      }
+    },
     "/api/v1/meta": {
       "get": {
         "operationId": "meta_api_v1_meta_get",

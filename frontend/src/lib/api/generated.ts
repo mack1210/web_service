@@ -4,6 +4,142 @@
  */
 
 export interface paths {
+    "/api/v1/aipot/attempts/{attempt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Attempt */
+        get: operations["attempt_api_v1_aipot_attempts__attempt_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/evaluations/{evaluation_id}/artifact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evaluation Artifact */
+        get: operations["evaluation_artifact_api_v1_aipot_evaluations__evaluation_id__artifact_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/exams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Exams */
+        get: operations["exams_api_v1_aipot_exams_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/exams/{exam_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Exam */
+        get: operations["exam_api_v1_aipot_exams__exam_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/exams/{exam_id}/assets/{asset_name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Asset */
+        get: operations["asset_api_v1_aipot_exams__exam_id__assets__asset_name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/exams/{exam_id}/questions/{number}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer Feedback */
+        post: operations["answer_feedback_api_v1_aipot_exams__exam_id__questions__number__feedback_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/exams/{exam_id}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit */
+        post: operations["submit_api_v1_aipot_exams__exam_id__submissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aipot/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Study History */
+        get: operations["study_history_api_v1_aipot_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/meta": {
         parameters: {
             query?: never;
@@ -149,6 +285,354 @@ export interface components {
              * @enum {string}
              */
             status: "succeeded" | "failed";
+        };
+        /** AipotAttemptDetail */
+        AipotAttemptDetail: {
+            /** Answered Count */
+            answered_count: number;
+            /** Chapters */
+            chapters: components["schemas"]["AipotChapterResult"][];
+            /** Elapsed Seconds */
+            elapsed_seconds: number;
+            /** Exam Id */
+            exam_id: string;
+            /** Exam Title */
+            exam_title: string;
+            /** Id */
+            id: string;
+            /** Reviews */
+            reviews: components["schemas"]["AipotQuestionReview"][];
+            /** Score */
+            score: number;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+        };
+        /** AipotAttemptSummary */
+        AipotAttemptSummary: {
+            /** Answered Count */
+            answered_count: number;
+            /** Exam Id */
+            exam_id: string;
+            /** Exam Title */
+            exam_title: string;
+            /** Id */
+            id: string;
+            /** Score */
+            score: number;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+        };
+        /** AipotChapterResult */
+        AipotChapterResult: {
+            /** Chapter */
+            chapter: string;
+            /** Chapter Title */
+            chapter_title: string;
+            /** Earned */
+            earned: number;
+            /** Percent */
+            percent: number;
+            /** Possible */
+            possible: number;
+            /** Recommendation */
+            recommendation: string;
+            /** Topics */
+            topics?: string[];
+        };
+        /** AipotChoiceFeedback */
+        AipotChoiceFeedback: {
+            /** Correct */
+            correct: boolean;
+            /** Definition */
+            definition: string;
+            /** Differences */
+            differences: string;
+            /** Id */
+            id: string;
+            /** Purpose */
+            purpose: string;
+            /** Reason */
+            reason: string;
+            /** Similarities */
+            similarities: string;
+            /** Text */
+            text: string;
+        };
+        /** AipotEvaluationArtifact */
+        AipotEvaluationArtifact: {
+            /** Asset Url */
+            asset_url?: string | null;
+            /** Exit Code */
+            exit_code?: number | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "text" | "image" | "code" | "unavailable";
+            /** Media Type */
+            media_type?: string | null;
+            /** Stderr */
+            stderr?: string | null;
+            /** Stdout */
+            stdout?: string | null;
+            /** Text */
+            text?: string | null;
+        };
+        /** AipotEvaluationCriterion */
+        AipotEvaluationCriterion: {
+            /** Criterion */
+            criterion: string;
+            /** Earned */
+            earned: number;
+            /** Evidence */
+            evidence: string;
+            /** Met */
+            met: boolean;
+            /** Possible */
+            possible: number;
+            /** Rationale */
+            rationale: string;
+        };
+        /** AipotEvaluationEvidence */
+        AipotEvaluationEvidence: {
+            artifact: components["schemas"]["AipotEvaluationArtifact"];
+            /** Cost Usd */
+            cost_usd?: number | null;
+            /** Criteria */
+            criteria: components["schemas"]["AipotEvaluationCriterion"][];
+            /** Executor Model */
+            executor_model: string;
+            /** Id */
+            id: string;
+            /** Input Summary */
+            input_summary: string;
+            /** Judge Model */
+            judge_model: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "text" | "image" | "code" | "unavailable";
+            /** Submitted Prompt */
+            submitted_prompt: string;
+        };
+        /** AipotExamDetail */
+        AipotExamDetail: {
+            /** Id */
+            id: string;
+            /** Image First */
+            image_first: boolean;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "source" | "generated" | "public";
+            /** Known Limitations */
+            known_limitations?: string[];
+            /** Question Count */
+            question_count: number;
+            /** Questions */
+            questions: components["schemas"]["AipotQuestion"][];
+            /** Title */
+            title: string;
+        };
+        /** AipotExamHistory */
+        AipotExamHistory: {
+            /** Attempts */
+            attempts: number;
+            /** Id */
+            id: string;
+            /** Image First */
+            image_first: boolean;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "source" | "generated" | "public";
+            last_attempt?: components["schemas"]["AipotAttemptSummary"] | null;
+            /** Question Count */
+            question_count: number;
+            /** Title */
+            title: string;
+        };
+        /** AipotExamSummary */
+        AipotExamSummary: {
+            /** Id */
+            id: string;
+            /** Image First */
+            image_first: boolean;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "source" | "generated" | "public";
+            /** Question Count */
+            question_count: number;
+            /** Title */
+            title: string;
+        };
+        /** AipotHistoryResponse */
+        AipotHistoryResponse: {
+            /** Exams */
+            exams: components["schemas"]["AipotExamHistory"][];
+            /** Recent Attempts */
+            recent_attempts: components["schemas"]["AipotAttemptSummary"][];
+            /** Weaknesses */
+            weaknesses: components["schemas"]["AipotWeakness"][];
+        };
+        /** AipotImmediateFeedback */
+        AipotImmediateFeedback: {
+            /** Choice Feedback */
+            choice_feedback?: components["schemas"]["AipotChoiceFeedback"][];
+            /** Correct */
+            correct: boolean;
+            /** Correct Answer */
+            correct_answer?: string | null;
+            /** Earned */
+            earned: number;
+            evaluation?: components["schemas"]["AipotEvaluationEvidence"] | null;
+            /** Explanation */
+            explanation?: string | null;
+            /** Missing */
+            missing?: string[];
+            /** Number */
+            number: number;
+            /** Possible */
+            possible: number;
+        };
+        /** AipotImmediateFeedbackRequest */
+        AipotImmediateFeedbackRequest: {
+            /** Answer */
+            answer: string;
+            /**
+             * Confirm Media
+             * @default false
+             */
+            confirm_media: boolean;
+        };
+        /** AipotQuestion */
+        AipotQuestion: {
+            /** Asset Url */
+            asset_url?: string | null;
+            /** Chapter */
+            chapter: string;
+            /** Choice Ids */
+            choice_ids?: string[];
+            /** Choices */
+            choices?: string[];
+            /**
+             * Evaluation Available
+             * @default true
+             */
+            evaluation_available: boolean;
+            /** Evaluation Kind */
+            evaluation_kind?: ("text" | "image" | "code" | "unavailable") | null;
+            /**
+             * Multiple Selection
+             * @default false
+             */
+            multiple_selection: boolean;
+            /** Number */
+            number: number;
+            /** Ocr Text */
+            ocr_text?: string | null;
+            /** Points */
+            points: number;
+            /** Prompt */
+            prompt: string;
+            /**
+             * Single Concept Explanation
+             * @default false
+             */
+            single_concept_explanation: boolean;
+            /** Source Page */
+            source_page?: number | null;
+            /** Topic */
+            topic: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "multiple_choice" | "multiple_select" | "choice_bank" | "short_answer" | "practical_prompt";
+            /** Visual Assets */
+            visual_assets?: components["schemas"]["AipotVisualAsset"][];
+        };
+        /** AipotQuestionReview */
+        AipotQuestionReview: {
+            /** Chapter */
+            chapter: string;
+            /** Correct Answer */
+            correct_answer?: string | null;
+            evaluation?: components["schemas"]["AipotEvaluationEvidence"] | null;
+            /** Explanation */
+            explanation?: string | null;
+            /** Missing */
+            missing?: string[];
+            /** Number */
+            number: number;
+            /** Possible Score */
+            possible_score: number;
+            /** Result */
+            result: string;
+            /** Score */
+            score: number;
+            /**
+             * Submitted Answer
+             * @default
+             */
+            submitted_answer: string;
+            /** Topic */
+            topic: string;
+        };
+        /** AipotSubmissionRequest */
+        AipotSubmissionRequest: {
+            /** Answers */
+            answers?: {
+                [key: string]: string;
+            };
+            /** Client Submission Id */
+            client_submission_id: string;
+            /** Elapsed Seconds */
+            elapsed_seconds: number;
+        };
+        /** AipotVisualAsset */
+        AipotVisualAsset: {
+            /** Alt */
+            alt: string;
+            /** Asset Url */
+            asset_url: string;
+            /**
+             * Keep Marker Text
+             * @default false
+             */
+            keep_marker_text: boolean;
+            /** Marker */
+            marker: string;
+        };
+        /** AipotWeakness */
+        AipotWeakness: {
+            /** Attempts */
+            attempts: number;
+            /** Chapter */
+            chapter: string;
+            /** Chapter Title */
+            chapter_title: string;
+            /** Earned */
+            earned: number;
+            /** Percent */
+            percent: number;
+            /** Possible */
+            possible: number;
+            /** Recommendation */
+            recommendation: string;
+            /** Topics */
+            topics?: string[];
         };
         /** ErrorEnvelope */
         ErrorEnvelope: {
@@ -296,6 +780,548 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    attempt_api_v1_aipot_attempts__attempt_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AipotAttemptDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    evaluation_artifact_api_v1_aipot_evaluations__evaluation_id__artifact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evaluation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    exams_api_v1_aipot_exams_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AipotExamSummary"][];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    exam_api_v1_aipot_exams__exam_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exam_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AipotExamDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    asset_api_v1_aipot_exams__exam_id__assets__asset_name__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exam_id: string;
+                asset_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    answer_feedback_api_v1_aipot_exams__exam_id__questions__number__feedback_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exam_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AipotImmediateFeedbackRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AipotImmediateFeedback"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    submit_api_v1_aipot_exams__exam_id__submissions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exam_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AipotSubmissionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AipotAttemptDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    study_history_api_v1_aipot_history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AipotHistoryResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     meta_api_v1_meta_get: {
         parameters: {
             query?: never;

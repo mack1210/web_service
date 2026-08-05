@@ -75,3 +75,46 @@ Captured: 2026-07-10T22:25:41+09:00
 - The operator requested direct access from `http://192.168.219.121:18080/settings`. The local ignored `.env` now sets `HOST_BIND_ADDRESS=192.168.219.121`.
 - Only the main Compose project's containers were recreated. API, frontend, and Caddy all became healthy; the LAN `/settings` route returned 200 and exposed the Settings page heading.
 - `ss -ltn 'sport = :18080'` now reports `192.168.219.121:18080`. Loopback is intentionally not a listener in this mode. Before starting the Cloudflare Tunnel profile, return the local setting to `127.0.0.1`.
+
+## 2026-08-03 AI-POT study integration
+
+- The existing Compose app was extended at `/aipot`; no host port, Caddy route, firewall, DNS, or unrelated container was changed.
+- Compose mounts the local AI-POT study workspace read-only into the API. The source directory must remain at `/home/cgma/cgma_git/study/aipot/실전모의고사` for deployed source-photo questions and generated mocks to load.
+- A new Compose-owned `aipot_history` volume contains personal submitted-attempt JSON state. It is not version-controlled and must not be removed with `down -v`.
+- Only the API and frontend services were rebuilt/recreated. Caddy stayed running and healthy on `192.168.219.121:18080`.
+
+## 2026-08-04 AI-POT content and interaction update
+
+- Source OCR and generated visual-prompt assets use the existing read-only AI-POT content mount; no extra network, port, proxy, firewall, DNS, host-service, or container permission was introduced.
+- Only API and frontend services were recreated for the content update and answer-drawer scroll correction. Caddy continued running unchanged on `192.168.219.121:18080`.
+
+## 2026-08-04 AI-POT latest-technology rounds
+
+- Five generated sets (11–15) and their visual/data assets were added inside the existing read-only AI-POT study mount. No new service, port, proxy, firewall, DNS, network, or dependency was introduced.
+- The API picked up the mounted manifests without a restart. Only the frontend was rebuilt/recreated to replace its static catalog count with the live set count. Caddy and the API remained healthy and unchanged.
+
+## 2026-08-04 AI-POT inline source visual crops
+
+- Fifty-two reviewed diagram/image crops across all five source rounds (38 in Q01–Q35 and 14 in Q36–Q40), including source round 1 Q21, Q18's graph, and the shared Q34–Q35 Google Flow visual, are stored within the existing read-only AI-POT source mount and are served through the already scoped source-asset endpoint. No new storage, network route, port, proxy, dependency, or permission was added. Full source-page images are not served.
+- Only the API and frontend Compose services were rebuilt/recreated. Caddy, other services, and the persistent `aipot_history` volume were not modified.
+
+## 2026-08-05 AI-POT evidence-evaluator topology
+
+- The existing `aipot_history` volume now persists a SQLite database as well as legacy history
+  migration data. It must continue to be preserved across deployments and must not be removed with
+  `down -v`.
+- A new internal `aipot-sandbox` service communicates with the API over a named-volume Unix socket.
+  It publishes no host or Docker-network port and runs with `network_mode: none`, a read-only root,
+  dropped capabilities, bounded process/memory/CPU settings, and a temporary writable `/tmp`.
+- The evaluator only becomes operational when `OPENROUTER_API_KEY` is supplied outside version
+  control. Without it, practical evaluation fails explicitly; deployment must not represent an
+  unavailable evaluator as automatic scoring.
+- No existing Caddy route, host port, system service, firewall rule, or unrelated container needs
+  to change for this feature.
+
+## 2026-08-05 AI-POT completion-flow promotion
+
+- The completion/retry UI correction required only a frontend image rebuild/recreation. The API,
+  Caddy, host binding, and persistent study-data volume remained running and unchanged.
+- Post-promotion checks confirmed frontend health and the active `/aipot/solve/generated-mock-01`
+  route on `http://192.168.219.130:18080`.

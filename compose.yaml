@@ -9,6 +9,19 @@ services:
     environment:
       APP_ENV: production
       APP_NAME: overnight-web-agent-kit-api
+      AIPOT_CONTENT_ROOT: /aipot-content
+      AIPOT_HISTORY_FILE: /app/data/aipot-history.json
+      AIPOT_DATABASE_FILE: /app/data/aipot.sqlite3
+      AIPOT_SANDBOX_SOCKET: /aipot-sandbox/aipot-runner.sock
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      AIPOT_JUDGE_MODEL: ${AIPOT_JUDGE_MODEL:-anthropic/claude-haiku-4.5}
+      AIPOT_TEXT_MODEL: ${AIPOT_TEXT_MODEL:-anthropic/claude-haiku-4.5}
+      AIPOT_IMAGE_MODEL: ${AIPOT_IMAGE_MODEL:-openai/gpt-image-1}
+    volumes:
+      - ../../cgma_git/study/aipot/실전모의고사:/aipot-content:ro
+      - aipot_history:/app/data
+      - aipot_sandbox_socket:/aipot-sandbox
     restart: unless-stopped
     init: true
     healthcheck:
@@ -23,6 +36,29 @@ services:
       start_period: 10s
     networks:
       - app_net
+
+  aipot-sandbox:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: aipot-sandbox
+    environment:
+      AIPOT_SANDBOX_SOCKET: /aipot-sandbox/aipot-runner.sock
+    volumes:
+      - aipot_sandbox_socket:/aipot-sandbox
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 32
+    mem_limit: 256m
+    cpus: "0.50"
+    restart: unless-stopped
+    init: true
 
   frontend:
     build:
@@ -93,3 +129,5 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
+  aipot_history:
+  aipot_sandbox_socket:

@@ -36,6 +36,14 @@ export function useModalFocus({
   onEscape,
 }: UseModalFocusOptions) {
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onEscapeRef = useRef(onEscape);
+
+  // Callers commonly pass an inline close callback. Keeping its latest value in
+  // a ref prevents unrelated renders (for example, the study timer ticking)
+  // from re-running the focus setup and pulling a scrollable drawer to the top.
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  }, [onEscape]);
 
   useEffect(() => {
     if (!active) return;
@@ -54,7 +62,7 @@ export function useModalFocus({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onEscape?.();
+        onEscapeRef.current?.();
         return;
       }
 
@@ -86,5 +94,5 @@ export function useModalFocus({
       document.body.style.overflow = previousOverflow;
       previousFocusRef.current?.focus();
     };
-  }, [active, containerRef, initialFocusRef, onEscape]);
+  }, [active, containerRef, initialFocusRef]);
 }

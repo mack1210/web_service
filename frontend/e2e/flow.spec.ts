@@ -86,3 +86,17 @@ test("a missing item presents a recoverable not-found state", async ({ page }) =
   await expect(page.getByRole("heading", { name: "We could not find that item" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Return to collection" })).toHaveAttribute("href", "/items");
 });
+
+test("AI-POT study locks a selected answer and reveals Korean choice feedback", async ({ page }, testInfo) => {
+  await page.goto("/aipot");
+  await expect(page.getByRole("heading", { name: /풀 세트 선택/ })).toBeVisible();
+  await page.getByRole("link", { name: "세트 시작" }).first().click();
+  await page.getByRole("button", { name: /이론 시험 시작/ }).click();
+  await expect(page.getByText("이론 시험 · 실습으로 먼저 이동할 수 없습니다")).toBeVisible();
+  await expect(page.locator("fieldset")).toHaveCount(5);
+  await page.getByRole("radio").first().check();
+  await expect(page.getByText("모든 보기의 상세 해설")).toBeVisible();
+  await expect(page.getByRole("radio").first()).toBeDisabled();
+  await expectNoPageOverflow(page);
+  await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-aipot-feedback.png`), fullPage: true });
+});
