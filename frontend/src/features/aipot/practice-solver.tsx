@@ -24,11 +24,15 @@ export function canEnterPracticalPhase(phase: Phase, hasUnansweredTheoryQuestion
 }
 
 export function canFinishAndSubmit(phase: Phase, allQuestionsLocked: boolean) {
-  return phase === "results" || (phase === "practical" && allQuestionsLocked);
+  return phase === "results" || (phase !== "not_started" && allQuestionsLocked);
 }
 
 export function canRetryPracticalAnswer(questionNumber: number, locked: boolean) {
   return questionNumber >= 36 && locked;
+}
+
+export function questionPage(questionNumber: number) {
+  return Math.max(1, Math.ceil(questionNumber / PAGE_SIZE));
 }
 
 export function createClientSubmissionId(randomUuid: (() => string) | null = globalThis.crypto?.randomUUID?.bind(globalThis.crypto) ?? null) {
@@ -126,7 +130,7 @@ export function AipotPracticeSolver() {
       if (phase === "theory") {
         setRemainingTheory((current) => {
           const next = Math.max(0, current - elapsed);
-          if (!next) { setPhase("practical"); setPage(1); }
+          if (!next) { setPhase("practical"); setPage(questionPage(36)); }
           return next;
         });
       } else {
@@ -175,7 +179,7 @@ export function AipotPracticeSolver() {
   }, [jumpTarget, page, phase]);
   if (error && !exam) return <ErrorPanel message={error} onRetry={() => void load()} />;
   if (!exam) return <Skeleton className="h-96" />;
-  const activeQuestions = phase === "theory" || phase === "not_started" ? exam.questions.filter((question) => question.number <= 35) : phase === "practical" ? exam.questions.filter((question) => question.number >= 36) : exam.questions;
+  const activeQuestions = exam.questions;
   const pageCount = Math.max(1, Math.ceil(activeQuestions.length / PAGE_SIZE));
   const shown = phase === "results" ? activeQuestions : activeQuestions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const total = bands.theory + bands.applied + bands.practical;
@@ -185,16 +189,10 @@ export function AipotPracticeSolver() {
   const allQuestionsLocked = exam.questions.every((question) => Boolean(locks[question.number]));
   const readyToSubmit = canFinishAndSubmit(phase, allQuestionsLocked);
   const navigateToQuestion = (number: number) => {
-    if (number === 36 && canEnterPracticalPhase(phase, activeQuestions.some((question) => !locks[question.number]))) {
-      setPhase("practical");
-      setPage(1);
-      setJumpTarget(36);
-      return;
-    }
     if (phase !== "results") {
       const index = activeQuestions.findIndex((question) => question.number === number);
       if (index < 0) return;
-      setPage(Math.floor(index / PAGE_SIZE) + 1);
+      setPage(questionPage(number));
     }
     setJumpTarget(number);
   };
@@ -211,25 +209,24 @@ export function AipotPracticeSolver() {
   };
 
   return <div className="space-y-5">
-    <header className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between"><div><Link className="text-sm font-semibold text-[rgb(var(--primary))] hover:underline" href="/aipot">← 세트 선택</Link><p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-[rgb(var(--primary))]">AI-POT PRIVATE PRACTICE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{exam.title}</h1><p className="mt-2 text-sm text-muted">{phase === "not_started" ? "시작 전" : phase === "theory" ? "이론 시험 · 모든 이론 문항 확정 후 실습으로 이동" : phase === "practical" ? "실습 시험 · 5문항" : "상세 결과 검토"}</p></div><Card className="min-w-44 p-3 text-right"><p className="text-[11px] font-bold uppercase tracking-wider text-muted">{phase === "theory" ? "이론 남은 시간" : phase === "practical" ? "실습 남은 시간" : "현재 점수"}</p><p className="font-mono text-2xl font-extrabold">{phase === "results" ? `${total}/100` : clock(phase === "practical" ? remainingPractical : remainingTheory)}</p></Card></header>
+    <header className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between"><div><Link className="text-sm font-semibold text-[rgb(var(--primary))] hover:underline" href="/aipot">← 세트 선택</Link><p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-[rgb(var(--primary))]">AI-POT PRIVATE PRACTICE</p><h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{exam.title}</h1><p className="mt-2 text-sm text-muted">{phase === "not_started" ? "시작 전" : phase === "theory" ? "이론 40분 · Q01–40은 문항 바로가기에서 모두 확인 가능" : phase === "practical" ? "실습 20분 · Q36–40" : "상세 결과 검토"}</p></div><Card className="min-w-44 p-3 text-right"><p className="text-[11px] font-bold uppercase tracking-wider text-muted">{phase === "theory" ? "이론 남은 시간" : phase === "practical" ? "실습 남은 시간" : "현재 점수"}</p><p className="font-mono text-2xl font-extrabold">{phase === "results" ? `${total}/100` : clock(phase === "practical" ? remainingPractical : remainingTheory)}</p></Card></header>
     {error ? <ErrorPanel message={error} onRetry={() => setError(null)} /> : null}
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <section className="space-y-4">
         <Card className="border-[rgb(var(--primary))/0.3] bg-[rgb(var(--primary-soft))/0.35] text-sm leading-6"><strong>학습용 즉시 피드백 모드.</strong> 답안을 확정하면 바꿀 수 없으며, 정답은 녹색·선택한 오답은 빨간색으로 표시됩니다. 탭을 숨기면 타이머는 일시정지됩니다.</Card>
         {phase === "not_started" ? <Button className="w-full" onClick={() => setPhase("theory")}>이론 시험 시작 · 40분</Button> : shown.map((question) => <PracticeQuestion answer={answers[question.number] ?? ""} checking={checking === question.number} feedback={feedback[question.number]} key={question.number} locked={Boolean(locks[question.number])} onChange={(answer) => setAnswers((current) => ({ ...current, [question.number]: answer }))} onLock={(answer) => { if (question.evaluation_kind === "image") setMediaConfirmation({ question, answer }); else void lockAnswer(question, answer); }} onRetry={() => retryPracticalAnswer(question.number)} question={question} />)}
-        {phase === "practical" && readyToSubmit ? <Card className="border-2 border-emerald-600 bg-emerald-500/10"><h2 className="text-xl font-extrabold">40문항을 모두 확정했습니다</h2><p className="mt-2 text-sm text-muted">남은 실습 시간과 관계없이 지금 답안을 제출하고 최종 결과를 확인할 수 있습니다.</p><Button className="mt-4" loading={savingResult} onClick={() => void finishAndSave()}>시험 종료 및 답안 제출</Button></Card> : null}
+        {phase !== "results" && readyToSubmit ? <Card className="border-2 border-emerald-600 bg-emerald-500/10"><h2 className="text-xl font-extrabold">40문항을 모두 확정했습니다</h2><p className="mt-2 text-sm text-muted">남은 시간과 관계없이 지금 답안을 제출하고 최종 결과를 확인할 수 있습니다.</p><Button className="mt-4" loading={savingResult} onClick={() => void finishAndSave()}>시험 종료 및 답안 제출</Button></Card> : null}
         {phase !== "not_started" && phase !== "results" ? <nav aria-label="문제 페이지 이동" className="flex justify-between border-t pt-5"><Button disabled={page === 1} onClick={() => setPage((current) => current - 1)} variant="secondary">← 이전 5문제</Button><Button disabled={page >= pageCount} onClick={() => setPage((current) => current + 1)}>다음 5문제 →</Button></nav> : null}
         {phase === "results" ? <Card className="border-2 border-[rgb(var(--primary))] bg-[rgb(var(--primary-soft))/0.4]"><h2 className="text-xl font-extrabold">최종 결과 {total}/100점</h2><p className="mt-2 text-sm text-muted">정답 {correct} · 오답/보완 {incorrect} · 미응답 {40 - locked}</p><div className="mt-4 flex flex-wrap gap-3"><Button loading={savingResult} onClick={() => void finishAndSave()}>시험 종료 및 답안 제출</Button><Button onClick={restart} variant="secondary">이 세트 다시 시작</Button></div></Card> : null}
       </section>
-      <aside><AnswerNavigator activeQuestions={activeQuestions} canFinish={phase === "practical" && readyToSubmit} currentPage={page} feedback={feedback} locks={locks} nextUnanswered={nextUnanswered?.number} onFinish={() => void finishAndSave()} onNavigate={navigateToQuestion} onRestart={() => { if (window.confirm("이 세트의 현재 답안, 피드백, 타이머를 모두 초기화할까요?")) restart(); }} savingResult={savingResult} score={{ total, theory: bands.theory, applied: bands.applied, practical: bands.practical, correct, incorrect }} /></aside>
+      <aside><AnswerNavigator activeQuestions={activeQuestions} canFinish={readyToSubmit} currentPage={page} feedback={feedback} locks={locks} nextUnanswered={nextUnanswered?.number} onFinish={() => void finishAndSave()} onNavigate={navigateToQuestion} onRestart={() => { if (window.confirm("이 세트의 현재 답안, 피드백, 타이머를 모두 초기화할까요?")) restart(); }} savingResult={savingResult} score={{ total, theory: bands.theory, applied: bands.applied, practical: bands.practical, correct, incorrect }} /></aside>
     </div>
     <ConfirmDialog cancelLabel="수정하기" confirmLabel="이미지 생성·평가" description="이 답안은 실제 이미지 생성 모델을 호출합니다. 생성 결과가 점수 근거로 저장되며, 완료 후 답안을 바꿀 수 없습니다." loading={Boolean(mediaConfirmation && checking === mediaConfirmation.question.number)} onCancel={() => setMediaConfirmation(null)} onConfirm={() => { if (mediaConfirmation) { void lockAnswer(mediaConfirmation.question, mediaConfirmation.answer, true); setMediaConfirmation(null); } }} open={Boolean(mediaConfirmation)} title="유료 이미지 생성을 진행할까요?" />
   </div>;
 }
 
 function AnswerNavigator({ activeQuestions, canFinish, currentPage, locks, feedback, nextUnanswered, onFinish, onNavigate, onRestart, savingResult, score }: { activeQuestions: AipotExam["questions"]; canFinish: boolean; currentPage: number; locks: Record<number, boolean>; feedback: Record<number, AipotImmediateFeedback>; nextUnanswered?: number; onFinish: () => void; onNavigate: (number: number) => void; onRestart: () => void; savingResult: boolean; score: { total: number; theory: number; applied: number; practical: number; correct: number; incorrect: number } }) {
-  const theoryComplete = activeQuestions.length === 35 && !nextUnanswered;
-  return <Card className="sticky top-20 p-4"><strong>현재 점수 {score.total}/100</strong><dl className="mt-3 grid grid-cols-[1fr_auto] gap-y-2 text-sm"><dt>Q01–30</dt><dd className="font-bold">{score.theory}/60</dd><dt>Q31–35</dt><dd className="font-bold">{score.applied}/15</dd><dt>Q36–40</dt><dd className="font-bold">{score.practical}/25</dd></dl><p className="mt-4 border-t pt-3 text-sm leading-6 text-muted">정답 <span className="font-bold text-emerald-700 dark:text-emerald-300">{score.correct}</span> · 오답/보완 <span className="font-bold text-red-700 dark:text-red-300">{score.incorrect}</span><br />미응답 {activeQuestions.filter((question) => !locks[question.number]).length}</p>{canFinish ? <Button className="mt-4 w-full" loading={savingResult} onClick={onFinish}>시험 종료 및 답안 제출</Button> : theoryComplete ? <Button className="mt-4 w-full" onClick={() => onNavigate(36)}>실습 문제 Q36–40으로 이동</Button> : <Button className="mt-4 w-full" disabled={!nextUnanswered} onClick={() => nextUnanswered && onNavigate(nextUnanswered)}>{nextUnanswered ? `미응답 Q${String(nextUnanswered).padStart(2, "0")}로 이동` : "현재 단계의 미응답 없음"}</Button>}<Button className="mt-2 w-full" onClick={onRestart} variant="secondary">다시 풀기</Button><div className="mt-4 border-t pt-3"><p className="mb-2 text-xs font-bold text-muted">문항 바로가기</p><ol className="grid grid-cols-5 gap-1.5">{activeQuestions.map((question) => { const targetPage = Math.floor(activeQuestions.findIndex((item) => item.number === question.number) / PAGE_SIZE) + 1; const current = targetPage === currentPage; const result = feedback[question.number]; const status = result ? result.correct ? "정답" : "오답" : "미응답"; const tone = result ? result.correct ? "border-emerald-600 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200" : "border-red-600 bg-red-500/15 text-red-800 dark:text-red-200" : "bg-[rgb(var(--surface-muted))] hover:border-[rgb(var(--primary))/0.7]"; return <li key={question.number}><button aria-current={current ? "page" : undefined} aria-label={`Q${String(question.number).padStart(2, "0")} ${status}`} className={`grid min-h-10 w-full place-items-center rounded-md border text-xs font-bold transition ${current ? "ring-2 ring-[rgb(var(--primary))/0.35]" : ""} ${tone}`} onClick={() => onNavigate(question.number)}>{question.number}</button></li>; })}</ol></div></Card>;
+  return <Card className="sticky top-20 p-4"><strong>현재 점수 {score.total}/100</strong><dl className="mt-3 grid grid-cols-[1fr_auto] gap-y-2 text-sm"><dt>Q01–30</dt><dd className="font-bold">{score.theory}/60</dd><dt>Q31–35</dt><dd className="font-bold">{score.applied}/15</dd><dt>Q36–40</dt><dd className="font-bold">{score.practical}/25</dd></dl><p className="mt-4 border-t pt-3 text-sm leading-6 text-muted">정답 <span className="font-bold text-emerald-700 dark:text-emerald-300">{score.correct}</span> · 오답/보완 <span className="font-bold text-red-700 dark:text-red-300">{score.incorrect}</span><br />미응답 {activeQuestions.filter((question) => !locks[question.number]).length}</p>{canFinish ? <Button className="mt-4 w-full" loading={savingResult} onClick={onFinish}>시험 종료 및 답안 제출</Button> : <Button className="mt-4 w-full" disabled={!nextUnanswered} onClick={() => nextUnanswered && onNavigate(nextUnanswered)}>{nextUnanswered ? `미응답 Q${String(nextUnanswered).padStart(2, "0")}로 이동` : "현재 단계의 미응답 없음"}</Button>}<Button className="mt-2 w-full" onClick={onRestart} variant="secondary">다시 풀기</Button><div className="mt-4 border-t pt-3"><p className="mb-2 text-xs font-bold text-muted">문항 바로가기</p><ol className="grid grid-cols-5 gap-1.5">{activeQuestions.map((question) => { const targetPage = Math.floor(activeQuestions.findIndex((item) => item.number === question.number) / PAGE_SIZE) + 1; const current = targetPage === currentPage; const result = feedback[question.number]; const status = result ? result.correct ? "정답" : "오답" : "미응답"; const tone = result ? result.correct ? "border-emerald-600 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200" : "border-red-600 bg-red-500/15 text-red-800 dark:text-red-200" : "bg-[rgb(var(--surface-muted))] hover:border-[rgb(var(--primary))/0.7]"; return <li key={question.number}><button aria-current={current ? "page" : undefined} aria-label={`Q${String(question.number).padStart(2, "0")} ${status}`} className={`grid min-h-10 w-full place-items-center rounded-md border text-xs font-bold transition ${current ? "ring-2 ring-[rgb(var(--primary))/0.35]" : ""} ${tone}`} onClick={() => onNavigate(question.number)}>{question.number}</button></li>; })}</ol></div></Card>;
 }
 
 function PracticeQuestion({ question, answer, locked, checking, feedback, onChange, onLock, onRetry }: { question: AipotExam["questions"][number]; answer: string; locked: boolean; checking: boolean; feedback?: AipotImmediateFeedback; onChange: (answer: string) => void; onLock: (answer: string) => void; onRetry: () => void }) {

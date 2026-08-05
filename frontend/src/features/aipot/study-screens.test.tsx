@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 
 import { OcrQuestionText, parseOcrBlocks, questionNumberLabel, questionScrollId, reviewTone } from "./study-screens";
-import { canEnterPracticalPhase, canFinishAndSubmit, canRetryPracticalAnswer, createClientSubmissionId, explanationChoiceMarker } from "./practice-solver";
+import { canEnterPracticalPhase, canFinishAndSubmit, canRetryPracticalAnswer, createClientSubmissionId, explanationChoiceMarker, questionPage } from "./practice-solver";
 
 it("uses only the question number in the solve header", () => {
   expect(questionNumberLabel(15)).toBe("Q15");
@@ -96,9 +96,16 @@ it("allows the practice section after every theory question is locked", () => {
 
 it("offers final submission immediately after every question is locked", () => {
   expect(canFinishAndSubmit("practical", true)).toBe(true);
+  expect(canFinishAndSubmit("theory", true)).toBe(true);
   expect(canFinishAndSubmit("practical", false)).toBe(false);
   expect(canFinishAndSubmit("results", false)).toBe(true);
-  expect(canFinishAndSubmit("theory", true)).toBe(false);
+  expect(canFinishAndSubmit("theory", true)).toBe(true);
+});
+
+it("uses the shared eight-page map through the practical questions", () => {
+  expect(questionPage(35)).toBe(7);
+  expect(questionPage(36)).toBe(8);
+  expect(questionPage(40)).toBe(8);
 });
 
 it("allows retries only for locked practical-answer questions", () => {

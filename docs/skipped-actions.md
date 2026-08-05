@@ -243,6 +243,23 @@ cd /home/cgma/apps/web_service/frontend
 PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ```
 
+## 12. Live Q36/Q40 OpenRouter judge activation
+
+**Implemented and verified in source data**: source round 01 Q36 is `code` execution and Q40 is
+`image` execution; both are configured for the evidence-based OpenRouter/Haiku judge path. All 17
+sets were also audited to contain Q01–Q40.
+
+**Why live activation is pending**: the current deployed API does not expose evaluator metadata and
+the local secret environment has no `OPENROUTER_API_KEY`. A frontend-only promotion preserves the
+working existing API but cannot turn its legacy feedback into a genuine model judgment.
+
+**Required promotion after secure key configuration**:
+
+```bash
+cd /home/cgma/apps/web_service
+HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production up --build -d --wait
+```
+
 ## 10. Browser UUID compatibility coverage
 
 **Implemented and unit-tested**: final submission now falls back to a locally generated API-valid

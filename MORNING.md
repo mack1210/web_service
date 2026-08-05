@@ -53,3 +53,9 @@ fenced code are rendered as safe elements, and declared diagram segments replace
 tables. Source round 01 Q16 now shows its reviewed concept diagram and normal explanatory text
 without raw `>` syntax or a source caption. The live source-round solve route and API readiness
 check passed; API and Caddy remained unchanged.
+
+**2026-08-05 Q36–Q40 NAVIGATION:** Every set now uses the same eight-page Q01–Q40 navigator from
+the start, including direct floating-bar access to Q36–Q40 and final submission once all answers
+are locked. The frontend-only correction is live. Source round 01's staged evaluator configuration
+is Q36 code and Q40 image; genuine OpenRouter judging remains pending API promotion and secure key
+configuration, so old API behavior is not treated as a judge result.

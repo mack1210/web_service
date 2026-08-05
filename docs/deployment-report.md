@@ -151,3 +151,15 @@ remain text labels; and declared visual segments replace duplicate source blocks
 source caption. The source round 01 Q16 concept diagram path is covered by regression tests. The
 live source-round solve route and API readiness endpoint passed after promotion; API and Caddy were
 not recreated.
+
+## AI-POT all-question navigation correction — 2026-08-05
+
+Only the frontend service was rebuilt/recreated. Every one of the 17 manifests was audited with
+Q01–Q40 present, and the shared solver now exposes all eight pages and Q36–Q40 floating-bar targets
+from the start instead of filtering the practice section until a timer phase change. Final submission
+is available after all 40 locks. The live source-round solve route and API readiness check passed.
+
+Source round 01’s checked-in evaluator modes are Q36 `code` and Q40 `image`, both designed for the
+evidence-based provider/judge path. The currently running API has not been promoted with that path
+because its OpenRouter secret is not configured; this report does not claim keyword feedback is a
+model judgment.
