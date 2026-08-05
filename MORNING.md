@@ -30,12 +30,11 @@
 
 **DEPENDENCY AUDIT:** `pnpm audit` currently reports 19 advisories (13 high, 6 moderate) in existing locked dependencies, including Next.js `16.2.10` with fixes at `16.2.11`. No dependency update was made because it requires an explicit approval and a separate compatibility pass.
 
-**2026-08-05 AI-POT EVALUATOR:** Implemented but not deployed: practical questions now use
-persisted execution evidence and rubric scoring rather than exact/keyword matching. Text, image,
-and code modes are explicit in the corpus; missing required source files fail closed. The code
-runner is a separate no-network Unix-socket Compose service. Frontend/back-end checks pass, but the
-ignored local environment has no provider key, so live OpenRouter verification and container
-promotion remain pending. Do not record an evaluator key in this file or the repository.
+**2026-08-05 AI-POT EVALUATOR:** Live: practical questions use persisted execution evidence and
+rubric scoring rather than exact/keyword matching. Text, image, and code modes are explicit in the
+corpus; missing required source files fail closed. The code runner is a separate no-network
+Unix-socket Compose service. The provider secret is configured only in ignored local environment
+data; never record it in this file or the repository.
 
 **2026-08-05 AI-POT COMPLETION FLOW:** The frontend at `PRIMARY_URL` was rebuilt and recreated
 only. Once Q01–Q40 are locked it now shows `시험 종료 및 답안 제출` in the main area and floating
@@ -57,8 +56,13 @@ check passed; API and Caddy remained unchanged.
 **2026-08-05 Q36–Q40 NAVIGATION:** Every set now uses the same eight-page Q01–Q40 navigator from
 the start, including direct floating-bar access to Q36–Q40 and final submission once all answers
 are locked. The frontend-only correction is live. Source round 01's staged evaluator configuration
-is Q36 code and Q40 image; genuine OpenRouter judging remains pending API promotion and secure key
-configuration, so old API behavior is not treated as a judge result.
+is Q36 code and Q40 image. The evaluator API is now promoted and reports each practical mode to the
+frontend, so image questions open a paid-generation confirmation before their answer is locked.
+
+**2026-08-05 LIVE IMAGE EVALUATION:** Verified source-round-03 Q36 end to end. An unconfirmed image
+request returned the explicit confirmation guard; one confirmed request produced a private 1024×1536
+PNG through the configured image model and was scored by the configured Haiku judge using the actual
+artifact. API and isolated sandbox runner are healthy on port 18080.
 
 **2026-08-05 LEARNER STEM SANITIZATION:** Q01 source cover/instruction text and duplicated final
 numbered choice lines are now removed by the shared frontend renderer and API manifest sanitizer.

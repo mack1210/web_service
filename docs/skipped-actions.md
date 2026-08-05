@@ -211,6 +211,11 @@ without a secret, and deploying an unconfigured evaluator would only turn practi
 into explicit 503 failures. No provider request was made and no supplied credential was copied into
 the repository or command history.
 
+**Resolved 2026-08-05**: The provider secret was securely configured outside version control; the
+API and isolated runner were promoted. A source-round-03 Q36 image request now verifies the
+confirmation guard, real image artifact generation, private artifact retrieval, and Haiku rubric
+judging end to end. The key remains absent from Git and this document.
+
 **Operator steps after placing the key in ignored `.env` or the deployment secret manager**:
 
 ```bash
@@ -288,6 +293,10 @@ sets were also audited to contain Q01–Q40.
 **Why live activation is pending**: the current deployed API does not expose evaluator metadata and
 the local secret environment has no `OPENROUTER_API_KEY`. A frontend-only promotion preserves the
 working existing API but cannot turn its legacy feedback into a genuine model judgment.
+
+**Resolved 2026-08-05**: The deployed API now exposes evaluator metadata. The frontend can identify
+image questions and presents its confirmation dialog before a paid generation request; live Q36
+image generation and evidence-based judging were verified.
 
 **Required promotion after secure key configuration**:
 

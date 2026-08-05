@@ -176,3 +176,11 @@ Captured: 2026-07-10T22:25:41+09:00
   declares a reviewed `primary_visual`. It preserves the learner instruction and image asset.
 - Live checks across source rounds 01–05 found no duplicate image descriptions on visual questions;
   source-round-03 Q36 retained its reference crop after the cleanup.
+
+## 2026-08-05 live practical evaluator verification
+
+- The API and network-isolated `aipot-sandbox` runner are running. Live practical metadata reports
+  image/text/code modes to the frontend, which enables the required paid-image confirmation dialog.
+- Source-round-03 Q36 was checked with both paths: the unconfirmed request returned the expected
+  confirmation guard, and a confirmed request generated a private 1024×1536 PNG and received a
+  rubric score based on that actual artifact. The provider key is not recorded here or in Git.

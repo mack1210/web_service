@@ -204,3 +204,14 @@ reviewed reference crop. The content sanitizer removes those final image/result-
 only when the corpus declares `primary_visual`, preserving instructions, constraints, and the crop.
 The live API confirmed no such duplicate text on visual questions and confirmed that source-round-03
 Q36 still exposes its reviewed reference asset. No container recreation was necessary.
+
+## AI-POT live practical evaluator activation — 2026-08-05
+
+The API and its isolated `aipot-sandbox` runner were rebuilt/recreated after the provider secret was
+securely configured outside version control. The live exam payload now labels practical questions as
+`image`, `text`, `code`, or `unavailable`; the frontend consequently requests explicit confirmation
+before paid image generation. Source-round-03 Q36 was verified end to end: an unconfirmed request
+returned `409 aipot_media_confirmation_required`, and one confirmed request generated a private
+1024×1536 PNG (`image/png`) through `openai/gpt-image-1`. The actual artifact was stored privately
+and scored with all five rubric criteria by `anthropic/claude-haiku-4.5`. API, sandbox, frontend,
+Caddy, the solve route, and readiness endpoint were healthy afterward.
