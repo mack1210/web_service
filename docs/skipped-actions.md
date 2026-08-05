@@ -335,3 +335,11 @@ The supplied public B Q38 crop does not contain the Korean sentence that the ori
 learner to translate. Its evaluator context therefore requires use of the visible source text and
 forbids inventing details; it cannot truthfully expose an exact provider answer until that missing
 source sentence is supplied. This is intentionally not replaced with fabricated content.
+
+## 13. Intentionally retained visual evidence
+
+The public-set PDF extraction removes full-page crops only when the PDF contains every fact needed
+to answer the question. Crops remain for diagrams, UI pipeline/state screenshots, before/after image
+transformations, and image-reference tasks because replacing those with invented prose would lose
+evidence. The retained question list is enforced by
+`tools/extract-aipot-public-question-text.mjs`; all other Public A/B crops are text-only Markdown.

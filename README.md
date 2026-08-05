@@ -101,6 +101,16 @@ Every photographed source round uses one rendering contract, which new sets must
 - Keep formulas as plain, escaped LaTeX source unless a reviewed math renderer is deliberately
   introduced. Do not insert untrusted HTML or an unreviewed rendering library to display math.
 
+### Public-set PDF extraction contract
+
+`tools/extract-aipot-public-question-text.mjs` reads the supplied book PDF as the single source for
+Public A/B Q01–Q40 learner text. It replaces a full-page crop with safe Markdown whenever every
+fact required to solve the item can be represented as text; answer choices continue to render only
+in the choice controls. It retains a crop only for irreducibly visual evidence such as diagrams,
+UI pipelines, and before/after transformations. The companion assertion test checks, among other
+things, that Public A Q38 contains the complete dataset, its `㉠` cell, and expected output but no
+crop. Run `pnpm aipot:content:check` after any source-PDF or public-set change.
+
 When adding a source question, add its crop declaration to the corpus manifest first, then add the
 learner-facing prompt to the web manifest. Add a frontend rendering test when a new Markdown form
 or replacement rule is introduced, and an API test when a new segment field is added.

@@ -204,3 +204,12 @@ Captured: 2026-07-10T22:25:41+09:00
 - Live Public A Q36 feedback returned the book answer and `AI-POT AI프롬프트활용능력 1급 기본서
   구매인증자료 p.58–59`; the live source-round-01 Q39 API payload retained its image crop and
   omitted its former bracketed description.
+
+## 2026-08-05 public PDF text-extraction coverage
+
+- The Public A/B extraction assertion checks the book-derived source data directly: A Q13 must be
+  text-only with no copied choices; A Q38 must include its full dataset, `㉠` cell, and expected
+  result without a crop; B Q36 must retain its before/after crop; and B Q39 must retain its full
+  file facts as text with no crop.
+- The live API confirmed A Q13 and A Q38 have `asset_url: null` with the complete appropriate text,
+  while B Q36 retains its visual asset and no accidental Q37/Q38 heading.

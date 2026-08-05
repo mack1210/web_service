@@ -60,6 +60,7 @@ const publicContexts = {
     36: {
       topic: "이미지 변환 프롬프트",
       kind: "image",
+      visualEvidence: true,
       prompt: prompt("36. 참고 이미지의 장면 변환", `첨부된 전후 참고 이미지를 바탕으로 해변 일러스트를 목표 장면처럼 변환하는 프롬프트를 작성하시오.\n\n해변, 바다, 모래, 파라솔, 해변 인물, 야자수의 일러스트 분위기는 유지하고, 전경의 SUV/지프 차량은 제거한다. 목표 이미지의 구도와 요소를 반영하시오.`),
       solution: "Create an illustration of a sunny beach scene. The beach is filled with people enjoying the sun, some sitting on red lounge chairs under colorful umbrellas. Palm trees are scattered around, and the ocean is calm with gentle waves. The sky is blue with a few fluffy clouds. The overall mood is cheerful and relaxed.",
       rubric: ["전후 참고 이미지 반영", "SUV/지프 제거", "해변 핵심 요소 유지", "야자수와 목표 구도 반영", "일러스트 변환 목적 명확"],
@@ -149,12 +150,11 @@ function applyPublic(id, exam) {
   for (const question of exam.questions.filter((item) => item.number >= 36 && item.number <= 40)) {
     const context = publicContexts[id][question.number];
     question.topic = context.topic;
-    question.prompt = context.prompt;
     question.rubric = rubric(context.rubric);
     question.evaluation = {
       kind: context.kind,
       availability: "available",
-      input_assets: [path.basename(question.asset)],
+      input_assets: context.visualEvidence && question.asset ? [path.basename(question.asset)] : [],
       context_markdown: context.prompt,
       provider_solution: context.solution,
       reference_source: referenceSources[id],

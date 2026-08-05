@@ -15,6 +15,7 @@ const circledNumbers = { "①": 1, "②": 2, "③": 3, "④": 4, "⑤": 5 };
 const placeholder = "원본 페이지 참조";
 const sourceIndication = /^\s*(?:[-•]\s*)?(?:Related visual source|보기 계속|Source)\s*:\s*(?:\.\.\/)+assets\/source-round-[^\r\n]*\r?\n*/gim;
 const imageDescription = /\n{2}(?:(?:\*\*(?:이미지|결과물) 묘사:\*\*)|결과물은 )[\s\S]*$/;
+const textualImageMarker = /\[이미지:\s*([^\]\n]+)\]/g;
 
 function sectionMap(markdown) {
   const parts = markdown.split(/^## Q(\d{2})\s*$/m);
@@ -88,6 +89,7 @@ function choiceFeedback(topic, text, correctText, correct) {
 let repairedQuestions = 0;
 let sanitizedPrompts = 0;
 let removedImageDescriptions = 0;
+let normalizedTextualVisuals = 0;
 const unresolved = [];
 for (const filename of readdirSync(webExamRoot).filter((name) => /^source-round-\d{2}\.json$/.test(name)).sort()) {
   const manifestPath = resolve(webExamRoot, filename);
@@ -113,6 +115,14 @@ for (const filename of readdirSync(webExamRoot).filter((name) => /^source-round-
           removedImageDescriptions += 1;
           changed = true;
         }
+      }
+      // A fully transcribed source diagram is ordinary question text. Keep its
+      // information, but do not expose an implementation-style image label.
+      const normalizedVisualText = question.prompt.replace(textualImageMarker, (_match, contents) => `제시된 자료: ${contents}`);
+      if (normalizedVisualText !== question.prompt) {
+        question.prompt = normalizedVisualText;
+        normalizedTextualVisuals += 1;
+        changed = true;
       }
     }
     const choices = question.choices;
@@ -143,15 +153,17 @@ if (checkOnly) {
     const hasSourceIndication = (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && sourceIndication.test(question.prompt));
     sourceIndication.lastIndex = 0;
     let hasDuplicateImageDescription = false;
+    const hasTextualImageMarker = (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && textualImageMarker.test(question.prompt));
+    textualImageMarker.lastIndex = 0;
     if (/^source-round-\d{2}\.json$/.test(filename)) {
       const corpus = JSON.parse(readFileSync(resolve(corpusRoot, filename), "utf8"));
       const imageQuestionNumbers = new Set(corpus.questions.filter((question) => question.primary_visual).map((question) => question.number));
       hasDuplicateImageDescription = (manifest.questions ?? []).some((question) => imageQuestionNumbers.has(question.number) && typeof question.prompt === "string" && imageDescription.test(question.prompt));
     }
-    if (hasPlaceholder || hasSourceIndication || hasDuplicateImageDescription) remaining.push(filename);
+    if (hasPlaceholder || hasSourceIndication || hasDuplicateImageDescription || hasTextualImageMarker) remaining.push(filename);
   }
   if (remaining.length) throw new Error(`Placeholder choices remain in: ${remaining.join(", ")}`);
 }
 console.log(checkOnly
   ? "Validated source learner content: no placeholders, source-path notes, or duplicate image descriptions remain."
-  : `Repaired ${repairedQuestions} source choice group(s), removed ${sanitizedPrompts} source-path prompt note(s), and removed ${removedImageDescriptions} duplicate image-description block(s).`);
+  : `Repaired ${repairedQuestions} source choice group(s), removed ${sanitizedPrompts} source-path prompt note(s), removed ${removedImageDescriptions} duplicate image-description block(s), and normalized ${normalizedTextualVisuals} text-only visual reference(s).`);

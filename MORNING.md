@@ -99,3 +99,10 @@ the book’s actual public A/B answer examples (printed pp.58–59) and the orig
 answer examples (including rounds 04 p.26 and 05 p.28). The answer panel now shows `원문 답안 예시`
 and its citation only after lock. The shared content contract removes duplicate bracketed image
 descriptions from practical stems whenever the reviewed crop is displayed.
+
+**2026-08-05 LOSSLESS PUBLIC TEXT EXTRACTION:** Public A/B learner stems now come from the supplied
+book PDF rather than full-page crop images wherever the source is completely text-convertible. A
+Q38 is rendered as dataset/result Markdown tables with `㉠` in its original prompt cell; A Q13 is
+text only with choices kept in controls. Only diagrams, UI pipeline screenshots, and image
+transformation/reference material retain a crop. The extraction and assertions are part of the
+shared content check.

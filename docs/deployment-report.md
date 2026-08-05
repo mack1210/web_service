@@ -245,3 +245,15 @@ no longer repeat `[이미지: ...]` or `결과물 이미지` prose; the crop rem
 checks confirmed Public A Q36 returns the actual `냉방병 예방 팁 3가지를 알려줘.` answer and its
 book citation, while source-round-01 Q39 retains its crop and no longer exposes the redundant
 park-image description.
+
+## AI-POT public-set lossless PDF extraction — 2026-08-05
+
+The supplied book contains searchable source text for all Public A/B question pages. A new
+source-of-truth extraction tool converts that text into learner-safe Markdown, removes full-page
+crops where no information is lost, and retains crops only for genuinely visual evidence. This
+applies to every Public A/B question, not only practical questions. Public A Q38 is now represented
+by its complete four-row dataset table, a `㉠` prompt cell, and all four output rows; A Q13 is text
+only and has no duplicate options in its stem. Public B Q36 still retains its before/after image.
+
+The live API on port 18080 confirmed those three cases. The content check now regenerates/validates
+the PDF extraction and runs source assertions so a future set cannot regress to a generic page crop.
