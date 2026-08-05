@@ -125,3 +125,11 @@ Captured: 2026-07-10T22:25:41+09:00
   implementations. This was a frontend-only rebuild/recreation; API, Caddy, and the host binding
   remained unchanged.
 - The active solve route and `/health/ready` passed after promotion.
+
+## 2026-08-05 source-question rendering promotion
+
+- Source prompts now share a safe renderer for quote-marker removal, tables, fenced code, and
+  declared diagram segments. The canonical source-round corpus owns visual marker metadata; no
+  whole source page or generic source caption is exposed.
+- This was a frontend-only promotion. The active source-round solve route and `/health/ready`
+  passed at `http://192.168.219.130:18080`; API, Caddy, and host binding remained unchanged.

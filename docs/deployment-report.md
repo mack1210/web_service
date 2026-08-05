@@ -141,3 +141,13 @@ The final-submission path no longer assumes that `crypto.randomUUID()` exists. I
 browser API when available and otherwise generates a local `aipot-...` client submission ID, which
 satisfies the API's idempotency-ID requirement. Only the frontend service was rebuilt/recreated;
 the live solve route and API readiness endpoint returned successfully afterward.
+
+## AI-POT source Markdown rendering correction — 2026-08-05
+
+Only the frontend Compose service was rebuilt/recreated. The source solver now uses the reviewed
+safe-block renderer rather than writing a source prompt into a raw paragraph. Markdown quote
+markers are removed before rendering; tables and code fences are structured React elements; links
+remain text labels; and declared visual segments replace duplicate source blocks without a generic
+source caption. The source round 01 Q16 concept diagram path is covered by regression tests. The
+live source-round solve route and API readiness endpoint passed after promotion; API and Caddy were
+not recreated.

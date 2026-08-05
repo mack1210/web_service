@@ -614,6 +614,11 @@ export interface components {
             keep_marker_text: boolean;
             /** Marker */
             marker: string;
+            /**
+             * Replace Following Block
+             * @default false
+             */
+            replace_following_block: boolean;
         };
         /** AipotWeakness */
         AipotWeakness: {

@@ -46,3 +46,10 @@ browser draft and feedback so it can be evaluated again. API and Caddy stayed he
 unsupported direct `crypto.randomUUID()` call used by final submission. It now uses `randomUUID`
 when present and a local compatible ID fallback otherwise. The live solve route and API readiness
 check passed after promotion; API and Caddy remained unchanged.
+
+**2026-08-05 SOURCE RENDERING:** The frontend was rebuilt/recreated to render source prompts with
+the same safe block renderer used by reviewed OCR: Markdown quote markers are removed, tables and
+fenced code are rendered as safe elements, and declared diagram segments replace duplicate source
+tables. Source round 01 Q16 now shows its reviewed concept diagram and normal explanatory text
+without raw `>` syntax or a source caption. The live source-round solve route and API readiness
+check passed; API and Caddy remained unchanged.

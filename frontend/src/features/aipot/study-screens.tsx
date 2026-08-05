@@ -229,7 +229,9 @@ function nextNonEmptyLine(lines: string[], index: number): number {
 }
 
 export function parseOcrBlocks(text: string): OcrBlock[] {
-  const lines = text.split("\n");
+  // Source transcription can use Markdown blockquotes for callouts. Quote
+  // markers are presentation syntax, never learner-facing content.
+  const lines = text.split("\n").map((line) => line.replace(/^\s*(?:>\s*)+/, ""));
   const blocks: OcrBlock[] = [];
   let index = 0;
   while (index < lines.length) {
@@ -270,21 +272,20 @@ export function parseOcrBlocks(text: string): OcrBlock[] {
   return blocks;
 }
 
-type OcrVisualAsset = { marker: string; asset_url: string; alt: string; keep_marker_text?: boolean };
+type OcrVisualAsset = { marker: string; asset_url: string; alt: string; keep_marker_text?: boolean; replace_following_block?: boolean };
 
 export function OcrQuestionText({ text, visualAssets = [] }: { text: string; visualAssets?: OcrVisualAsset[] }) {
-  return <div className="space-y-2 text-[15px] leading-7">{parseOcrBlocks(text).map((block, index) => {
+  const blocks = parseOcrBlocks(text);
+  return <div className="space-y-2 text-[15px] leading-7">{blocks.map((block, index) => {
+    const previous = blocks[index - 1];
+    const previousVisual = previous?.type === "line" ? visualAssets.find((asset) => previous.text.includes(asset.marker)) : undefined;
+    if (previousVisual?.replace_following_block) return null;
     if (block.type === "code") return <pre className="overflow-x-auto rounded-lg border bg-slate-950 px-4 py-3 text-sm leading-6 text-slate-100" key={index}><code data-language={block.language}>{block.code}</code></pre>;
     if (block.type === "table") return <OcrTable headers={block.headers} key={index} rows={block.rows} />;
     const line = block.text;
     const visual = visualAssets.find((asset) => line.includes(asset.marker));
-    if (visual) return <div className="space-y-2" key={index}><figure className="overflow-hidden rounded-lg border bg-slate-950/5"><img alt={visual.alt} className="max-h-[32rem] w-full object-contain" loading="lazy" src={visual.asset_url} /><figcaption className="border-t px-3 py-2 text-xs text-muted">원본 문제의 시각 자료</figcaption></figure>{visual.keep_marker_text ? <p><InlineOcrText text={line} /></p> : null}</div>;
+    if (visual) return <div className="space-y-2" key={index}><figure className="overflow-hidden rounded-lg border bg-slate-950/5"><img alt={visual.alt} className="max-h-[32rem] w-full object-contain" loading="lazy" src={visual.asset_url} /></figure>{visual.keep_marker_text ? <p><InlineOcrText text={line} /></p> : null}</div>;
     if (line.startsWith("### ")) return <h3 className="pt-1 text-base font-extrabold" key={index}>{line.slice(4)}</h3>;
-    if (line.startsWith(">")) {
-      const quoted = line.slice(1).trim();
-      if (!quoted) return null;
-      return <p className={quoted.startsWith("[") ? "font-semibold" : ""} key={index}><InlineOcrText text={quoted} /></p>;
-    }
     if (line.startsWith("- ")) return <p className="pl-4" key={index}>• <InlineOcrText text={line.slice(2)} /></p>;
     return <p className={/^\d+\. /.test(line) ? "pl-4" : ""} key={index}><InlineOcrText text={line} /></p>;
   })}</div>;

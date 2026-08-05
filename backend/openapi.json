@@ -1027,6 +1027,11 @@
             "minLength": 1,
             "title": "Marker",
             "type": "string"
+          },
+          "replace_following_block": {
+            "default": false,
+            "title": "Replace Following Block",
+            "type": "boolean"
           }
         },
         "required": [

@@ -64,6 +64,27 @@ operation. Without a configured key, practical evaluation returns a clear 503 re
 than silently awarding a keyword-match score. Do not commit keys, generated learner artifacts, or
 the `aipot_history` volume.
 
+### Source-question rendering contract
+
+Every photographed source round uses one rendering contract, which new sets must follow:
+
+- `data/web-exams/` is the learner-facing question text and answer data.
+- `corpus/source-round-*.json` is the single source of truth for reviewed image segments: marker,
+  crop filename, alt text, and whether the image replaces the next Markdown block.
+- Source text is parsed into safe headings, lists, tables, fenced code blocks, and inline code.
+  Markdown quote markers are removed before rendering; links remain readable labels rather than
+  executable links; raw HTML is never injected.
+- Use a declared visual segment for diagrams, screenshots, and quote-image material. Do not append
+  a generic “source” caption, expose whole photographed pages, or duplicate an image as a raw
+  Markdown table. For example, source round 01 Q16 replaces its concept-diagram table with the
+  reviewed diagram and retains the explanatory callout as normal text.
+- Keep formulas as plain, escaped LaTeX source unless a reviewed math renderer is deliberately
+  introduced. Do not insert untrusted HTML or an unreviewed rendering library to display math.
+
+When adding a source question, add its crop declaration to the corpus manifest first, then add the
+learner-facing prompt to the web manifest. Add a frontend rendering test when a new Markdown form
+or replacement rule is introduced, and an API test when a new segment field is added.
+
 ## What Changed Recently
 
 This project was improved without replacing its framework, routes, API paths, or representative workflow.

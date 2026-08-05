@@ -36,6 +36,16 @@ it("replaces a visual OCR placeholder with the reviewed source crop", () => {
   expect(screen.queryByText("[그래프: 비용 함수 설명]")).toBeNull();
 });
 
+it("replaces a declared diagram segment without exposing quote syntax or its duplicate table", () => {
+  const text = "[개념도]\n\n| 입력 | 결과 |\n| --- | --- |\n| 예시 | 출력 |\n\n> [설명] 하나의 예시로 입력과 출력 관계를 보여 줍니다.";
+  const { container } = render(<OcrQuestionText text={text} visualAssets={[{ marker: "[개념도]", asset_url: "/api/one-shot.jpg", alt: "원샷 프롬프팅 개념도", replace_following_block: true }]} />);
+
+  expect(screen.getByRole("img", { name: "원샷 프롬프팅 개념도" })).toHaveAttribute("src", "/api/one-shot.jpg");
+  expect(screen.getByText("[설명] 하나의 예시로 입력과 출력 관계를 보여 줍니다.")).toBeInTheDocument();
+  expect(screen.queryByRole("table")).toBeNull();
+  expect(container.textContent).not.toContain(">");
+});
+
 it("replaces ordinary-text OCR visual markers used by later source rounds", () => {
   render(<OcrQuestionText text="그래프는 ReLU 함수로, 양수 구간에서 증가한다." visualAssets={[{ marker: "그래프는 ReLU 함수로", asset_url: "/api/relu.jpg", alt: "ReLU 그래프" }]} />);
 

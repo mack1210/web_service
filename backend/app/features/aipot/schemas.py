@@ -101,6 +101,7 @@ class AipotVisualAsset(BaseModel):
     asset_url: str
     alt: str = Field(min_length=1)
     keep_marker_text: bool = False
+    replace_following_block: bool = False
 
 
 class AipotExamDetail(AipotExamSummary):

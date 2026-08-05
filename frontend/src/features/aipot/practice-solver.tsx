@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ErrorPanel, Skeleton } from "@/components/ui/state-panels";
+import { OcrQuestionText } from "@/features/aipot/study-screens";
 import { clearDraft, readDraft, writeDraft } from "@/lib/aipot-draft";
 import { getAipotApi, type AipotExam, type AipotImmediateFeedback } from "@/lib/api/aipot";
 
@@ -32,6 +33,17 @@ export function canRetryPracticalAnswer(questionNumber: number, locked: boolean)
 
 export function createClientSubmissionId(randomUuid: (() => string) | null = globalThis.crypto?.randomUUID?.bind(globalThis.crypto) ?? null) {
   return randomUuid?.() ?? `aipot-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+export function questionVisualAssets(question: AipotExam["questions"][number]) {
+  const declaredVisualAssets = question.visual_assets ?? [];
+  if (declaredVisualAssets.length) return declaredVisualAssets;
+  const marker = question.prompt.match(/^\s*(\[[^\]\r\n]+\])\s*$/m)?.[1];
+  const assetUrl = question.asset_url;
+  if (!assetUrl || !marker) return [];
+  // Old cached API deployments only expose `asset_url`. Preserve the same
+  // safe segmented rendering until their matching API container is recreated.
+  return [{ marker, asset_url: assetUrl, alt: `${question.number}번 문제의 시각 자료`, replace_following_block: true }];
 }
 
 function clock(seconds: number) {
@@ -221,6 +233,8 @@ function AnswerNavigator({ activeQuestions, canFinish, currentPage, locks, feedb
 }
 
 function PracticeQuestion({ question, answer, locked, checking, feedback, onChange, onLock, onRetry }: { question: AipotExam["questions"][number]; answer: string; locked: boolean; checking: boolean; feedback?: AipotImmediateFeedback; onChange: (answer: string) => void; onLock: (answer: string) => void; onRetry: () => void }) {
+  const visualAssets = questionVisualAssets(question);
+  const standaloneAssetUrl = question.asset_url && !visualAssets.some((asset) => asset.asset_url === question.asset_url) ? question.asset_url : null;
   const selected = answer.split("|").filter(Boolean);
   const multiple = question.type === "multiple_select" || question.multiple_selection;
   const choices = question.choices ?? [];
@@ -235,8 +249,8 @@ function PracticeQuestion({ question, answer, locked, checking, feedback, onChan
   };
   return <Card className="space-y-4" id={`question-${question.number}`}>
     <div className="flex items-center justify-between border-b pb-3"><h2 className="text-sm font-extrabold text-[rgb(var(--primary))]">Q{String(question.number).padStart(2, "0")}</h2><span className="text-sm font-bold text-muted">{question.points}점</span></div>
-    <p className="whitespace-pre-wrap text-[15px] leading-7">{question.prompt}</p>
-    {question.asset_url ? <figure className="overflow-hidden rounded-xl border bg-slate-950/5"><img alt={`${question.number}번 참고 자료`} className="max-h-[38rem] w-full object-contain" src={question.asset_url} /></figure> : null}
+    <OcrQuestionText text={question.prompt} visualAssets={visualAssets} />
+    {standaloneAssetUrl ? <figure className="overflow-hidden rounded-xl border bg-slate-950/5"><img alt={`${question.number}번 참고 자료`} className="max-h-[38rem] w-full object-contain" src={standaloneAssetUrl} /></figure> : null}
     {["multiple_choice", "multiple_select", "choice_bank"].includes(question.type) ? <fieldset className="grid gap-2"><legend className="sr-only">{question.number}번 답안</legend>{choices.map((text, index) => { const id = choiceIds[index] ?? String(index + 1); const detail = choiceFeedback.get(id); const isSelected = selected.includes(id); const tone = detail?.correct ? "border-emerald-600 bg-emerald-500/10" : locked && isSelected ? "border-red-600 bg-red-500/10" : "hover:border-[rgb(var(--primary))/0.65]"; return <label className={`flex min-h-11 items-center gap-3 rounded-lg border p-3 text-sm ${tone} ${locked ? "cursor-not-allowed" : "cursor-pointer"}`} key={id}><input checked={isSelected} disabled={locked || checking} name={`q-${question.number}`} onChange={() => select(id)} type={multiple ? "checkbox" : "radio"} value={id} /><span><b className="mr-2">{id}.</b>{text}</span></label>; })}</fieldset> : question.type === "short_answer" ? <div className="flex flex-col gap-2 sm:flex-row"><input className="control flex-1" disabled={locked || checking} onChange={(event) => onChange(event.target.value)} placeholder="답을 입력하세요" value={answer} /><Button disabled={!answer.trim() || locked} loading={checking} onClick={() => onLock(answer)}>정답 확인 및 확정</Button></div> : <div className="space-y-2"><p className="rounded-lg bg-amber-500/10 p-3 text-sm">제한 사항과 참고 자료를 확인한 뒤 제출하세요. 실제 시험 중 프로그램 오류가 나면 감독관에게 알리세요.</p>{question.evaluation_available === false ? <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm">이 문항에 필요한 원본 실습 파일이 현재 학습 자료에 없습니다. 결과를 만들거나 점수를 확정할 수 없습니다.</p> : null}<textarea className="control min-h-48 w-full" disabled={locked || checking} onChange={(event) => onChange(event.target.value)} placeholder="목표, 입력, 제약, 출력 형식, 검증 기준을 포함해 작성하세요." value={answer} /><Button disabled={!answer.trim() || locked || question.evaluation_available === false} loading={checking} onClick={() => onLock(answer)}>{question.evaluation_kind === "image" ? "이미지 생성·평가 후 확정" : "실행·평가 후 확정"}</Button></div>}
     {multiple && !locked ? <Button disabled={!answer.trim()} loading={checking} onClick={() => onLock(answer)} variant="secondary">선택 확정</Button> : null}
     {feedback ? <FeedbackPanel feedback={feedback} selected={selected} singleConcept={question.single_concept_explanation} /> : null}

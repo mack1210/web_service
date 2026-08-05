@@ -252,3 +252,17 @@ covered by the frontend unit test suite, and the corrected frontend was promoted
 **Remaining limitation**: no local Playwright Chromium is available to run the exact browser that
 reported the failure. The live route/readiness checks and production build pass; run the command in
 the previous section after installing Chromium to exercise the full submit click path.
+
+## 11. Source-question renderer browser coverage
+
+**Implemented and tested**: source prompts are now parsed into safe text, tables, fenced code, and
+declared image segments. The Q16 quote-marker/diagram-table replacement is covered by frontend and
+API tests, and the corrected frontend was promoted successfully.
+
+**Remaining browser check**: no local Playwright Chromium is installed to visually inspect the
+source round in a production browser. After installing it, run:
+
+```bash
+cd /home/cgma/apps/web_service/frontend
+PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
+```

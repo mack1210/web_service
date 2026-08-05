@@ -90,7 +90,7 @@ def test_public_exam_hides_answers_and_only_allows_question_assets(tmp_path: Pat
     ]
     assert first_question["multiple_selection"] is False
     assert first_question["asset_url"] is None
-    assert first_question["visual_assets"] == [{"marker": "[그래프:", "asset_url": "/api/v1/aipot/exams/source-round-01/assets/q01-visual-01.jpg", "alt": "테스트 그래프", "keep_marker_text": False}]
+    assert first_question["visual_assets"] == [{"marker": "[그래프:", "asset_url": "/api/v1/aipot/exams/source-round-01/assets/q01-visual-01.jpg", "alt": "테스트 그래프", "keep_marker_text": False, "replace_following_block": False}]
     assert response.json()["questions"][1]["ocr_text"] == "세그먼트 참고 이미지를 보고 실습 문제를 해결하세요."
     assert response.json()["questions"][1]["asset_url"].endswith("q36-reference.jpg")
     assert client.get("/api/v1/aipot/exams/source-round-01/assets/page-01.jpg").status_code == 404
@@ -198,3 +198,27 @@ def test_web_manifest_assets_resolve_from_the_quiz_relative_path(tmp_path: Path,
 
     assert response.status_code == 200
     assert response.content == b"private-page"
+
+
+def test_source_web_manifest_uses_corpus_visual_segments_as_the_single_source(tmp_path: Path, monkeypatch):
+    content = tmp_path / "content"
+    web_manifest = content / "data" / "web-exams" / "source-round-01.json"
+    corpus_manifest = content / "corpus" / "source-round-01.json"
+    asset = content / "assets" / "source-round-01" / "q16-visual-01.jpg"
+    web_manifest.parent.mkdir(parents=True)
+    corpus_manifest.parent.mkdir(parents=True)
+    asset.parent.mkdir(parents=True)
+    asset.write_bytes(b"visual")
+    web_manifest.write_text(json.dumps({
+        "id": "source-round-01", "title": "원본 1회", "sourceKind": "private_photographed_book",
+        "questions": [{"number": 16, "type": "multiple_choice", "chapter": "C07", "topic": "프롬프팅", "prompt": "[개념도]\\n\\n| 입력 | 출력 |", "points": 2, "asset": "../assets/source-round-01/q16-visual-01.jpg", "answer": "1", "accepted_answers": ["1"], "choices": []}],
+    }), encoding="utf-8")
+    corpus_manifest.write_text(json.dumps({
+        "questions": [{"number": 16, "visuals": [{"marker": "[개념도]", "file": "q16-visual-01.jpg", "alt": "원샷 개념도", "replace_following_block": True}]}],
+    }), encoding="utf-8")
+    monkeypatch.setattr(service, "settings", replace(service.settings, aipot_content_root=content, aipot_history_file=tmp_path / "history.json"))
+
+    question = TestClient(app).get("/api/v1/aipot/exams/source-round-01").json()["questions"][0]
+
+    assert question["asset_url"] is None
+    assert question["visual_assets"] == [{"marker": "[개념도]", "asset_url": "/api/v1/aipot/exams/source-round-01/assets/q16-visual-01.jpg", "alt": "원샷 개념도", "keep_marker_text": False, "replace_following_block": True}]

@@ -224,6 +224,26 @@ def _split_ocr_multiple_choice(section: str) -> tuple[str, list[str]]:
     return section, []
 
 
+def _source_visuals(exam_id: str, question_number: int) -> list[dict]:
+    """Read source-image segments from the photographed-round corpus.
+
+    The web manifest owns learner-facing prompt text; the corpus manifest owns
+    the reviewed source-image marker, crop filename, and alt text. Keeping that
+    visual metadata in one place prevents new source sets from drifting into
+    unsegmented raw Markdown.
+    """
+
+    path = _content_root() / "corpus" / f"{exam_id}.json"
+    if not exam_id.startswith("source-round-") or not path.is_file():
+        return []
+    corpus = json.loads(path.read_text(encoding="utf-8"))
+    source_question = next(
+        (item for item in corpus.get("questions", []) if item.get("number") == question_number),
+        None,
+    )
+    return list(source_question.get("visuals", [])) if source_question else []
+
+
 def _public_question(exam_id: str, question: dict, ocr_sections: dict[int, str]) -> AipotQuestion:
     asset_url = None
     source_page = question.get("source_page")
@@ -235,19 +255,24 @@ def _public_question(exam_id: str, question: dict, ocr_sections: dict[int, str])
         ocr_text, ocr_choices = _split_ocr_multiple_choice(ocr_text)
         choices = ocr_choices or choices
         choice_ids = [str(index) for index in range(1, len(choices) + 1)]
-    if primary_visual := question.get("primary_visual"):
-        asset_url = f"/api/v1/aipot/exams/{exam_id}/assets/{Path(primary_visual['file']).name}"
-    elif asset := question.get("asset"):
-        asset_url = f"/api/v1/aipot/exams/{exam_id}/assets/{Path(asset).name}"
+    declared_visuals = _source_visuals(exam_id, question["number"]) or question.get("visuals", [])
     visual_assets = [
         AipotVisualAsset(
             marker=visual["marker"],
             asset_url=f"/api/v1/aipot/exams/{exam_id}/assets/{Path(visual['file']).name}",
             alt=visual["alt"],
-            keep_marker_text=visual.get("keep_marker_text", False),
+            keep_marker_text=visual.get("keep_marker_text", False) or visual["marker"].startswith(("###", "Q")),
+            replace_following_block=visual.get("replace_following_block", False),
         )
-        for visual in question.get("visuals", [])
+        for visual in declared_visuals
     ]
+    visual_filenames = {Path(visual["file"]).name for visual in declared_visuals}
+    if primary_visual := question.get("primary_visual"):
+        asset_url = f"/api/v1/aipot/exams/{exam_id}/assets/{Path(primary_visual['file']).name}"
+    elif asset := question.get("asset"):
+        asset_name = Path(asset).name
+        if asset_name not in visual_filenames:
+            asset_url = f"/api/v1/aipot/exams/{exam_id}/assets/{asset_name}"
     return AipotQuestion(
         number=question["number"],
         type=question["type"],
