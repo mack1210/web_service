@@ -79,3 +79,7 @@ as the one-source maintenance path for future source sets.
 **2026-08-05 SOURCE-PATH SANITIZATION:** Removed ten OCR workflow/source-path notes, including
 `보기 계속: ../../assets/...`, from learner prompts across source rounds. Existing reviewed image
 segments remain intact; live checks across source rounds 01–05 found no exposed source-path text.
+
+**2026-08-05 IMAGE-DESCRIPTION SANITIZATION:** Removed five verbose OCR image/result-description
+blocks when their reviewed reference crop is already attached. Learners see the instruction and the
+image segment, not a redundant textual restatement. The shared content check validates this rule.

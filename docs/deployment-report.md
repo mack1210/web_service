@@ -196,3 +196,11 @@ Ten learner prompts contained OCR workflow notes such as `보기 계속: ../../a
 preserving declared reviewed visual crops. The shared content check now fails on either a placeholder
 choice or a source-path prompt note. Live API checks across source rounds 01–05 found neither form
 of exposed source metadata; no container recreation was necessary.
+
+## AI-POT duplicate image-description sanitization — 2026-08-05
+
+Five practical prompts repeated a verbose OCR description of a visual result even though each had a
+reviewed reference crop. The content sanitizer removes those final image/result-description blocks
+only when the corpus declares `primary_visual`, preserving instructions, constraints, and the crop.
+The live API confirmed no such duplicate text on visual questions and confirmed that source-round-03
+Q36 still exposes its reviewed reference asset. No container recreation was necessary.

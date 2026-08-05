@@ -9,10 +9,12 @@ const contentRoot = process.env.AIPOT_CONTENT_ROOT
   : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
 const webExamRoot = resolve(contentRoot, "data/web-exams");
 const ocrRoot = resolve(contentRoot, "corpus/ocr");
+const corpusRoot = resolve(contentRoot, "corpus");
 const choicePattern = /^\s*(?:([1-5])[.)]|([①②③④⑤]))\s+(.+?)\s*$/;
 const circledNumbers = { "①": 1, "②": 2, "③": 3, "④": 4, "⑤": 5 };
 const placeholder = "원본 페이지 참조";
 const sourceIndication = /^\s*(?:[-•]\s*)?(?:Related visual source|보기 계속|Source)\s*:\s*(?:\.\.\/)+assets\/source-round-[^\r\n]*\r?\n*/gim;
+const imageDescription = /\n{2}(?:(?:\*\*(?:이미지|결과물) 묘사:\*\*)|결과물은 )[\s\S]*$/;
 
 function sectionMap(markdown) {
   const parts = markdown.split(/^## Q(\d{2})\s*$/m);
@@ -85,12 +87,15 @@ function choiceFeedback(topic, text, correctText, correct) {
 
 let repairedQuestions = 0;
 let sanitizedPrompts = 0;
+let removedImageDescriptions = 0;
 const unresolved = [];
 for (const filename of readdirSync(webExamRoot).filter((name) => /^source-round-\d{2}\.json$/.test(name)).sort()) {
   const manifestPath = resolve(webExamRoot, filename);
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   const sourceId = filename.slice(0, -".json".length);
   const ocr = sectionMap(readFileSync(resolve(ocrRoot, `${sourceId}.md`), "utf8"));
+  const corpus = JSON.parse(readFileSync(resolve(corpusRoot, filename), "utf8"));
+  const imageQuestionNumbers = new Set(corpus.questions.filter((question) => question.primary_visual).map((question) => question.number));
   let changed = false;
 
   for (const question of manifest.questions ?? []) {
@@ -100,6 +105,14 @@ for (const filename of readdirSync(webExamRoot).filter((name) => /^source-round-
         question.prompt = prompt;
         sanitizedPrompts += 1;
         changed = true;
+      }
+      if (imageQuestionNumbers.has(question.number)) {
+        const withoutDescription = question.prompt.replace(imageDescription, "").trimEnd();
+        if (withoutDescription !== question.prompt) {
+          question.prompt = withoutDescription;
+          removedImageDescriptions += 1;
+          changed = true;
+        }
       }
     }
     const choices = question.choices;
@@ -129,10 +142,16 @@ if (checkOnly) {
     const hasPlaceholder = JSON.stringify(manifest).includes(placeholder);
     const hasSourceIndication = (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && sourceIndication.test(question.prompt));
     sourceIndication.lastIndex = 0;
-    if (hasPlaceholder || hasSourceIndication) remaining.push(filename);
+    let hasDuplicateImageDescription = false;
+    if (/^source-round-\d{2}\.json$/.test(filename)) {
+      const corpus = JSON.parse(readFileSync(resolve(corpusRoot, filename), "utf8"));
+      const imageQuestionNumbers = new Set(corpus.questions.filter((question) => question.primary_visual).map((question) => question.number));
+      hasDuplicateImageDescription = (manifest.questions ?? []).some((question) => imageQuestionNumbers.has(question.number) && typeof question.prompt === "string" && imageDescription.test(question.prompt));
+    }
+    if (hasPlaceholder || hasSourceIndication || hasDuplicateImageDescription) remaining.push(filename);
   }
   if (remaining.length) throw new Error(`Placeholder choices remain in: ${remaining.join(", ")}`);
 }
 console.log(checkOnly
-  ? "Validated source learner content: no placeholder choices or source-path prompt notes remain."
-  : `Repaired ${repairedQuestions} source choice group(s) and removed ${sanitizedPrompts} source-path prompt note(s).`);
+  ? "Validated source learner content: no placeholders, source-path notes, or duplicate image descriptions remain."
+  : `Repaired ${repairedQuestions} source choice group(s), removed ${sanitizedPrompts} source-path prompt note(s), and removed ${removedImageDescriptions} duplicate image-description block(s).`);

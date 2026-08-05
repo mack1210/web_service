@@ -272,6 +272,13 @@ continuation note. A browser review remains pending local Playwright Chromium; a
 open source round 03 Q31 and confirm the prompt starts directly with the question, while any required
 material is shown only as a reviewed crop rather than a filesystem-style source indication.
 
+## 16. Visual-prompt browser review
+
+The live API and content check confirm that prompts with reviewed reference crops no longer repeat
+long OCR image descriptions. A browser review remains pending local Playwright Chromium; after it is
+installed, open source-round-03 Q36 and source-round-04 Q37 to confirm that each shows the compact
+task instruction and image crop only.
+
 ## 12. Live Q36/Q40 OpenRouter judge activation
 
 **Implemented and verified in source data**: source round 01 Q36 is `code` execution and Q40 is

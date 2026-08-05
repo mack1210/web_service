@@ -169,3 +169,10 @@ Captured: 2026-07-10T22:25:41+09:00
   source`, or `../../assets/...` from learner prompts without removing declared visual assets.
 - The live API was queried for source rounds 01–05; no learner prompt exposed any of those source
   indications. A source-round-02 Q31 reviewed image crop remained available after sanitization.
+
+## 2026-08-05 duplicate image-description coverage
+
+- The content check rejects a trailing OCR image/result description on a question whose corpus entry
+  declares a reviewed `primary_visual`. It preserves the learner instruction and image asset.
+- Live checks across source rounds 01–05 found no duplicate image descriptions on visual questions;
+  source-round-03 Q36 retained its reference crop after the cleanup.

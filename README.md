@@ -89,6 +89,9 @@ Every photographed source round uses one rendering contract, which new sets must
 - Never expose OCR workflow notes or local source paths (for example, `보기 계속:` or
   `../../assets/...`) in learner text. If the material is needed to answer a question, declare and
   show only its reviewed crop through the visual-segment metadata.
+- When a reviewed visual crop is attached, do not repeat its OCR-generated image/expected-result
+  description in the learner prompt. Keep the task instruction and constraints, and let the image
+  be the visual evidence the learner inspects.
 - Keep formulas as plain, escaped LaTeX source unless a reviewed math renderer is deliberately
   introduced. Do not insert untrusted HTML or an unreviewed rendering library to display math.
 
