@@ -431,6 +431,8 @@ export interface components {
             kind: "text" | "image" | "code" | "unavailable";
             /** Reference Solution */
             reference_solution?: string | null;
+            /** Reference Source */
+            reference_source?: string | null;
             /** Submitted Prompt */
             submitted_prompt: string;
         };

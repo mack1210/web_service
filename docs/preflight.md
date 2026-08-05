@@ -194,3 +194,13 @@ Captured: 2026-07-10T22:25:41+09:00
   choice/image-content policies. The public A/B Q36–Q40 context is emitted as safe Markdown.
 - A live Public A Q36 request with the reported unrelated living-room image prompt returned 0/5,
   `aligned: false`, and `executor_model: not run: context mismatch`.
+
+## 2026-08-05 actual-answer and visual-description coverage
+
+- `aipot:content:check` now fails if an available Q36–Q40 evaluator lacks both a source answer and
+  source citation, or if an asset-backed practical prompt still contains a duplicate bracketed image
+  description.
+- The evaluator test asserts that a post-lock response carries the answer reference and its source.
+- Live Public A Q36 feedback returned the book answer and `AI-POT AI프롬프트활용능력 1급 기본서
+  구매인증자료 p.58–59`; the live source-round-01 Q39 API payload retained its image crop and
+  omitted its former bracketed description.

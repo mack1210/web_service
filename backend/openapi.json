@@ -506,6 +506,17 @@
             ],
             "title": "Reference Solution"
           },
+          "reference_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Source"
+          },
           "submitted_prompt": {
             "title": "Submitted Prompt",
             "type": "string"

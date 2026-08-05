@@ -114,6 +114,7 @@ def test_irrelevant_practical_prompt_scores_zero_without_execution(tmp_path: Pat
         "## 요구\n냉방병 예방 팁 중 `적절한 온도 조절`, `규칙적인 환기`, `적절한 복장`만 간단히 출력하게 하세요."
     )
     public_a_q36["evaluation"]["provider_solution"] = "세 가지 지정 팁만 간결히 제시하도록 범위를 한정한다."
+    public_a_q36["evaluation"]["reference_source"] = "기본서 구매인증자료 p.58"
 
     result = subject.evaluate(
         exam_id="public-set-a", question=public_a_q36,
@@ -124,6 +125,7 @@ def test_irrelevant_practical_prompt_scores_zero_without_execution(tmp_path: Pat
     assert fake.image_calls == 0
     assert all(item["earned"] == 0 and not item["met"] for item in result["criteria"])
     assert result["reference_solution"] == "세 가지 지정 팁만 간결히 제시하도록 범위를 한정한다."
+    assert result["reference_source"] == "기본서 구매인증자료 p.58"
     assert result["context_alignment"]["aligned"] is False
 
 

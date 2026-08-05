@@ -447,6 +447,7 @@ class AipotPracticalEvaluator:
             attachments, references, input_summary = self._attachments(exam_id, question, spec)
             context_markdown = self._context_markdown(question, spec)
             provider_solution = str(spec.get("provider_solution", "")).strip() or None
+            reference_source = str(spec.get("reference_source", "")).strip() or None
             alignment = self.client.assess_context(
                 context_markdown=context_markdown, answer=answer, provider_solution=provider_solution,
                 attachments=attachments,
@@ -463,6 +464,7 @@ class AipotPracticalEvaluator:
                         "stdout": None, "stderr": None, "exit_code": None,
                     },
                     "reference_solution": provider_solution,
+                    "reference_source": reference_source,
                     "context_alignment": alignment,
                     "cost_usd": None,
                 }
@@ -509,6 +511,7 @@ class AipotPracticalEvaluator:
                 "input_summary": input_summary, "executor_model": self.settings.aipot_image_model if kind == "image" else self.settings.aipot_text_model,
                 "judge_model": self.settings.aipot_judge_model, "criteria": criteria,
                 "artifact": artifact, "reference_solution": provider_solution,
+                "reference_source": reference_source,
                 "context_alignment": alignment, "cost_usd": execution.cost_usd,
             }
             self.repository.complete_evaluation(

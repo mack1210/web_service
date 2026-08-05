@@ -93,3 +93,9 @@ Markdown task context and the original input asset(s) before execution. Public A
 placeholders were replaced with concise, task-specific Markdown and rubrics. An unrelated Public A
 Q36 living-room image prompt was live-verified at 0/5 without running the executor; the post-lock
 review displays the provider-derived reference answer where the supplied source contained one.
+
+**2026-08-05 ACTUAL PRACTICAL ANSWERS:** Replaced reconstructed Q36–Q40 reference strings with
+the book’s actual public A/B answer examples (printed pp.58–59) and the original-round photographed
+answer examples (including rounds 04 p.26 and 05 p.28). The answer panel now shows `원문 답안 예시`
+and its citation only after lock. The shared content contract removes duplicate bracketed image
+descriptions from practical stems whenever the reviewed crop is displayed.

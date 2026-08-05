@@ -88,6 +88,7 @@ class AipotEvaluationEvidence(BaseModel):
     criteria: list[AipotEvaluationCriterion]
     artifact: AipotEvaluationArtifact
     reference_solution: str | None = None
+    reference_source: str | None = None
     context_alignment: AipotContextAlignment | None = None
     cost_usd: float | None = Field(default=None, ge=0)
 

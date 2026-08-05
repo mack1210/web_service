@@ -108,12 +108,14 @@ or replacement rule is introduced, and an API test when a new segment field is a
 ### Practical-question evaluation context
 
 `tools/enrich-aipot-practical-context.mjs` is the single maintained source for public-set practical
-contexts, specific rubrics, evaluation kind, and post-submission reference answers. Run it after
-changing those source facts, then run `pnpm aipot:content:check`. It deliberately keeps
-`evaluation.provider_solution` in the backend-only manifest: it is not sent with `AipotQuestion`
-and appears in evaluation evidence only after an answer has been locked. All practical questions
-fall back to their reviewed learner-facing Markdown and declared input assets if no supplemental
-context is needed.
+contexts, specific rubrics, evaluation kind, and post-submission reference answers. It transcribes
+the public A/B Q36–Q40 answer examples from the supplied book and the original-round Q36–Q40
+examples from their photographed answer pages. Run it after changing those source facts, then run
+`pnpm aipot:content:check`. It deliberately keeps `evaluation.provider_solution` in the backend-only
+manifest: it is not sent with `AipotQuestion` and appears with its source citation in evaluation
+evidence only after an answer has been locked. All practical questions fall back to their reviewed
+learner-facing Markdown and declared input assets if no supplemental context is needed. If a reviewed
+crop is shown, do not duplicate it as `[이미지: ...]` prose in the learner prompt.
 
 ## What Changed Recently
 

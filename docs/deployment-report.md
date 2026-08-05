@@ -230,3 +230,18 @@ Live verification on port 18080 submitted the reported unrelated living-room ima
 A Q36. It returned 0/5, `context_alignment.aligned: false`, no executor model run, a Korean
 task-mismatch explanation, and the after-lock reference answer. API, frontend, Caddy, and readiness
 remained healthy after the API/frontend rebuild.
+
+## AI-POT actual practical-answer sources — 2026-08-05
+
+The practical answer references are no longer inferred scoring summaries. Public A Q36–Q40 were
+transcribed from the supplied `AI-POT AI프롬프트활용능력 1급 기본서_구매인증자료.pdf` printed
+pages 58–59, and Public B Q36–Q40 from printed page 59. Original source-round examples were read
+from their photographed answer pages; rounds 04 and 05 were additionally verified against pages 26
+and 28. Each post-lock evidence response now contains both the exact answer example and a source
+label, and the frontend displays it under `원문 답안 예시`.
+
+The mounted learner manifests were regenerated. Practical question stems with a reviewed image crop
+no longer repeat `[이미지: ...]` or `결과물 이미지` prose; the crop remains the visual evidence. Live
+checks confirmed Public A Q36 returns the actual `냉방병 예방 팁 3가지를 알려줘.` answer and its
+book citation, while source-round-01 Q39 retains its crop and no longer exposes the redundant
+park-image description.
