@@ -75,3 +75,7 @@ live Q01 answer-feedback request returned a scored result.
 02–05 from their reviewed OCR transcriptions, including all affected Q01–Q30 choices in rounds 03
 and 05. The live API now returns zero placeholder choices; the repair/validation tool is documented
 as the one-source maintenance path for future source sets.
+
+**2026-08-05 SOURCE-PATH SANITIZATION:** Removed ten OCR workflow/source-path notes, including
+`보기 계속: ../../assets/...`, from learner prompts across source rounds. Existing reviewed image
+segments remain intact; live checks across source rounds 01–05 found no exposed source-path text.

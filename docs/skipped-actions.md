@@ -265,6 +265,13 @@ choices. A visual browser pass remains pending local Playwright Chromium; after 
 rounds 03 and 05 and confirm each answer control shows meaningful Korean source text rather than a
 `원본 페이지 참조` label.
 
+## 15. Source-path visual browser review
+
+The content check and live API audit confirm that no learner prompt exposes an OCR source path or
+continuation note. A browser review remains pending local Playwright Chromium; after installation,
+open source round 03 Q31 and confirm the prompt starts directly with the question, while any required
+material is shown only as a reviewed crop rather than a filesystem-style source indication.
+
 ## 12. Live Q36/Q40 OpenRouter judge activation
 
 **Implemented and verified in source data**: source round 01 Q36 is `code` execution and Q40 is

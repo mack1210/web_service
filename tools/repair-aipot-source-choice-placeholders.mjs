@@ -12,6 +12,7 @@ const ocrRoot = resolve(contentRoot, "corpus/ocr");
 const choicePattern = /^\s*(?:([1-5])[.)]|([①②③④⑤]))\s+(.+?)\s*$/;
 const circledNumbers = { "①": 1, "②": 2, "③": 3, "④": 4, "⑤": 5 };
 const placeholder = "원본 페이지 참조";
+const sourceIndication = /^\s*(?:[-•]\s*)?(?:Related visual source|보기 계속|Source)\s*:\s*(?:\.\.\/)+assets\/source-round-[^\r\n]*\r?\n*/gim;
 
 function sectionMap(markdown) {
   const parts = markdown.split(/^## Q(\d{2})\s*$/m);
@@ -83,6 +84,7 @@ function choiceFeedback(topic, text, correctText, correct) {
 }
 
 let repairedQuestions = 0;
+let sanitizedPrompts = 0;
 const unresolved = [];
 for (const filename of readdirSync(webExamRoot).filter((name) => /^source-round-\d{2}\.json$/.test(name)).sort()) {
   const manifestPath = resolve(webExamRoot, filename);
@@ -92,6 +94,14 @@ for (const filename of readdirSync(webExamRoot).filter((name) => /^source-round-
   let changed = false;
 
   for (const question of manifest.questions ?? []) {
+    if (typeof question.prompt === "string") {
+      const prompt = question.prompt.replace(sourceIndication, "").trimStart();
+      if (prompt !== question.prompt) {
+        question.prompt = prompt;
+        sanitizedPrompts += 1;
+        changed = true;
+      }
+    }
     const choices = question.choices;
     if (!Array.isArray(choices) || !choices.some((choice) => choice?.text?.includes(placeholder))) continue;
     const values = sourceChoices(ocr.get(question.number) ?? "", choices.length);
@@ -115,10 +125,14 @@ if (unresolved.length) throw new Error(`Could not recover source choices: ${unre
 if (checkOnly) {
   const remaining = [];
   for (const filename of readdirSync(webExamRoot).filter((name) => name.endsWith(".json"))) {
-    if (readFileSync(resolve(webExamRoot, filename), "utf8").includes(placeholder)) remaining.push(filename);
+    const manifest = JSON.parse(readFileSync(resolve(webExamRoot, filename), "utf8"));
+    const hasPlaceholder = JSON.stringify(manifest).includes(placeholder);
+    const hasSourceIndication = (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && sourceIndication.test(question.prompt));
+    sourceIndication.lastIndex = 0;
+    if (hasPlaceholder || hasSourceIndication) remaining.push(filename);
   }
   if (remaining.length) throw new Error(`Placeholder choices remain in: ${remaining.join(", ")}`);
 }
 console.log(checkOnly
-  ? "Validated source learner content: no placeholder choices remain."
-  : `Repaired ${repairedQuestions} source question(s) using reviewed OCR.`);
+  ? "Validated source learner content: no placeholder choices or source-path prompt notes remain."
+  : `Repaired ${repairedQuestions} source choice group(s) and removed ${sanitizedPrompts} source-path prompt note(s).`);

@@ -188,3 +188,11 @@ source of truth to recover the corresponding final numbered and table choice blo
 tool now fails if `원본 페이지 참조` remains. Because the API reads the mounted content on each
 request, no container recreation was necessary: live checks for all four source rounds returned
 40 questions and zero placeholders, and a round-03 feedback response used the recovered choice text.
+
+## AI-POT source-path prompt sanitization — 2026-08-05
+
+Ten learner prompts contained OCR workflow notes such as `보기 계속: ../../assets/...` or
+`Related visual source: ...`. These notes were removed from the mounted learner manifests while
+preserving declared reviewed visual crops. The shared content check now fails on either a placeholder
+choice or a source-path prompt note. Live API checks across source rounds 01–05 found neither form
+of exposed source metadata; no container recreation was necessary.

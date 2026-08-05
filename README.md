@@ -86,6 +86,9 @@ Every photographed source round uses one rendering contract, which new sets must
   a generic “source” caption, expose whole photographed pages, or duplicate an image as a raw
   Markdown table. For example, source round 01 Q16 replaces its concept-diagram table with the
   reviewed diagram and retains the explanatory callout as normal text.
+- Never expose OCR workflow notes or local source paths (for example, `보기 계속:` or
+  `../../assets/...`) in learner text. If the material is needed to answer a question, declare and
+  show only its reviewed crop through the visual-segment metadata.
 - Keep formulas as plain, escaped LaTeX source unless a reviewed math renderer is deliberately
   introduced. Do not insert untrusted HTML or an unreviewed rendering library to display math.
 

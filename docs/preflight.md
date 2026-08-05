@@ -162,3 +162,10 @@ Captured: 2026-07-10T22:25:41+09:00
   `원본 페이지 참조` placeholder exists; the repair tool derives replacements from reviewed OCR.
 - The live API was queried for source rounds 02–05 after recovery: every response contained 40
   questions and zero placeholders. A round-03 answer-feedback request returned recovered choices.
+
+## 2026-08-05 source-path sanitization coverage
+
+- The content repair/check tool removes OCR workflow notes containing `보기 계속`, `Related visual
+  source`, or `../../assets/...` from learner prompts without removing declared visual assets.
+- The live API was queried for source rounds 01–05; no learner prompt exposed any of those source
+  indications. A source-round-02 Q31 reviewed image crop remained available after sanitization.
