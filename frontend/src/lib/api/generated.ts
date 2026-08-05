@@ -364,6 +364,15 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** AipotContextAlignment */
+        AipotContextAlignment: {
+            /** Aligned */
+            aligned: boolean;
+            /** Evidence */
+            evidence: string;
+            /** Rationale */
+            rationale: string;
+        };
         /** AipotEvaluationArtifact */
         AipotEvaluationArtifact: {
             /** Asset Url */
@@ -402,6 +411,7 @@ export interface components {
         /** AipotEvaluationEvidence */
         AipotEvaluationEvidence: {
             artifact: components["schemas"]["AipotEvaluationArtifact"];
+            context_alignment?: components["schemas"]["AipotContextAlignment"] | null;
             /** Cost Usd */
             cost_usd?: number | null;
             /** Criteria */
@@ -419,6 +429,8 @@ export interface components {
              * @enum {string}
              */
             kind: "text" | "image" | "code" | "unavailable";
+            /** Reference Solution */
+            reference_solution?: string | null;
             /** Submitted Prompt */
             submitted_prompt: string;
         };

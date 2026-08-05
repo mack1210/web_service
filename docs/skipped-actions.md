@@ -328,3 +328,10 @@ source round in a production browser. After installing it, run:
 cd /home/cgma/apps/web_service/frontend
 PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ```
+
+## 12. Public B Q38 source-text gap
+
+The supplied public B Q38 crop does not contain the Korean sentence that the original task asks the
+learner to translate. Its evaluator context therefore requires use of the visible source text and
+forbids inventing details; it cannot truthfully expose an exact provider answer until that missing
+source sentence is supplied. This is intentionally not replaced with fabricated content.

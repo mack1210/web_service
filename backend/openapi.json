@@ -287,6 +287,29 @@
         "title": "AipotChoiceFeedback",
         "type": "object"
       },
+      "AipotContextAlignment": {
+        "properties": {
+          "aligned": {
+            "title": "Aligned",
+            "type": "boolean"
+          },
+          "evidence": {
+            "title": "Evidence",
+            "type": "string"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "aligned",
+          "rationale",
+          "evidence"
+        ],
+        "title": "AipotContextAlignment",
+        "type": "object"
+      },
       "AipotEvaluationArtifact": {
         "properties": {
           "asset_url": {
@@ -417,6 +440,16 @@
           "artifact": {
             "$ref": "#/components/schemas/AipotEvaluationArtifact"
           },
+          "context_alignment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AipotContextAlignment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "cost_usd": {
             "anyOf": [
               {
@@ -461,6 +494,17 @@
             ],
             "title": "Kind",
             "type": "string"
+          },
+          "reference_solution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Solution"
           },
           "submitted_prompt": {
             "title": "Submitted Prompt",

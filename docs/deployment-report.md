@@ -215,3 +215,18 @@ returned `409 aipot_media_confirmation_required`, and one confirmed request gene
 1024×1536 PNG (`image/png`) through `openai/gpt-image-1`. The actual artifact was stored privately
 and scored with all five rubric criteria by `anthropic/claude-haiku-4.5`. API, sandbox, frontend,
 Caddy, the solve route, and readiness endpoint were healthy afterward.
+
+## AI-POT practical context relevance gate — 2026-08-05
+
+The evaluator was promoted with a versioned cache contract and a pre-execution Haiku relevance gate.
+It receives the reviewed Markdown question context, declared text/image input material, and, where
+the supplied source contains it, a provider-derived reference answer. A non-matching answer is
+persisted as zero evidence without running a text, code, or image executor. The judge then receives
+the same task packet plus the actual generated artifact/result for aligned answers. Public A/B
+Q36–Q40 now have task-specific Markdown contexts and rubrics rather than generic screenshot
+placeholders; source rounds retain their reviewed prompt and declared source material.
+
+Live verification on port 18080 submitted the reported unrelated living-room image prompt to Public
+A Q36. It returned 0/5, `context_alignment.aligned: false`, no executor model run, a Korean
+task-mismatch explanation, and the after-lock reference answer. API, frontend, Caddy, and readiness
+remained healthy after the API/frontend rebuild.

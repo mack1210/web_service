@@ -72,6 +72,12 @@ class AipotEvaluationArtifact(BaseModel):
     exit_code: int | None = None
 
 
+class AipotContextAlignment(BaseModel):
+    aligned: bool
+    rationale: str
+    evidence: str
+
+
 class AipotEvaluationEvidence(BaseModel):
     id: str
     kind: EvaluationKind
@@ -81,6 +87,8 @@ class AipotEvaluationEvidence(BaseModel):
     judge_model: str
     criteria: list[AipotEvaluationCriterion]
     artifact: AipotEvaluationArtifact
+    reference_solution: str | None = None
+    context_alignment: AipotContextAlignment | None = None
     cost_usd: float | None = Field(default=None, ge=0)
 
 

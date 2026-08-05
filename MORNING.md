@@ -87,3 +87,9 @@ segments remain intact; live checks across source rounds 01–05 found no expose
 **2026-08-05 IMAGE-DESCRIPTION SANITIZATION:** Removed five verbose OCR image/result-description
 blocks when their reviewed reference crop is already attached. Learners see the instruction and the
 image segment, not a redundant textual restatement. The shared content check validates this rule.
+
+**2026-08-05 PRACTICAL CONTEXT GATE:** Every available Q36–Q40 evaluator now receives reviewed
+Markdown task context and the original input asset(s) before execution. Public A/B practical
+placeholders were replaced with concise, task-specific Markdown and rubrics. An unrelated Public A
+Q36 living-room image prompt was live-verified at 0/5 without running the executor; the post-lock
+review displays the provider-derived reference answer where the supplied source contained one.

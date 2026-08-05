@@ -24,6 +24,12 @@ can now be evaluated from the learner's submitted prompt and the generated execu
 - Text prompts are executed and judged against a question-specific rubric.
 - Image prompts require an explicit confirmation before a paid generation request; the generated
   image is retained as evidence.
+- Before either execution, Haiku applies a **question-context relevance gate**. It receives the
+  reviewed Markdown task context plus any supplied text/image material. A polished prompt for a
+  different task is locked as zero without an execution or media-generation charge.
+- The final judge receives the same context and materials with the actual execution result. Where
+  a provider example answer was recoverable from the private source, it is a calibration reference
+  rather than an exact-string key and is revealed only after the answer is locked.
 - Code prompts are generated first, then run in an internal, network-isolated Unix-socket runner
   with bounded CPU, memory, files, and output.
 - Missing required source material and unavailable evaluation configuration fail closed: the
@@ -98,6 +104,16 @@ Every photographed source round uses one rendering contract, which new sets must
 When adding a source question, add its crop declaration to the corpus manifest first, then add the
 learner-facing prompt to the web manifest. Add a frontend rendering test when a new Markdown form
 or replacement rule is introduced, and an API test when a new segment field is added.
+
+### Practical-question evaluation context
+
+`tools/enrich-aipot-practical-context.mjs` is the single maintained source for public-set practical
+contexts, specific rubrics, evaluation kind, and post-submission reference answers. Run it after
+changing those source facts, then run `pnpm aipot:content:check`. It deliberately keeps
+`evaluation.provider_solution` in the backend-only manifest: it is not sent with `AipotQuestion`
+and appears in evaluation evidence only after an answer has been locked. All practical questions
+fall back to their reviewed learner-facing Markdown and declared input assets if no supplemental
+context is needed.
 
 ## What Changed Recently
 

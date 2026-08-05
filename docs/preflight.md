@@ -184,3 +184,13 @@ Captured: 2026-07-10T22:25:41+09:00
 - Source-round-03 Q36 was checked with both paths: the unconfirmed request returned the expected
   confirmation guard, and a confirmed request generated a private 1024×1536 PNG and received a
   rubric score based on that actual artifact. The provider key is not recorded here or in Git.
+
+## 2026-08-05 practical context gate coverage
+
+- Backend evaluator tests cover an unrelated practical answer: every criterion is zero, no executor
+  runs, and the after-lock reference answer is retained. Tests also confirm that the judge receives
+  the reviewed context and provider reference.
+- `pnpm aipot:content:check` validates the practical-context source of truth in addition to source
+  choice/image-content policies. The public A/B Q36–Q40 context is emitted as safe Markdown.
+- A live Public A Q36 request with the reported unrelated living-room image prompt returned 0/5,
+  `aligned: false`, and `executor_model: not run: context mismatch`.
