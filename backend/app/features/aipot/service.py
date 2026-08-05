@@ -94,7 +94,7 @@ def _load_manifest(exam_id: str) -> dict:
 
 
 def _sanitize_manifest(manifest: dict) -> dict:
-    """Never expose appended answer-key notes as learner question content."""
+    """Return only learner-facing stems, never cover or duplicated answer text."""
 
     for question in manifest.get("questions", []):
         prompt = question.get("prompt")
@@ -102,9 +102,46 @@ def _sanitize_manifest(manifest: dict) -> dict:
             continue
         for marker in ("\n## 부록: 정답", "\n### 정답표", "\n## 출제 설계 추출"):
             if marker in prompt:
-                question["prompt"] = prompt.split(marker, 1)[0].rstrip()
+                prompt = prompt.split(marker, 1)[0].rstrip()
                 break
+        if question.get("number") == 1:
+            prompt = _strip_question_one_preamble(prompt)
+        choices = question.get("choices")
+        if isinstance(choices, list) and len(choices) >= 2:
+            prompt = _strip_terminal_rendered_choices(prompt, len(choices))
+        question["prompt"] = prompt
     return manifest
+
+
+def _strip_question_one_preamble(prompt: str) -> str:
+    """Drop the source cover and instructions that precede the first stem."""
+
+    heading = re.search(r"^###\s*(?:객관식|이론\s*시험)\s*$", prompt, flags=re.MULTILINE)
+    return prompt[heading.end():].lstrip() if heading else prompt
+
+
+def _strip_terminal_rendered_choices(prompt: str, choice_count: int) -> str:
+    """Remove a final 1→N OCR choice run already represented by UI controls."""
+
+    lines = prompt.splitlines()
+    for start, line in enumerate(lines):
+        first = _OCR_CHOICE.match(line)
+        if not first or _choice_number(first.group("number") or first.group("circled")) != "1":
+            continue
+        cursor = start
+        for expected in range(1, choice_count + 1):
+            while cursor < len(lines) and not lines[cursor].strip():
+                cursor += 1
+            if cursor >= len(lines):
+                break
+            choice = _OCR_CHOICE.match(lines[cursor])
+            if not choice or _choice_number(choice.group("number") or choice.group("circled")) != str(expected):
+                break
+            cursor += 1
+        else:
+            if not any(line.strip() for line in lines[cursor:]):
+                return "\n".join(lines[:start]).rstrip()
+    return prompt
 
 
 def _all_manifests() -> list[dict]:

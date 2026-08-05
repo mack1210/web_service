@@ -163,3 +163,11 @@ Source round 01’s checked-in evaluator modes are Q36 `code` and Q40 `image`, b
 evidence-based provider/judge path. The currently running API has not been promoted with that path
 because its OpenRouter secret is not configured; this report does not claim keyword feedback is a
 model judgment.
+
+## AI-POT learner-stem sanitization correction — 2026-08-05
+
+The shared source renderer and API manifest sanitizer now strip the Q01 photographed cover and
+instructions through the objective-section heading. They also remove a final complete numbered or
+circled choice run when the same choices are already supplied to answer controls. This keeps the
+question stem focused and prevents duplicate answer text in every set. The frontend-only service
+was rebuilt/recreated successfully; both source and generated solve routes and API readiness passed.

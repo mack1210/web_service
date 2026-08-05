@@ -74,6 +74,10 @@ Every photographed source round uses one rendering contract, which new sets must
 - Source text is parsed into safe headings, lists, tables, fenced code blocks, and inline code.
   Markdown quote markers are removed before rendering; links remain readable labels rather than
   executable links; raw HTML is never injected.
+- For question 1, omit the photographed test-cover title, timing guidance, and section heading;
+  begin at the actual question stem. If a final numbered/circled choice run is also supplied in
+  `choices`, omit that run from the stem so each choice appears exactly once, in the answer
+  controls. This rule applies to every source and generated set.
 - Use a declared visual segment for diagrams, screenshots, and quote-image material. Do not append
   a generic “source” caption, expose whole photographed pages, or duplicate an image as a raw
   Markdown table. For example, source round 01 Q16 replaces its concept-diagram table with the

@@ -115,6 +115,25 @@ def test_exam_cover_instructions_are_not_sent_as_question_one_text():
     assert service._strip_exam_preamble(section) == "실제 첫 번째 문제입니다."
 
 
+def test_manifest_sanitizer_removes_cover_and_duplicate_ui_choices():
+    manifest = {
+        "questions": [{
+            "number": 1,
+            "prompt": "`AI-POT 실전 모의고사 01회` / `1급`\n\n총 60분\n\n### 객관식\n\n학습의 의미로 알맞은 것을 고르시오.\n\n1. 적용\n2. 추론\n3. 학습\n4. 최적화",
+            "choices": ["적용", "추론", "학습", "최적화"],
+        }]
+    }
+
+    assert service._sanitize_manifest(manifest)["questions"][0]["prompt"] == "학습의 의미로 알맞은 것을 고르시오."
+
+
+def test_manifest_sanitizer_removes_circled_duplicate_ui_choices():
+    assert service._strip_terminal_rendered_choices(
+        "질문 본문입니다.\n\n① 적용\n② 추론\n③ 학습\n④ 최적화",
+        4,
+    ) == "질문 본문입니다."
+
+
 def test_ocr_choice_parser_moves_final_choice_table_out_of_the_stem():
     stem, choices = service._split_ocr_multiple_choice(
         "표의 정보를 보고 알맞은 조합을 고르시오.\n\n| 번호 | A | B |\n| --- | --- | --- |\n| ① | 실제 A1 | 실제 B1 |\n| ② | 실제 A2 | 실제 B2 |\n| ③ | 실제 A3 | 실제 B3 |\n| ④ | 실제 A4 | 실제 B4 |"

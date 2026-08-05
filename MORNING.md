@@ -59,3 +59,9 @@ the start, including direct floating-bar access to Q36–Q40 and final submissio
 are locked. The frontend-only correction is live. Source round 01's staged evaluator configuration
 is Q36 code and Q40 image; genuine OpenRouter judging remains pending API promotion and secure key
 configuration, so old API behavior is not treated as a judge result.
+
+**2026-08-05 LEARNER STEM SANITIZATION:** Q01 source cover/instruction text and duplicated final
+numbered choice lines are now removed by the shared frontend renderer and API manifest sanitizer.
+Only the actual question stem is shown above the selectable choices. The README records this as a
+one-source rendering contract for every current and future set. The frontend-only promotion passed
+its health check and both the source and generated solver-route checks on port 18080.

@@ -2,11 +2,23 @@ import { render, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 
 import { OcrQuestionText, parseOcrBlocks, questionNumberLabel, questionScrollId, reviewTone } from "./study-screens";
-import { canEnterPracticalPhase, canFinishAndSubmit, canRetryPracticalAnswer, createClientSubmissionId, explanationChoiceMarker, questionPage } from "./practice-solver";
+import { canEnterPracticalPhase, canFinishAndSubmit, canRetryPracticalAnswer, createClientSubmissionId, explanationChoiceMarker, learnerFacingPrompt, questionPage } from "./practice-solver";
 
 it("uses only the question number in the solve header", () => {
   expect(questionNumberLabel(15)).toBe("Q15");
   expect(questionScrollId(21)).toBe("question-21");
+});
+
+it("removes the first-question cover and duplicated final choice list", () => {
+  const source = "`AI-POT 실전 모의고사 01회` / `1급`\n\n소요 시간: 총 60분\n\n### 객관식\n\n다음 중 AI 학습의 올바른 순서를 고르시오.\n\n1. 적용\n2. 추론\n3. 학습\n4. 최적화";
+
+  expect(learnerFacingPrompt(source, 1, 4)).toBe("다음 중 AI 학습의 올바른 순서를 고르시오.");
+});
+
+it("removes a duplicated circled choice list without changing the stem", () => {
+  const source = "다음 중 적절한 용도를 고르시오.\n\n① 적용\n② 추론\n③ 학습\n④ 최적화";
+
+  expect(learnerFacingPrompt(source, 8, 4)).toBe("다음 중 적절한 용도를 고르시오.");
 });
 
 it("renders OCR quote markers as compact normal text", () => {

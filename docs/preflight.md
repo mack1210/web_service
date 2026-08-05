@@ -140,3 +140,11 @@ Captured: 2026-07-10T22:25:41+09:00
   navigator for every set. Q36–Q40 are no longer gated behind an internal display filter.
 - This was a frontend-only promotion; live route/readiness checks passed. Provider-backed practical
   judging still requires API promotion with `OPENROUTER_API_KEY` supplied outside version control.
+
+## 2026-08-05 learner-stem sanitization coverage
+
+- Q01 cover instructions are removed after the objective-test heading, and a final complete
+  numbered/circled duplicate choice block is excluded whenever those choices are rendered as answer
+  controls. The frontend and backend test suites each exercise this contract.
+- `README.md` is the one-source policy for current and future source/generated sets. The frontend
+  promotion is limited to the UI; the same API sanitizer is ready for the next secure API release.

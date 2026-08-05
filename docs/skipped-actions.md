@@ -243,6 +243,14 @@ cd /home/cgma/apps/web_service/frontend
 PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ```
 
+## 12. Learner-stem visual browser check
+
+The Q01 cover/duplicate-choice sanitization has frontend and backend unit coverage, production
+build coverage, and will be live after the frontend promotion. A full browser assertion remains
+pending only because the local Playwright Chromium executable is unavailable. Once installed, open
+any source or generated Q01 and verify that the stem begins at the actual question while answer
+choices appear only once in the selectable controls.
+
 ## 12. Live Q36/Q40 OpenRouter judge activation
 
 **Implemented and verified in source data**: source round 01 Q36 is `code` execution and Q40 is

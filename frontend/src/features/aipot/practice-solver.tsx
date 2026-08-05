@@ -50,6 +50,39 @@ export function questionVisualAssets(question: AipotExam["questions"][number]) {
   return [{ marker, asset_url: assetUrl, alt: `${question.number}번 문제의 시각 자료`, replace_following_block: true }];
 }
 
+const RENDERED_CHOICE = /^\s*(?:([1-5])[.)]|[①②③④⑤])\s+.+?\s*$/;
+
+/**
+ * The source files are also used for archival OCR.  Learners should receive
+ * only the question stem here: cover instructions and a final, duplicated
+ * numbered-choice block belong in neither the prompt nor the answer controls.
+ */
+export function learnerFacingPrompt(prompt: string, questionNumber: number, choiceCount: number) {
+  let text = prompt;
+  if (questionNumber === 1) {
+    const objectiveHeading = /^###\s*(?:객관식|이론\s*시험)\s*$/m.exec(text);
+    if (objectiveHeading?.index !== undefined) text = text.slice(objectiveHeading.index + objectiveHeading[0].length).trimStart();
+  }
+  if (choiceCount < 2) return text;
+
+  const lines = text.split("\n");
+  for (let start = 0; start < lines.length; start += 1) {
+    let cursor = start;
+    let completeRun = true;
+    for (let expected = 1; expected <= choiceCount; expected += 1) {
+      while (cursor < lines.length && !lines[cursor].trim()) cursor += 1;
+      const match = lines[cursor]?.match(RENDERED_CHOICE);
+      if (!match || Number(match[1] ?? ({ "①": "1", "②": "2", "③": "3", "④": "4", "⑤": "5" }[lines[cursor].trim().charAt(0)] ?? "0")) !== expected) {
+        completeRun = false;
+        break;
+      }
+      cursor += 1;
+    }
+    if (completeRun && !lines.slice(cursor).some((line) => line.trim())) return lines.slice(0, start).join("\n").trimEnd();
+  }
+  return text;
+}
+
 function clock(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
@@ -235,6 +268,7 @@ function PracticeQuestion({ question, answer, locked, checking, feedback, onChan
   const selected = answer.split("|").filter(Boolean);
   const multiple = question.type === "multiple_select" || question.multiple_selection;
   const choices = question.choices ?? [];
+  const prompt = learnerFacingPrompt(question.prompt, question.number, choices.length);
   const choiceIds = question.choice_ids ?? [];
   const choiceFeedback = new Map((feedback?.choice_feedback ?? []).map((item) => [item.id, item]));
   const select = (id: string) => {
@@ -246,7 +280,7 @@ function PracticeQuestion({ question, answer, locked, checking, feedback, onChan
   };
   return <Card className="space-y-4" id={`question-${question.number}`}>
     <div className="flex items-center justify-between border-b pb-3"><h2 className="text-sm font-extrabold text-[rgb(var(--primary))]">Q{String(question.number).padStart(2, "0")}</h2><span className="text-sm font-bold text-muted">{question.points}점</span></div>
-    <OcrQuestionText text={question.prompt} visualAssets={visualAssets} />
+    <OcrQuestionText text={prompt} visualAssets={visualAssets} />
     {standaloneAssetUrl ? <figure className="overflow-hidden rounded-xl border bg-slate-950/5"><img alt={`${question.number}번 참고 자료`} className="max-h-[38rem] w-full object-contain" src={standaloneAssetUrl} /></figure> : null}
     {["multiple_choice", "multiple_select", "choice_bank"].includes(question.type) ? <fieldset className="grid gap-2"><legend className="sr-only">{question.number}번 답안</legend>{choices.map((text, index) => { const id = choiceIds[index] ?? String(index + 1); const detail = choiceFeedback.get(id); const isSelected = selected.includes(id); const tone = detail?.correct ? "border-emerald-600 bg-emerald-500/10" : locked && isSelected ? "border-red-600 bg-red-500/10" : "hover:border-[rgb(var(--primary))/0.65]"; return <label className={`flex min-h-11 items-center gap-3 rounded-lg border p-3 text-sm ${tone} ${locked ? "cursor-not-allowed" : "cursor-pointer"}`} key={id}><input checked={isSelected} disabled={locked || checking} name={`q-${question.number}`} onChange={() => select(id)} type={multiple ? "checkbox" : "radio"} value={id} /><span><b className="mr-2">{id}.</b>{text}</span></label>; })}</fieldset> : question.type === "short_answer" ? <div className="flex flex-col gap-2 sm:flex-row"><input className="control flex-1" disabled={locked || checking} onChange={(event) => onChange(event.target.value)} placeholder="답을 입력하세요" value={answer} /><Button disabled={!answer.trim() || locked} loading={checking} onClick={() => onLock(answer)}>정답 확인 및 확정</Button></div> : <div className="space-y-2"><p className="rounded-lg bg-amber-500/10 p-3 text-sm">제한 사항과 참고 자료를 확인한 뒤 제출하세요. 실제 시험 중 프로그램 오류가 나면 감독관에게 알리세요.</p>{question.evaluation_available === false ? <p className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm">이 문항에 필요한 원본 실습 파일이 현재 학습 자료에 없습니다. 결과를 만들거나 점수를 확정할 수 없습니다.</p> : null}<textarea className="control min-h-48 w-full" disabled={locked || checking} onChange={(event) => onChange(event.target.value)} placeholder="목표, 입력, 제약, 출력 형식, 검증 기준을 포함해 작성하세요." value={answer} /><Button disabled={!answer.trim() || locked || question.evaluation_available === false} loading={checking} onClick={() => onLock(answer)}>{question.evaluation_kind === "image" ? "이미지 생성·평가 후 확정" : "실행·평가 후 확정"}</Button></div>}
     {multiple && !locked ? <Button disabled={!answer.trim()} loading={checking} onClick={() => onLock(answer)} variant="secondary">선택 확정</Button> : null}
