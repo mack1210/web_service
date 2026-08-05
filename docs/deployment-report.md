@@ -257,3 +257,8 @@ only and has no duplicate options in its stem. Public B Q36 still retains its be
 
 The live API on port 18080 confirmed those three cases. The content check now regenerates/validates
 the PDF extraction and runs source assertions so a future set cannot regress to a generic page crop.
+## 2026-08-06 — AI-POT supplied sample set
+
+`sample-set-01` is available through the mounted AI-POT content directory. It is generated from the
+provided Markdown source, uses the shared 100-point structure, and contains no redundant page-image
+attachments because every required table/chart was transcribed losslessly.

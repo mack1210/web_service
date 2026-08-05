@@ -213,3 +213,9 @@ Captured: 2026-07-10T22:25:41+09:00
   file facts as text with no crop.
 - The live API confirmed A Q13 and A Q38 have `asset_url: null` with the complete appropriate text,
   while B Q36 retains its visual asset and no accidental Q37/Q38 heading.
+## AI-POT supplied sample set
+
+- Run `pnpm aipot:content:check`; it rebuild-validates `sample-set-01` from its supplied Markdown
+  source and asserts the 40-question, 100-point structure.
+- Confirm Q01–Q30 expose answer choices only in controls, Q35 is the PEST short answer, and Q36–Q40
+  carry provider references for practical evaluation.

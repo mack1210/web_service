@@ -10,7 +10,7 @@
 
 **AI-POT URL:** `http://192.168.219.130:18080/aipot`
 
-**AI-POT CATALOG:** 17 sets total: five photographed source rounds, ten original practice rounds (01–05 and 11–15), and PDF-based Public Sets A/B. Every set uses the 60 + 15 + 25 = 100 point model.
+**AI-POT CATALOG:** 18 sets total: five photographed source rounds, ten original practice rounds (01–05 and 11–15), PDF-based Public Sets A/B, and the supplied Markdown Sample Set 01. Every set uses the 60 + 15 + 25 = 100 point model.
 
 **AI-POT DATA:** Source material is mounted read-only from `/home/cgma/cgma_git/study/aipot/실전모의고사`; submitted private study history is in the Compose-owned `aipot_history` volume. The pre-existing no-login/plain-HTTP warning applies: this is only for non-sensitive personal study.
 
@@ -106,3 +106,10 @@ Q38 is rendered as dataset/result Markdown tables with `㉠` in its original pro
 text only with choices kept in controls. Only diagrams, UI pipeline screenshots, and image
 transformation/reference material retain a crop. The extraction and assertions are part of the
 shared content check.
+## 2026-08-06 — supplied sample set
+
+- `sample-set-01` is generated from the provided Markdown package by
+  `tools/import-aipot-provided-sample-set.mjs`; do not hand-edit its manifest or duplicate
+  text-convertible source images.
+- It intentionally normalizes the source's Q35 prompt-writing item to a PEST short answer so the
+  shared 100-point scoring contract remains 30×2, 5×3, and 5×5.

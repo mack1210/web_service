@@ -127,6 +127,18 @@ evidence only after an answer has been locked. All practical questions fall back
 learner-facing Markdown and declared input assets if no supplemental context is needed. If a reviewed
 crop is shown, do not duplicate it as `[이미지: ...]` prose in the learner prompt.
 
+### Supplied Markdown sample-set contract
+
+`tools/import-aipot-provided-sample-set.mjs` builds `sample-set-01` from
+`aipot-level1-sample-questions/AI-POT-1급-테스트-제공문제.md`. That supplied Markdown is the only
+source for its stems, choice text, answer grounds, practical-context references, and dictionary
+links. Its readable charts and tables are rendered as safe Markdown, not exposed as page images;
+the corresponding sample assets remain unnecessary unless a future revision contains information
+that cannot be represented losslessly as text. The importer normalizes the document's Q35 practical
+exercise into a PEST 3-point short answer so every set retains the official 100-point structure:
+30 multiple-choice questions, five short-answer questions, and Q36–Q40 as five 5-point practical
+evaluations. Run `pnpm aipot:content:check` after editing the supplied package or its importer.
+
 ## What Changed Recently
 
 This project was improved without replacing its framework, routes, API paths, or representative workflow.

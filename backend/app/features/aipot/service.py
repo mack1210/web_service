@@ -55,7 +55,7 @@ CHAPTERS = {
 }
 _CIRCLED = str.maketrans({"①": "1", "②": "2", "③": "3", "④": "4", "⑤": "5"})
 _CIRCLED_TO_NUMBER = {"①": "1", "②": "2", "③": "3", "④": "4", "⑤": "5"}
-_EXAM_ID = re.compile(r"^(source-round|generated-mock)-\d{2}$|^public-set-[ab]$")
+_EXAM_ID = re.compile(r"^(source-round|generated-mock|sample-set)-\d{2}$|^public-set-[ab]$")
 _OCR_CHOICE = re.compile(r"^\s*(?:(?P<number>[1-5])[.)]|(?P<circled>[①②③④⑤]))\s+(?P<value>.+?)\s*$")
 _TABLE_CHOICE = re.compile(r"^(?P<number>[1-5]|[①②③④⑤])$")
 

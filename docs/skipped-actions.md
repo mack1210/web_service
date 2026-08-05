@@ -343,3 +343,8 @@ to answer the question. Crops remain for diagrams, UI pipeline/state screenshots
 transformations, and image-reference tasks because replacing those with invented prose would lose
 evidence. The retained question list is enforced by
 `tools/extract-aipot-public-question-text.mjs`; all other Public A/B crops are text-only Markdown.
+## Supplied sample assets intentionally not deployed
+
+The `aipot-level1-sample-questions/assets/` files are not copied into the live set. The supplied
+Markdown already transcribes every decision-relevant table/chart; adding those images would violate
+the focused-asset policy and duplicate learner-facing information.

@@ -10,7 +10,7 @@
     "frontend:typecheck": "pnpm --dir frontend typecheck",
     "frontend:test": "pnpm --dir frontend test",
     "frontend:build": "pnpm --dir frontend build",
-    "aipot:content:check": "node tools/repair-aipot-source-choice-placeholders.mjs --check && node tools/enrich-aipot-practical-context.mjs --check && node tools/extract-aipot-public-question-text.mjs --check && node tools/test-aipot-public-question-text.mjs",
+    "aipot:content:check": "node tools/repair-aipot-source-choice-placeholders.mjs --check && node tools/enrich-aipot-practical-context.mjs --check && node tools/extract-aipot-public-question-text.mjs --check && node tools/test-aipot-public-question-text.mjs && node tools/import-aipot-provided-sample-set.mjs --check && node tools/test-aipot-provided-sample-set.mjs",
     "backend:lint": "uv --directory backend run ruff check .",
     "backend:test": "uv --directory backend run pytest",
     "generate:openapi": "uv --directory backend run python -m app.openapi && pnpm --dir frontend generate:api",

@@ -134,6 +134,10 @@ def test_manifest_sanitizer_removes_circled_duplicate_ui_choices():
     ) == "질문 본문입니다."
 
 
+def test_sample_set_identifier_is_a_valid_exam_id():
+    assert service._EXAM_ID.fullmatch("sample-set-01")
+
+
 def test_ocr_choice_parser_moves_final_choice_table_out_of_the_stem():
     stem, choices = service._split_ocr_multiple_choice(
         "표의 정보를 보고 알맞은 조합을 고르시오.\n\n| 번호 | A | B |\n| --- | --- | --- |\n| ① | 실제 A1 | 실제 B1 |\n| ② | 실제 A2 | 실제 B2 |\n| ③ | 실제 A3 | 실제 B3 |\n| ④ | 실제 A4 | 실제 B4 |"
