@@ -41,3 +41,8 @@ promotion remain pending. Do not record an evaluator key in this file or the rep
 only. Once Q01–Q40 are locked it now shows `시험 종료 및 답안 제출` in the main area and floating
 answer navigator. Locked Q36–Q40 also expose `서술형 다시풀기`, which clears only that prompt's
 browser draft and feedback so it can be evaluated again. API and Caddy stayed healthy and unchanged.
+
+**2026-08-05 AI-POT UUID COMPATIBILITY:** The frontend was rebuilt/recreated again to replace the
+unsupported direct `crypto.randomUUID()` call used by final submission. It now uses `randomUUID`
+when present and a local compatible ID fallback otherwise. The live solve route and API readiness
+check passed after promotion; API and Caddy remained unchanged.

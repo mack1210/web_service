@@ -242,3 +242,13 @@ The existing environment limitation remains; after Chromium is available, run:
 cd /home/cgma/apps/web_service/frontend
 PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ```
+
+## 10. Browser UUID compatibility coverage
+
+**Implemented and unit-tested**: final submission now falls back to a locally generated API-valid
+client submission ID when `crypto.randomUUID` is missing. Both the native and fallback paths are
+covered by the frontend unit test suite, and the corrected frontend was promoted to the live stack.
+
+**Remaining limitation**: no local Playwright Chromium is available to run the exact browser that
+reported the failure. The live route/readiness checks and production build pass; run the command in
+the previous section after installing Chromium to exercise the full submit click path.

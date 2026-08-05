@@ -30,6 +30,10 @@ export function canRetryPracticalAnswer(questionNumber: number, locked: boolean)
   return questionNumber >= 36 && locked;
 }
 
+export function createClientSubmissionId(randomUuid: (() => string) | null = globalThis.crypto?.randomUUID?.bind(globalThis.crypto) ?? null) {
+  return randomUuid?.() ?? `aipot-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
 function clock(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
@@ -186,7 +190,7 @@ export function AipotPracticeSolver() {
   const finishAndSave = async () => {
     setSavingResult(true);
     try {
-      const attempt = await getAipotApi().submit(exam.id, { clientSubmissionId: crypto.randomUUID(), elapsedSeconds: (THEORY_SECONDS - remainingTheory) + (PRACTICAL_SECONDS - remainingPractical), answers });
+      const attempt = await getAipotApi().submit(exam.id, { clientSubmissionId: createClientSubmissionId(), elapsedSeconds: (THEORY_SECONDS - remainingTheory) + (PRACTICAL_SECONDS - remainingPractical), answers });
       clearDraft(exam.id); router.push(`/aipot/attempts/${attempt.id}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "결과 저장에 실패했습니다."); setSavingResult(false); }
   };

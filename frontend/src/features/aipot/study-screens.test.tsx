@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 
 import { OcrQuestionText, parseOcrBlocks, questionNumberLabel, questionScrollId, reviewTone } from "./study-screens";
-import { canEnterPracticalPhase, canFinishAndSubmit, canRetryPracticalAnswer, explanationChoiceMarker } from "./practice-solver";
+import { canEnterPracticalPhase, canFinishAndSubmit, canRetryPracticalAnswer, createClientSubmissionId, explanationChoiceMarker } from "./practice-solver";
 
 it("uses only the question number in the solve header", () => {
   expect(questionNumberLabel(15)).toBe("Q15");
@@ -96,4 +96,9 @@ it("allows retries only for locked practical-answer questions", () => {
   expect(canRetryPracticalAnswer(40, true)).toBe(true);
   expect(canRetryPracticalAnswer(35, true)).toBe(false);
   expect(canRetryPracticalAnswer(36, false)).toBe(false);
+});
+
+it("uses a compatible client submission ID when randomUUID is unavailable", () => {
+  expect(createClientSubmissionId(() => "server-compatible-id")).toBe("server-compatible-id");
+  expect(createClientSubmissionId(null)).toMatch(/^aipot-\d+-[a-z0-9]+$/);
 });

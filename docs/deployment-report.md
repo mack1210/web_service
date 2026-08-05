@@ -134,3 +134,10 @@ lock, and feedback for a fresh evaluation.
 
 The API and Caddy services were not recreated. Frontend health, `/health/ready`, and the live
 `/aipot/solve/generated-mock-01` page were checked successfully after promotion.
+
+## AI-POT submission-ID compatibility correction — 2026-08-05
+
+The final-submission path no longer assumes that `crypto.randomUUID()` exists. It now uses that
+browser API when available and otherwise generates a local `aipot-...` client submission ID, which
+satisfies the API's idempotency-ID requirement. Only the frontend service was rebuilt/recreated;
+the live solve route and API readiness endpoint returned successfully afterward.

@@ -118,3 +118,10 @@ Captured: 2026-07-10T22:25:41+09:00
   Caddy, host binding, and persistent study-data volume remained running and unchanged.
 - Post-promotion checks confirmed frontend health and the active `/aipot/solve/generated-mock-01`
   route on `http://192.168.219.130:18080`.
+
+## 2026-08-05 browser UUID compatibility promotion
+
+- The final-submission client identifier now has a no-`randomUUID` fallback for older browser
+  implementations. This was a frontend-only rebuild/recreation; API, Caddy, and the host binding
+  remained unchanged.
+- The active solve route and `/health/ready` passed after promotion.
