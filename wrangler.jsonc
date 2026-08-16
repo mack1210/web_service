@@ -1,0 +1,15 @@
+{
+  "$schema": "./frontend/node_modules/wrangler/config-schema.json",
+  "name": "web-service",
+  "main": "frontend/.open-next/worker.js",
+  "compatibility_date": "2026-08-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": "frontend/.open-next/assets",
+    "binding": "ASSETS"
+  },
+  "build": {
+    "cwd": "frontend",
+    "command": "pnpm install --frozen-lockfile && pnpm cloudflare:build"
+  }
+}

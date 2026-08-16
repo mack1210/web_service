@@ -478,6 +478,9 @@ Captured: 2026-07-10T22:25:41+09:00
 
 - [x] `frontend/wrangler.jsonc` targets the OpenNext worker at `.open-next/worker.js`, serves
   `.open-next/assets`, and enables `nodejs_compat`.
+- [x] Root `wrangler.jsonc` targets the same `web-service` Worker and runs the frozen frontend
+  install/OpenNext build, so the existing root `npx wrangler deploy` command has the required
+  Worker and asset paths.
 - [x] `@opennextjs/cloudflare@1.20.1` and `wrangler@4.123.0` are pinned in the frontend pnpm
   lockfile; `workerd` is explicitly allowed to run its postinstall binary setup.
 - [x] `pnpm --dir frontend exec vitest run tests/cloudflare-config.test.ts` passed (2 tests), and

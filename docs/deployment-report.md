@@ -646,11 +646,10 @@ those paths with `nodejs_compat`. `wrangler deploy --dry-run` validated the Work
 and local `wrangler dev` returned HTTP 200 for `/`. No Cloudflare account deployment, domain
 change, origin-route change, or Compose mutation was performed.
 
-For Workers Builds configured at repository root, use `pnpm cloudflare:deploy` as the deploy
-command. It reinstalls the isolated frontend dependency graph with
-`pnpm --dir frontend install --frozen-lockfile` before invoking the pinned toolchain. Do not use
-the former root `npx wrangler deploy` command: it has no Next.js project or static asset directory
-at that location.
+For Workers Builds configured at repository root, the existing `npx wrangler deploy` command now
+uses root `wrangler.jsonc` to reinstall the isolated frontend dependency graph with a frozen pnpm
+install and generate the OpenNext Worker before upload. `pnpm cloudflare:deploy` remains the
+equivalent explicit local command using the pinned frontend toolchain.
 
 The Worker needs `NEXT_PUBLIC_DATA_SOURCE=http` and an approved public HTTPS
 `NEXT_API_ORIGIN` in Cloudflare Build Variables and secrets. That API origin must not be the same

@@ -377,5 +377,5 @@ restart was required.
   dependency set remains managed by `backend/pyproject.toml` and `backend/uv.lock`.
 - [ ] The frontend production audit still reports 14 pre-existing advisories (8 high, 6 moderate),
   including Next.js `16.2.10`; remediation requires a separately approved dependency upgrade.
-- [ ] Account-level deployment remains pending: set the Workers Builds deploy command to
-  `pnpm cloudflare:deploy` and provide an approved, reachable HTTPS FastAPI `NEXT_API_ORIGIN`.
+- [ ] Account-level deployment remains pending: the existing root `npx wrangler deploy` now builds
+  the frontend automatically; provide an approved, reachable HTTPS FastAPI `NEXT_API_ORIGIN`.

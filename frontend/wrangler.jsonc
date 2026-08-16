@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "overnight-web-agent-kit",
+  "name": "web-service",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],

@@ -746,8 +746,8 @@ separate origin and its authentication boundary is an account/security decision.
 **Impact**: The repository now produces the required Worker and static assets, but Cloudflare has
 not received a deployment and the deployed Worker cannot yet serve live API-backed flows.
 
-**Manual command**: In Workers Builds for this repository, set the deploy command to
-`pnpm cloudflare:deploy`. Add Build Variables and secrets
+**Manual command**: The existing root `npx wrangler deploy` command now reads `wrangler.jsonc` and
+builds the frontend automatically. Add Build Variables and secrets
 `NEXT_PUBLIC_DATA_SOURCE=http` and `NEXT_API_ORIGIN=https://<approved-api-origin>`; then trigger a
 deployment. Keep the API origin distinct from the Worker custom domain.
 

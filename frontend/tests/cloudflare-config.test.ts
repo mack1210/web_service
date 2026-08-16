@@ -13,11 +13,29 @@ describe("Cloudflare Workers deployment configuration", () => {
     ) as Record<string, unknown>;
 
     expect(config).toMatchObject({
+      name: "web-service",
       main: ".open-next/worker.js",
       compatibility_flags: expect.arrayContaining(["nodejs_compat"]),
       assets: {
         directory: ".open-next/assets",
         binding: "ASSETS",
+      },
+    });
+
+    const rootConfig = JSON.parse(
+      readFileSync(resolve(workspaceRoot, "wrangler.jsonc"), "utf8"),
+    ) as Record<string, unknown>;
+
+    expect(rootConfig).toMatchObject({
+      name: "web-service",
+      main: "frontend/.open-next/worker.js",
+      assets: {
+        directory: "frontend/.open-next/assets",
+        binding: "ASSETS",
+      },
+      build: {
+        cwd: "frontend",
+        command: "pnpm install --frozen-lockfile && pnpm cloudflare:build",
       },
     });
   });

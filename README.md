@@ -135,15 +135,17 @@ curl --fail --show-error http://127.0.0.1:18080/api/v1/meta
 Node 도구는 `frontend/package.json`과 `frontend/pnpm-lock.yaml`, Python 도구는
 `backend/pyproject.toml`과 `backend/uv.lock`으로 각각 관리합니다.
 
-Cloudflare Workers Builds에서 저장소 루트를 기준으로 다음 deploy command를 사용합니다.
+Cloudflare Workers Builds의 기존 루트 deploy command `npx wrangler deploy`는
+루트 `wrangler.jsonc`의 build command를 통해 `frontend/`의 frozen pnpm install과 OpenNext build를
+자동으로 실행합니다. 따라서 대시보드 command를 바꾸지 않아도 Worker와 asset 경로를 찾습니다.
+로컬에서 같은 pinned toolchain을 명시적으로 실행하려면 다음 명령을 사용합니다.
 
 ```bash
 pnpm cloudflare:deploy
 ```
 
-이 명령은 중첩된 프런트엔드 lockfile을 frozen 모드로 설치하고 OpenNext build 뒤 Worker를
-배포합니다. 기존의 루트 `npx wrangler deploy`는 Next.js 앱과 asset 디렉터리를 찾지 못하므로
-사용하지 마세요. 로컬 Workers runtime 검증은 다음 명령으로 실행합니다.
+이 명령도 중첩된 프런트엔드 lockfile을 frozen 모드로 설치하고 OpenNext build 뒤 Worker를
+배포합니다. 로컬 Workers runtime 검증은 다음 명령으로 실행합니다.
 
 ```bash
 pnpm cloudflare:preview
