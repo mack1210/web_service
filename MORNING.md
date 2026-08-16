@@ -367,3 +367,15 @@ restart was required.
 - [x] The existing system Caddy now proxies `web.heybobma.dedyn.io` to the app ingress at `127.0.0.1:18080`; Let's Encrypt completed public TLS validation and issued the certificate.
 - [x] The project Caddy keeps its `127.0.0.1:18080` ingress for the system Caddy and, with the optional LAN overlay, also binds the explicitly requested direct-test address `192.168.219.199:18080`. The system Caddy, API, frontend, sandbox, and persistent history volume were not restarted or removed.
 - [x] Local SNI HTTPS verification returned 200 for `/` and `/health/ready` through the domain. LAN clients may still require router NAT loopback or split DNS; see `docs/skipped-actions.md`.
+
+## 2026-08-16 — Cloudflare Workers build configuration
+
+- [x] The Next.js frontend now builds as an OpenNext Cloudflare Worker. `frontend/wrangler.jsonc`
+  declares `.open-next/worker.js` and `.open-next/assets`; the configuration test and production
+  OpenNext build passed locally. The local Workers preview returned HTTP 200 at `127.0.0.1:8787`.
+- [x] Cloudflare tooling is pinned in the frontend pnpm manifest/lockfile. The independent FastAPI
+  dependency set remains managed by `backend/pyproject.toml` and `backend/uv.lock`.
+- [ ] The frontend production audit still reports 14 pre-existing advisories (8 high, 6 moderate),
+  including Next.js `16.2.10`; remediation requires a separately approved dependency upgrade.
+- [ ] Account-level deployment remains pending: the existing root `npx wrangler deploy` now builds
+  the frontend automatically; provide an approved, reachable HTTPS FastAPI `NEXT_API_ORIGIN`.

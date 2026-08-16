@@ -128,6 +128,35 @@ curl --fail --show-error http://127.0.0.1:18080/api/v1/meta
 승인 후 결정해야 합니다. 현재 direct origin은 로그인 없는 개인 학습용이므로 민감한 자료를
 입력하지 마세요.
 
+### Cloudflare Workers frontend 배포
+
+동적 Next.js 경로가 있으므로 Pages의 정적 export가 아니라 OpenNext 기반 Cloudflare Workers를
+사용합니다. Worker 진입점과 정적 asset 위치는 `frontend/wrangler.jsonc`에 고정되어 있으며,
+Node 도구는 `frontend/package.json`과 `frontend/pnpm-lock.yaml`, Python 도구는
+`backend/pyproject.toml`과 `backend/uv.lock`으로 각각 관리합니다.
+
+Cloudflare Workers Builds의 기존 루트 deploy command `npx wrangler deploy`는
+루트 `wrangler.jsonc`의 build command를 통해 `frontend/`의 frozen pnpm install과 OpenNext build를
+자동으로 실행합니다. 따라서 대시보드 command를 바꾸지 않아도 Worker와 asset 경로를 찾습니다.
+로컬에서 같은 pinned toolchain을 명시적으로 실행하려면 다음 명령을 사용합니다.
+
+```bash
+pnpm cloudflare:deploy
+```
+
+이 명령도 중첩된 프런트엔드 lockfile을 frozen 모드로 설치하고 OpenNext build 뒤 Worker를
+배포합니다. 로컬 Workers runtime 검증은 다음 명령으로 실행합니다.
+
+```bash
+pnpm cloudflare:preview
+```
+
+Workers Builds에는 `NEXT_PUBLIC_DATA_SOURCE=http`과 `NEXT_API_ORIGIN`을 Build Variables and
+secrets에 설정해야 합니다. `NEXT_API_ORIGIN`은 Worker의 사용자-facing hostname과 다른,
+승인된 HTTPS FastAPI origin이어야 하며 `/api/*`와 `/health/*` 요청을 제공해야 합니다.
+Docker 내부 주소(`http://api:8000`, `localhost`)는 Cloudflare에서 도달할 수 없습니다. API
+origin/인증 경계와 custom domain 연결은 계정·보안 결정이므로 별도 승인 후 설정합니다.
+
 ## AI-POT 콘텐츠와 평가
 
 Compose의 API는 학습 자료를 읽기 전용으로 `/aipot-content`에 mount합니다. learner

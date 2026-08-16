@@ -637,3 +637,26 @@ The system Caddy, API, frontend, sandbox, and `aipot_history` volume were preser
 attempt to reach its own public IP timed out, which is consistent with absent NAT loopback; this
 does not affect external HTTPS reachability, but local-LAN hostname access needs router hairpin NAT
 or a split-DNS override.
+
+## 2026-08-16 — Cloudflare Workers frontend build path
+
+The frontend now has a separate Cloudflare Workers delivery artifact: OpenNext builds Next.js into
+`frontend/.open-next/worker.js` plus `.open-next/assets`, and `frontend/wrangler.jsonc` deploys
+those paths with `nodejs_compat`. `wrangler deploy --dry-run` validated the Worker and 29 assets,
+and local `wrangler dev` returned HTTP 200 for `/`. No Cloudflare account deployment, domain
+change, origin-route change, or Compose mutation was performed.
+
+For Workers Builds configured at repository root, the existing `npx wrangler deploy` command now
+uses root `wrangler.jsonc` to reinstall the isolated frontend dependency graph with a frozen pnpm
+install and generate the OpenNext Worker before upload. `pnpm cloudflare:deploy` remains the
+equivalent explicit local command using the pinned frontend toolchain.
+
+The Worker needs `NEXT_PUBLIC_DATA_SOURCE=http` and an approved public HTTPS
+`NEXT_API_ORIGIN` in Cloudflare Build Variables and secrets. That API origin must not be the same
+hostname routed to this Worker, or Next's `/api/*` rewrite would loop. Selecting/exposing that
+origin and its authentication boundary remains an operator security decision.
+
+The follow-up production dependency audit reports 14 pre-existing advisories (8 high and 6
+moderate), including Next.js `16.2.10` and transitive PostCSS/sharp paths. The Cloudflare adapter
+addition did not update application dependencies; a separately approved upgrade and compatibility
+pass is required before representing the Worker deployment as security-remediated.
