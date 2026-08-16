@@ -15,6 +15,7 @@ frontend/node_modules/
 frontend/.next/
 frontend/.open-next/
 frontend/.wrangler/
+.wrangler/
 frontend/cloudflare-env.d.ts
 frontend/tsconfig.tsbuildinfo
 frontend/coverage/

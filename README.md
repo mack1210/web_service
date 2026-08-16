@@ -151,11 +151,12 @@ pnpm cloudflare:deploy
 pnpm cloudflare:preview
 ```
 
-Workers Builds에는 `NEXT_PUBLIC_DATA_SOURCE=http`과 `NEXT_API_ORIGIN`을 Build Variables and
-secrets에 설정해야 합니다. `NEXT_API_ORIGIN`은 Worker의 사용자-facing hostname과 다른,
-승인된 HTTPS FastAPI origin이어야 하며 `/api/*`와 `/health/*` 요청을 제공해야 합니다.
-Docker 내부 주소(`http://api:8000`, `localhost`)는 Cloudflare에서 도달할 수 없습니다. API
-origin/인증 경계와 custom domain 연결은 계정·보안 결정이므로 별도 승인 후 설정합니다.
+Workers 설정은 `NEXT_PUBLIC_DATA_SOURCE=http`과
+`NEXT_API_ORIGIN=https://web.heybobma.dedyn.io`를 사용해 현재 `:18080` Docker ingress의
+FastAPI 경로를 프록시합니다. 이 origin은 Worker hostname과 달라 rewrite loop가 생기지 않으며
+`/api/*`와 `/health/*`를 제공합니다. Docker 내부 주소(`http://api:8000`, `localhost`)는
+Cloudflare에서 도달할 수 없습니다. API origin/인증 경계와 custom domain 변경은 별도 승인 후
+결정합니다.
 
 ## AI-POT 콘텐츠와 평가
 

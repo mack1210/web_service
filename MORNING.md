@@ -378,4 +378,7 @@ restart was required.
 - [ ] The frontend production audit still reports 14 pre-existing advisories (8 high, 6 moderate),
   including Next.js `16.2.10`; remediation requires a separately approved dependency upgrade.
 - [ ] Account-level deployment remains pending: the existing root `npx wrangler deploy` now builds
-  the frontend automatically; provide an approved, reachable HTTPS FastAPI `NEXT_API_ORIGIN`.
+  the frontend automatically and proxies API requests to the approved Docker ingress at
+  `https://web.heybobma.dedyn.io`.
+- [x] Local Workers runtime verification returned HTTP 200 for `/health/ready` and `/api/v1/meta`
+  through that API upstream.

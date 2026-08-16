@@ -8,6 +8,10 @@
     "directory": "frontend/.open-next/assets",
     "binding": "ASSETS"
   },
+  "vars": {
+    "NEXT_PUBLIC_DATA_SOURCE": "http",
+    "NEXT_API_ORIGIN": "https://web.heybobma.dedyn.io"
+  },
   "build": {
     "cwd": "frontend",
     "command": "pnpm install --frozen-lockfile && pnpm cloudflare:build"
