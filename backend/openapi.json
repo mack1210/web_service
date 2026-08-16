@@ -85,7 +85,7 @@
       "AipotAttemptDetail": {
         "properties": {
           "answered_count": {
-            "maximum": 40.0,
+            "maximum": 100.0,
             "minimum": 0.0,
             "title": "Answered Count",
             "type": "integer"
@@ -150,7 +150,7 @@
       "AipotAttemptSummary": {
         "properties": {
           "answered_count": {
-            "maximum": 40.0,
+            "maximum": 100.0,
             "minimum": 0.0,
             "title": "Answered Count",
             "type": "integer"
@@ -245,28 +245,12 @@
             "title": "Correct",
             "type": "boolean"
           },
-          "definition": {
-            "title": "Definition",
-            "type": "string"
-          },
-          "differences": {
-            "title": "Differences",
+          "explanation": {
+            "title": "Explanation",
             "type": "string"
           },
           "id": {
             "title": "Id",
-            "type": "string"
-          },
-          "purpose": {
-            "title": "Purpose",
-            "type": "string"
-          },
-          "reason": {
-            "title": "Reason",
-            "type": "string"
-          },
-          "similarities": {
-            "title": "Similarities",
             "type": "string"
           },
           "text": {
@@ -277,11 +261,7 @@
         "required": [
           "id",
           "text",
-          "definition",
-          "purpose",
-          "reason",
-          "similarities",
-          "differences",
+          "explanation",
           "correct"
         ],
         "title": "AipotChoiceFeedback",
@@ -517,6 +497,13 @@
             ],
             "title": "Reference Source"
           },
+          "source_criteria": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Criteria",
+            "type": "array"
+          },
           "submitted_prompt": {
             "title": "Submitted Prompt",
             "type": "string"
@@ -573,6 +560,15 @@
             "title": "Questions",
             "type": "array"
           },
+          "study_mode": {
+            "default": "exam",
+            "enum": [
+              "exam",
+              "wrong_note"
+            ],
+            "title": "Study Mode",
+            "type": "string"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -623,10 +619,26 @@
               }
             ]
           },
+          "previous_attempts": {
+            "items": {
+              "$ref": "#/components/schemas/AipotAttemptSummary"
+            },
+            "title": "Previous Attempts",
+            "type": "array"
+          },
           "question_count": {
             "minimum": 1.0,
             "title": "Question Count",
             "type": "integer"
+          },
+          "study_mode": {
+            "default": "exam",
+            "enum": [
+              "exam",
+              "wrong_note"
+            ],
+            "title": "Study Mode",
+            "type": "string"
           },
           "title": {
             "title": "Title",
@@ -667,6 +679,15 @@
             "minimum": 1.0,
             "title": "Question Count",
             "type": "integer"
+          },
+          "study_mode": {
+            "default": "exam",
+            "enum": [
+              "exam",
+              "wrong_note"
+            ],
+            "title": "Study Mode",
+            "type": "string"
           },
           "title": {
             "title": "Title",
@@ -773,7 +794,7 @@
             "type": "array"
           },
           "number": {
-            "maximum": 40.0,
+            "maximum": 100.0,
             "minimum": 1.0,
             "title": "Number",
             "type": "integer"
@@ -872,7 +893,7 @@
             "type": "boolean"
           },
           "number": {
-            "maximum": 40.0,
+            "maximum": 100.0,
             "minimum": 1.0,
             "title": "Number",
             "type": "integer"
@@ -986,6 +1007,11 @@
             ],
             "title": "Explanation"
           },
+          "is_unanswered": {
+            "default": false,
+            "title": "Is Unanswered",
+            "type": "boolean"
+          },
           "missing": {
             "items": {
               "type": "string"
@@ -1053,6 +1079,18 @@
             "minimum": 0.0,
             "title": "Elapsed Seconds",
             "type": "integer"
+          },
+          "practical_evaluation_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Practical Evaluation Ids",
+            "type": "object"
+          },
+          "skip_practical_evaluation": {
+            "default": false,
+            "title": "Skip Practical Evaluation",
+            "type": "boolean"
           }
         },
         "required": [
@@ -1961,7 +1999,7 @@
             "name": "number",
             "required": true,
             "schema": {
-              "maximum": 40,
+              "maximum": 100,
               "minimum": 1,
               "title": "Number",
               "type": "integer"

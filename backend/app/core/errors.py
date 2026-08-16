@@ -74,7 +74,7 @@ class AipotMediaConfirmationRequiredError(AppError):
     def __init__(self) -> None:
         super().__init__(
             code="aipot_media_confirmation_required",
-            message="Confirm the paid media generation before submitting this answer.",
+            message="이미지 생성·평가를 진행하려면 확인 창에서 ‘이미지 생성·평가’를 눌러 주세요.",
             status_code=409,
             retryable=False,
         )

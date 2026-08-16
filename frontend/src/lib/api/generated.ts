@@ -349,18 +349,10 @@ export interface components {
         AipotChoiceFeedback: {
             /** Correct */
             correct: boolean;
-            /** Definition */
-            definition: string;
-            /** Differences */
-            differences: string;
+            /** Explanation */
+            explanation: string;
             /** Id */
             id: string;
-            /** Purpose */
-            purpose: string;
-            /** Reason */
-            reason: string;
-            /** Similarities */
-            similarities: string;
             /** Text */
             text: string;
         };
@@ -433,6 +425,8 @@ export interface components {
             reference_solution?: string | null;
             /** Reference Source */
             reference_source?: string | null;
+            /** Source Criteria */
+            source_criteria?: string[];
             /** Submitted Prompt */
             submitted_prompt: string;
         };
@@ -453,6 +447,12 @@ export interface components {
             question_count: number;
             /** Questions */
             questions: components["schemas"]["AipotQuestion"][];
+            /**
+             * Study Mode
+             * @default exam
+             * @enum {string}
+             */
+            study_mode: "exam" | "wrong_note";
             /** Title */
             title: string;
         };
@@ -470,8 +470,16 @@ export interface components {
              */
             kind: "source" | "generated" | "public";
             last_attempt?: components["schemas"]["AipotAttemptSummary"] | null;
+            /** Previous Attempts */
+            previous_attempts?: components["schemas"]["AipotAttemptSummary"][];
             /** Question Count */
             question_count: number;
+            /**
+             * Study Mode
+             * @default exam
+             * @enum {string}
+             */
+            study_mode: "exam" | "wrong_note";
             /** Title */
             title: string;
         };
@@ -488,6 +496,12 @@ export interface components {
             kind: "source" | "generated" | "public";
             /** Question Count */
             question_count: number;
+            /**
+             * Study Mode
+             * @default exam
+             * @enum {string}
+             */
+            study_mode: "exam" | "wrong_note";
             /** Title */
             title: string;
         };
@@ -586,6 +600,11 @@ export interface components {
             evaluation?: components["schemas"]["AipotEvaluationEvidence"] | null;
             /** Explanation */
             explanation?: string | null;
+            /**
+             * Is Unanswered
+             * @default false
+             */
+            is_unanswered: boolean;
             /** Missing */
             missing?: string[];
             /** Number */
@@ -614,6 +633,15 @@ export interface components {
             client_submission_id: string;
             /** Elapsed Seconds */
             elapsed_seconds: number;
+            /** Practical Evaluation Ids */
+            practical_evaluation_ids?: {
+                [key: string]: string;
+            };
+            /**
+             * Skip Practical Evaluation
+             * @default false
+             */
+            skip_practical_evaluation: boolean;
         };
         /** AipotVisualAsset */
         AipotVisualAsset: {

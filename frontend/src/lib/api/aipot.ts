@@ -29,7 +29,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export interface AipotApi {
   getHistory(): Promise<AipotHistory>;
   getExam(examId: string): Promise<AipotExam>;
-  submit(examId: string, input: { clientSubmissionId: string; elapsedSeconds: number; answers: Record<number, string> }): Promise<AipotAttempt>;
+  submit(examId: string, input: { clientSubmissionId: string; elapsedSeconds: number; answers: Record<number, string>; practicalEvaluationIds?: Record<number, string>; skipPracticalEvaluation?: boolean }): Promise<AipotAttempt>;
   getAttempt(attemptId: string): Promise<AipotAttempt>;
   feedback(examId: string, number: number, answer: string, confirmMedia?: boolean): Promise<AipotImmediateFeedback>;
 }
@@ -43,6 +43,8 @@ const httpApi: AipotApi = {
       client_submission_id: input.clientSubmissionId,
       elapsed_seconds: input.elapsedSeconds,
       answers: input.answers,
+      practical_evaluation_ids: input.practicalEvaluationIds ?? {},
+      skip_practical_evaluation: input.skipPracticalEvaluation ?? false,
     }),
   }),
   getAttempt: (attemptId) => request<AipotAttempt>(`/api/v1/aipot/attempts/${encodeURIComponent(attemptId)}`),
@@ -79,7 +81,7 @@ const mockApi: AipotApi = {
     if (!question) throw new AipotRequestError("문항을 찾을 수 없습니다.", 404);
     const possible = question.points;
     const correct = question.type === "practical_prompt" ? Boolean(answer.trim()) : answer === "1";
-    return { number, earned: correct ? possible : 0, possible, correct, correct_answer: question.type === "practical_prompt" ? null : "1", explanation: "개발용 즉시 피드백입니다.", missing: correct ? [] : [question.topic], choice_feedback: (question.choices ?? []).map((text, index) => ({ id: String(index + 1), text, correct: index === 0, definition: "개발용 개념", purpose: "개발용 확인", reason: index === 0 ? "정답입니다." : "오답입니다.", similarities: "관련 개념입니다.", differences: "정답 조건이 다릅니다." })) };
+    return { number, earned: correct ? possible : 0, possible, correct, correct_answer: question.type === "practical_prompt" ? null : "1", explanation: "개발용 즉시 피드백입니다.", missing: correct ? [] : [question.topic], choice_feedback: (question.choices ?? []).map((text, index) => ({ id: String(index + 1), text, correct: index === 0, explanation: `${text}: 개발용 키워드 설명입니다.` })) };
   },
 };
 

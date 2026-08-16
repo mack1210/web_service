@@ -48,7 +48,7 @@ def exam(exam_id: Annotated[str, Path(min_length=1, max_length=64)]) -> AipotExa
 @router.post("/exams/{exam_id}/questions/{number}/feedback", response_model=AipotImmediateFeedback, responses=ERROR_RESPONSES)
 def answer_feedback(
     exam_id: Annotated[str, Path(min_length=1, max_length=64)],
-    number: Annotated[int, Path(ge=1, le=40)],
+    number: Annotated[int, Path(ge=1, le=100)],
     request: AipotImmediateFeedbackRequest,
 ) -> AipotImmediateFeedback:
     return service.immediate_feedback(exam_id, number, request.answer, request.confirm_media)

@@ -156,6 +156,28 @@ class AipotRepository:
             return None
         return StoredEvaluation(id=str(row["id"]), response=json.loads(str(row["response_json"])))
 
+    def get_completed_evaluation_by_id(
+        self, *, evaluation_id: str, exam_id: str, question_number: int, answer_hash: str,
+    ) -> StoredEvaluation | None:
+        """Return the evidence the learner locked for this exact answer.
+
+        This is intentionally independent of a later evaluator-contract hash:
+        a completed answer must remain submit-ready even when scoring wording is
+        improved after the learner has already paid for or run an evaluation.
+        """
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT id, response_json FROM evaluations
+                WHERE id = ? AND exam_id = ? AND question_number = ? AND answer_hash = ?
+                  AND status = 'completed'
+                """,
+                (evaluation_id, exam_id, question_number, answer_hash),
+            ).fetchone()
+        if not row or not row["response_json"]:
+            return None
+        return StoredEvaluation(id=str(row["id"]), response=json.loads(str(row["response_json"])))
+
     def complete_evaluation(
         self, *, evaluation_id: str, response: dict[str, Any], artifact: bytes | None,
         artifact_media_type: str | None,

@@ -30,29 +30,22 @@ function questions(id: string, imageFirst: boolean): Exam["questions"] {
 }
 
 export const mockExams: Exam[] = [
-  ...Array.from({ length: 5 }, (_, index) => ({
-    id: `source-round-${String(index + 1).padStart(2, "0")}`,
-    title: `AI-POT 실전 모의고사 ${String(index + 1).padStart(2, "0")}회 (원본)`,
+  {
+    id: "source-round-01",
+    title: "AI-POT 실전 모의고사 01회 (개인 학습용 원본)",
     kind: "source" as const,
     image_first: true,
     question_count: 40,
+    study_mode: "exam",
     known_limitations: ["개발용 미리보기에서는 원본 사진을 표시하지 않습니다."],
-    questions: questions(`source-${index + 1}`, true),
-  })),
-  ...Array.from({ length: 5 }, (_, index) => ({
-    id: `generated-mock-${String(index + 1).padStart(2, "0")}`,
-    title: `AI-POT 창작 실전 모의고사 ${String(index + 1).padStart(2, "0")}회`,
-    kind: "generated" as const,
-    image_first: false,
-    question_count: 40,
-    known_limitations: [],
-    questions: questions(`generated-${index + 1}`, false),
-  })),
+    questions: questions("source-1", true),
+  },
 ];
 
 const attempts = new Map<string, Attempt>();
 
 export function mockHistory(): History {
+  const orderedAttempts = [...attempts.values()].sort((left, right) => right.submitted_at.localeCompare(left.submitted_at));
   return {
     exams: mockExams.map((exam) => ({
       id: exam.id,
@@ -60,10 +53,19 @@ export function mockHistory(): History {
       kind: exam.kind,
       image_first: exam.image_first,
       question_count: exam.question_count,
-      attempts: [...attempts.values()].filter((attempt) => attempt.exam_id === exam.id).length,
-      last_attempt: [...attempts.values()].find((attempt) => attempt.exam_id === exam.id) ?? null,
+      study_mode: exam.study_mode,
+      attempts: orderedAttempts.filter((attempt) => attempt.exam_id === exam.id).length,
+      last_attempt: orderedAttempts.find((attempt) => attempt.exam_id === exam.id) ?? null,
+      previous_attempts: orderedAttempts.filter((attempt) => attempt.exam_id === exam.id).map((attempt) => ({
+        id: attempt.id,
+        exam_id: attempt.exam_id,
+        exam_title: attempt.exam_title,
+        submitted_at: attempt.submitted_at,
+        score: attempt.score,
+        answered_count: attempt.answered_count,
+      })),
     })),
-    recent_attempts: [...attempts.values()].map((attempt) => ({
+    recent_attempts: orderedAttempts.map((attempt) => ({
       id: attempt.id,
       exam_id: attempt.exam_id,
       exam_title: attempt.exam_title,
@@ -90,8 +92,9 @@ export function mockSubmit(exam: Exam, answers: Record<number, string>, elapsedS
       explanation: correct ? "개발용 미리보기의 예시 해설입니다." : null,
       score,
       possible_score: question.type === "multiple_choice" ? 50 / 35 : question.type === "short_answer" ? 50 / 35 : 10,
-      result: score > 0 ? "정답" : "오답/미응답",
-      missing: score > 0 ? [] : [question.topic],
+      result: score > 0 ? "정답" : answer ? "오답" : "미응답",
+      is_unanswered: !answer,
+      missing: score > 0 || !answer ? [] : [question.topic],
     };
   });
   const attempt: Attempt = {

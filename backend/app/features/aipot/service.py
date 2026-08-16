@@ -108,7 +108,7 @@ def _sanitize_manifest(manifest: dict) -> dict:
             prompt = _strip_question_one_preamble(prompt)
         choices = question.get("choices")
         if isinstance(choices, list) and len(choices) >= 2:
-            prompt = _strip_terminal_rendered_choices(prompt, len(choices))
+            prompt = _strip_terminal_rendered_choices(prompt, choices)
         question["prompt"] = prompt
     return manifest
 
@@ -120,16 +120,21 @@ def _strip_question_one_preamble(prompt: str) -> str:
     return prompt[heading.end():].lstrip() if heading else prompt
 
 
-def _strip_terminal_rendered_choices(prompt: str, choice_count: int) -> str:
-    """Remove a final 1→N OCR choice run already represented by UI controls."""
+def _strip_terminal_rendered_choices(prompt: str, choices: list[object]) -> str:
+    """Remove a final OCR choice run only when it duplicates the UI controls."""
 
     lines = prompt.splitlines()
+    choice_texts = [
+        str(choice.get("text", "")) if isinstance(choice, dict) else str(choice)
+        for choice in choices
+    ]
     for start, line in enumerate(lines):
         first = _OCR_CHOICE.match(line)
         if not first or _choice_number(first.group("number") or first.group("circled")) != "1":
             continue
         cursor = start
-        for expected in range(1, choice_count + 1):
+        rendered_choices: list[str] = []
+        for expected in range(1, len(choice_texts) + 1):
             while cursor < len(lines) and not lines[cursor].strip():
                 cursor += 1
             if cursor >= len(lines):
@@ -137,9 +142,13 @@ def _strip_terminal_rendered_choices(prompt: str, choice_count: int) -> str:
             choice = _OCR_CHOICE.match(lines[cursor])
             if not choice or _choice_number(choice.group("number") or choice.group("circled")) != str(expected):
                 break
+            rendered_choices.append(choice.group("value").strip())
             cursor += 1
         else:
-            if not any(line.strip() for line in lines[cursor:]):
+            if (
+                not any(line.strip() for line in lines[cursor:])
+                and rendered_choices == choice_texts
+            ):
                 return "\n".join(lines[:start]).rstrip()
     return prompt
 
@@ -166,6 +175,7 @@ def _summary(manifest: dict) -> AipotExamSummary:
         kind="public" if is_public else "source" if is_source else "generated",
         question_count=len(manifest["questions"]),
         image_first=is_source or is_public,
+        study_mode="wrong_note" if manifest.get("study_mode") == "wrong_note" else "exam",
     )
 
 
@@ -337,7 +347,11 @@ def list_exams() -> list[AipotExamSummary]:
 def get_exam(exam_id: str) -> AipotExamDetail:
     manifest = _load_manifest(exam_id)
     source_kind = manifest.get("source_kind", manifest.get("sourceKind"))
-    ocr_sections = _ocr_sections(exam_id) if source_kind == "private_photographed_book" and not manifest.get("sourceKind") else {}
+    # A source corpus is an audit transcription. Once a reviewed learner
+    # manifest exists in data/web-exams, it is authoritative: falling back to
+    # the corpus here can reintroduce a photographed-OCR typo into choices.
+    learner_manifest_exists = (_content_root() / "data" / "web-exams" / f"{exam_id}.json").is_file()
+    ocr_sections = _ocr_sections(exam_id) if source_kind == "private_photographed_book" and not learner_manifest_exists else {}
     return AipotExamDetail(
         **_summary(manifest).model_dump(),
         questions=[_public_question(exam_id, question, ocr_sections) for question in manifest["questions"]],
@@ -374,6 +388,11 @@ def get_asset_path(exam_id: str, asset_name: str) -> Path:
             for visual in question.get("visuals", [])
         )
         allowed.update(
+            Path(visual["file"]).name
+            for question in manifest["questions"]
+            for visual in _source_visuals(exam_id, question["number"])
+        )
+        allowed.update(
             Path(question["asset"]).name
             for question in manifest["questions"]
             if question.get("asset")
@@ -390,7 +409,7 @@ def get_asset_path(exam_id: str, asset_name: str) -> Path:
 def _normalize(answer: str) -> str:
     value = answer.strip().translate(_CIRCLED).lower()
     value = re.sub(r"^(정답|answer)\s*[:：]", "", value).strip()
-    pieces = [piece for piece in re.split(r"[,/·ㆍ\s]+", value) if piece]
+    pieces = [piece for piece in re.split(r"[|,/·ㆍ\s]+", value) if piece]
     if len(pieces) > 1 and all(piece.isdigit() for piece in pieces):
         return "|".join(sorted(set(pieces), key=int))
     return re.sub(r"\s+", " ", value)
@@ -408,39 +427,85 @@ def _recommendation(percent: float) -> str:
     return "다음 챕터 진행"
 
 
-def _score(manifest: dict, answers: dict[int, str]) -> tuple[list[dict], list[dict], float]:
-    rows: list[dict] = []
+def _is_unanswered_review(review: dict) -> bool:
+    """Read the explicit flag, including attempts saved before it existed."""
+
+    return bool(review.get("is_unanswered", not bool(str(review.get("submitted_answer", "")).strip())))
+
+
+def _chapter_rows(reviews: list[dict]) -> list[dict]:
+    """Build chapter results from responses the learner actually submitted."""
+
     chapters: dict[str, dict] = defaultdict(lambda: {"earned": 0.0, "possible": 0.0, "topics": []})
+    for review in reviews:
+        if _is_unanswered_review(review):
+            continue
+        chapter = chapters[review["chapter"]]
+        chapter["earned"] += review["score"]
+        chapter["possible"] += review["possible_score"]
+        if review["score"] < review["possible_score"] and review["topic"] not in chapter["topics"]:
+            chapter["topics"].append(review["topic"])
+
+    rows = []
+    for code, values in sorted(chapters.items()):
+        percent = round(values["earned"] / values["possible"] * 100, 1) if values["possible"] else 0.0
+        rows.append({
+            "chapter": code,
+            # Source sets may introduce codes outside the shared taxonomy.
+            # Retain the code rather than failing to render the whole result.
+            "chapter_title": CHAPTERS.get(code, code),
+            "earned": round(values["earned"], 2),
+            "possible": round(values["possible"], 2),
+            "percent": percent,
+            "topics": values["topics"][:3],
+            "recommendation": _recommendation(percent),
+        })
+    return rows
+
+
+def _score(
+    manifest: dict, answers: dict[int, str], *, practical_evaluation_ids: dict[int, str] | None = None,
+    skip_practical_evaluation: bool = False,
+) -> tuple[list[dict], list[dict], float]:
+    rows: list[dict] = []
     for question in manifest["questions"]:
         answer = answers.get(question["number"], "").strip()
+        is_unanswered = not bool(answer)
         evaluation = None
         if question["type"] == "practical_prompt":
             possible = float(question.get("points", _official_points(question["number"])))
-            evaluation = _practical_evaluator().completed(
-                exam_id=manifest["id"], question=question, answer=answer
-            ) if answer else None
-            if answer and evaluation is None:
-                raise AipotEvaluationRequiredError(
-                    f"Q{question['number']:02d} must finish evidence-based evaluation before final submission."
-                )
-            raw_possible = sum(float(item["points"]) for item in question["rubric"])
-            raw_earned = sum(float(item["earned"]) for item in evaluation["criteria"]) if evaluation else 0.0
-            missing = [item["criterion"] for item in evaluation["criteria"] if not item["met"]] if evaluation else [item["criterion"] for item in question["rubric"]]
-            earned = raw_earned / raw_possible * possible if raw_possible else 0.0
-            correct = None
-            result = "충족" if earned == possible else "보완 필요"
+            if skip_practical_evaluation:
+                missing = ["자동 평가를 건너뜀"] if answer else []
+                earned = 0.0
+                correct = None
+                result = "제출됨 · 미평가" if answer else "미응답"
+            elif not answer:
+                missing = []
+                earned = 0.0
+                correct = None
+                result = "미응답"
+            else:
+                evaluation = _practical_evaluator().completed(
+                    exam_id=manifest["id"], question=question, answer=answer,
+                    evaluation_id=(practical_evaluation_ids or {}).get(question["number"]),
+                ) if answer else None
+                if answer and evaluation is None:
+                    raise AipotEvaluationRequiredError(
+                        f"Q{question['number']:02d} must finish evidence-based evaluation before final submission."
+                    )
+                raw_possible = sum(float(item["points"]) for item in question["rubric"])
+                raw_earned = sum(float(item["earned"]) for item in evaluation["criteria"]) if evaluation else 0.0
+                missing = [item["criterion"] for item in evaluation["criteria"] if not item["met"]] if evaluation else [item["criterion"] for item in question["rubric"]]
+                earned = raw_earned / raw_possible * possible if raw_possible else 0.0
+                correct = None
+                result = "충족" if earned == possible else "보완 필요"
         else:
             possible = float(question.get("points", _official_points(question["number"])))
             correct = question.get("answer")
             accepted = {_normalize(value) for value in question.get("accepted_answers", [])}
             earned = possible if answer and _normalize(answer) in accepted else 0.0
-            missing = [] if earned else [question["topic"]]
-            result = "정답" if earned else "오답/미응답"
-        chapter = chapters[question["chapter"]]
-        chapter["earned"] += earned
-        chapter["possible"] += possible
-        if earned < possible and question["topic"] not in chapter["topics"]:
-            chapter["topics"].append(question["topic"])
+            missing = [] if earned or is_unanswered else [question["topic"]]
+            result = "정답" if earned else "미응답" if is_unanswered else "오답"
         rows.append(
             {
                 "number": question["number"],
@@ -452,25 +517,12 @@ def _score(manifest: dict, answers: dict[int, str]) -> tuple[list[dict], list[di
                 "score": earned,
                 "possible_score": possible,
                 "result": result,
+                "is_unanswered": is_unanswered,
                 "missing": missing,
                 "evaluation": evaluation,
             }
         )
-    chapter_rows = []
-    for code, values in sorted(chapters.items()):
-        percent = round(values["earned"] / values["possible"] * 100, 1) if values["possible"] else 0.0
-        chapter_rows.append(
-            {
-                "chapter": code,
-                "chapter_title": CHAPTERS[code],
-                "earned": round(values["earned"], 2),
-                "possible": round(values["possible"], 2),
-                "percent": percent,
-                "topics": values["topics"][:3],
-                "recommendation": _recommendation(percent),
-            }
-        )
-    return rows, chapter_rows, round(sum(row["score"] for row in rows), 1)
+    return rows, _chapter_rows(rows), round(sum(row["score"] for row in rows), 1)
 
 
 def _official_points(number: int) -> int:
@@ -498,14 +550,14 @@ def immediate_feedback(exam_id: str, number: int, answer: str, confirm_media: bo
         missing = [] if earned else [question["topic"]]
         correct_answer = str(question.get("answer", ""))
     feedback = []
+    correct_choice_ids = set(_normalize(str(question.get("answer", ""))).split("|"))
     for choice in question.get("choices", []):
         if not isinstance(choice, dict):
             continue
         detail = choice.get("feedback", {})
         feedback.append(AipotChoiceFeedback(
-            id=str(choice["id"]), text=str(choice["text"]), correct=_normalize(str(choice["id"])) == _normalize(str(question.get("answer", ""))),
-            definition=str(detail.get("definition", question["topic"])), purpose=str(detail.get("purpose", "")),
-            reason=str(detail.get("reason", "")), similarities=str(detail.get("similarities", "")), differences=str(detail.get("differences", "")),
+            id=str(choice["id"]), text=str(choice["text"]), correct=_normalize(str(choice["id"])) in correct_choice_ids,
+            explanation=str(detail.get("explanation", detail.get("definition", question["topic"]))),
         ))
     return AipotImmediateFeedback(
         number=number, earned=earned, possible=possible, correct=earned == possible,
@@ -526,18 +578,40 @@ def _attempt_summary(record: dict) -> AipotAttemptSummary:
 
 
 def _attempt_detail(record: dict) -> AipotAttemptDetail:
+    reviews = []
+    for review in record["reviews"]:
+        # Attempts saved before the explicit flag can still be read safely.
+        reviews.append(AipotQuestionReview(**{
+            **review,
+            "is_unanswered": _is_unanswered_review(review),
+        }))
     return AipotAttemptDetail(
         **_attempt_summary(record).model_dump(),
         elapsed_seconds=record["elapsed_seconds"],
-        reviews=[AipotQuestionReview(**review) for review in record["reviews"]],
-        chapters=[AipotChapterResult(**chapter) for chapter in record["chapters"]],
+        reviews=reviews,
+        chapters=[AipotChapterResult(**chapter) for chapter in _chapter_rows([
+            review.model_dump() for review in reviews
+        ])],
     )
 
 
 def submit(exam_id: str, request: AipotSubmissionRequest) -> AipotAttemptDetail:
     manifest = _load_manifest(exam_id)
-    answers = {number: answer.strip() for number, answer in request.answers.items() if 1 <= number <= 40}
-    reviews, chapters, score = _score(manifest, answers)
+    question_numbers = {int(question["number"]) for question in manifest["questions"]}
+    answers = {number: answer.strip() for number, answer in request.answers.items() if number in question_numbers}
+    practical_evaluation_ids = {
+        number: evaluation_id.strip()
+        for number, evaluation_id in request.practical_evaluation_ids.items()
+        if number in {
+            int(question["number"])
+            for question in manifest["questions"]
+            if question.get("type") == "practical_prompt"
+        } and evaluation_id.strip()
+    }
+    reviews, chapters, score = _score(
+        manifest, answers, practical_evaluation_ids=practical_evaluation_ids,
+        skip_practical_evaluation=request.skip_practical_evaluation,
+    )
     record = {
         "id": str(uuid4()),
         "client_submission_id": request.client_submission_id,
@@ -581,25 +655,27 @@ def history() -> AipotHistoryResponse:
                 **summary.model_dump(),
                 attempts=len(attempts),
                 last_attempt=_attempt_summary(attempts[0]) if attempts else None,
+                previous_attempts=[_attempt_summary(attempt) for attempt in attempts],
             )
         )
     buckets: dict[str, dict] = defaultdict(lambda: {"earned": 0.0, "possible": 0.0, "topics": [], "attempts": set()})
     for record in records:
-        for chapter in record["chapters"]:
-            bucket = buckets[chapter["chapter"]]
-            bucket["earned"] += chapter["earned"]
-            bucket["possible"] += chapter["possible"]
+        for review in record["reviews"]:
+            if _is_unanswered_review(review):
+                continue
+            bucket = buckets[review["chapter"]]
+            bucket["earned"] += review["score"]
+            bucket["possible"] += review["possible_score"]
             bucket["attempts"].add(record["id"])
-            for topic in chapter["topics"]:
-                if topic not in bucket["topics"]:
-                    bucket["topics"].append(topic)
+            if review["score"] < review["possible_score"] and review["topic"] not in bucket["topics"]:
+                bucket["topics"].append(review["topic"])
     weaknesses = []
     for code, values in buckets.items():
         percent = round(values["earned"] / values["possible"] * 100, 1)
         weaknesses.append(
             AipotWeakness(
                 chapter=code,
-                chapter_title=CHAPTERS[code],
+                chapter_title=CHAPTERS.get(code, code),
                 earned=round(values["earned"], 2),
                 possible=round(values["possible"], 2),
                 percent=percent,

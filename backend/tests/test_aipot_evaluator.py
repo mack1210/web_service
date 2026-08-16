@@ -92,6 +92,21 @@ def test_image_evaluation_requires_confirmation_and_persists_artifact(tmp_path: 
     assert artifact == (b"png-bytes", "image/png")
 
 
+def test_completed_evaluation_id_preserves_a_locked_answer_across_contract_updates(tmp_path: Path):
+    fake = FakeClient()
+    subject = evaluator(tmp_path, fake)
+    original = question("image")
+    result = subject.evaluate(exam_id="public-set-a", question=original, answer="이미지를 만들어줘", confirm_media=True)
+
+    updated_question = {**original, "prompt": "개선된 안내문으로 이미지를 생성하세요."}
+    completed = subject.completed(
+        exam_id="public-set-a", question=updated_question, answer="이미지를 만들어줘", evaluation_id=result["id"],
+    )
+
+    assert completed == result
+    assert fake.image_calls == 1
+
+
 def test_unavailable_practical_source_fails_without_reservation(tmp_path: Path):
     fake = FakeClient()
     subject = evaluator(tmp_path, fake)
@@ -104,20 +119,20 @@ def test_unavailable_practical_source_fails_without_reservation(tmp_path: Path):
     assert subject.repository.list_attempts() == []
 
 
-def test_irrelevant_practical_prompt_scores_zero_without_execution(tmp_path: Path):
+def test_irrelevant_nonpublic_practical_prompt_scores_zero_without_execution(tmp_path: Path):
     fake = FakeClient()
     fake.aligned = False
     subject = evaluator(tmp_path, fake)
-    public_a_q36 = question()
-    public_a_q36["prompt"] = "범위 한정 기법으로 냉방병 예방 팁 3개만 출력하는 프롬프트를 작성하세요."
-    public_a_q36["evaluation"]["context_markdown"] = (
+    nonpublic_question = question()
+    nonpublic_question["prompt"] = "범위 한정 기법으로 냉방병 예방 팁 3개만 출력하는 프롬프트를 작성하세요."
+    nonpublic_question["evaluation"]["context_markdown"] = (
         "## 요구\n냉방병 예방 팁 중 `적절한 온도 조절`, `규칙적인 환기`, `적절한 복장`만 간단히 출력하게 하세요."
     )
-    public_a_q36["evaluation"]["provider_solution"] = "세 가지 지정 팁만 간결히 제시하도록 범위를 한정한다."
-    public_a_q36["evaluation"]["reference_source"] = "기본서 구매인증자료 p.58"
+    nonpublic_question["evaluation"]["provider_solution"] = "세 가지 지정 팁만 간결히 제시하도록 범위를 한정한다."
+    nonpublic_question["evaluation"]["reference_source"] = "기본서 구매인증자료 p.58"
 
     result = subject.evaluate(
-        exam_id="public-set-a", question=public_a_q36,
+        exam_id="generated-mock-01", question=nonpublic_question,
         answer="역할: 이미지 생성 AI; 목표: 북유럽풍 거실을 16:9로 생성", confirm_media=False,
     )
 
@@ -127,6 +142,35 @@ def test_irrelevant_practical_prompt_scores_zero_without_execution(tmp_path: Pat
     assert result["reference_solution"] == "세 가지 지정 팁만 간결히 제시하도록 범위를 한정한다."
     assert result["reference_source"] == "기본서 구매인증자료 p.58"
     assert result["context_alignment"]["aligned"] is False
+
+
+@pytest.mark.parametrize(
+    ("exam_id", "number", "kind"),
+    [
+        ("public-set-a", 36, "text"), ("public-set-a", 37, "image"), ("public-set-a", 38, "text"),
+        ("public-set-a", 39, "text"), ("public-set-a", 40, "text"), ("public-set-b", 36, "image"),
+        ("public-set-b", 37, "image"), ("public-set-b", 38, "text"), ("public-set-b", 39, "text"),
+        ("public-set-b", 40, "text"),
+    ],
+)
+def test_every_public_practical_answer_executes_before_scoring(tmp_path: Path, exam_id: str, number: int, kind: str):
+    fake = FakeClient()
+    fake.aligned = False
+    subject = evaluator(tmp_path, fake)
+    public_question = question(kind)
+    public_question["number"] = number
+
+    result = subject.evaluate(
+        exam_id=exam_id, question=public_question,
+        answer="Create an image prompt with incomplete details." if kind == "image" else "요구한 결과를 간단히 만들어줘.",
+        confirm_media=kind == "image",
+    )
+
+    assert fake.assessment_calls == []
+    assert fake.image_calls == (1 if kind == "image" else 0)
+    assert fake.text_calls == (0 if kind == "image" else 1)
+    assert fake.judge_calls
+    assert result["context_alignment"]["aligned"] is True
 
 
 def test_context_and_reference_are_given_to_execution_and_judge(tmp_path: Path):
@@ -140,5 +184,49 @@ def test_context_and_reference_are_given_to_execution_and_judge(tmp_path: Path):
 
     subject.evaluate(exam_id="public-set-a", question=contextual, answer="자료를 소수 둘째 자리로 표기해줘", confirm_media=False)
 
+    assert fake.judge_calls[0]["question_text"] == contextual["prompt"]
     assert fake.judge_calls[0]["context_markdown"].startswith(contextual["prompt"])
+    assert fake.judge_calls[0]["answer"] == "자료를 소수 둘째 자리로 표기해줘"
     assert fake.judge_calls[0]["provider_solution"] == contextual["evaluation"]["provider_solution"]
+
+
+def test_range_limited_refinement_executes_instead_of_being_rejected_as_unrelated(tmp_path: Path):
+    fake = FakeClient()
+    fake.aligned = False
+    subject = evaluator(tmp_path, fake)
+    range_question = question()
+    range_question["prompt"] = "최초 질문과 최종 결과를 비교하여 범위를 한정하는 프롬프트를 작성하시오."
+    range_question["evaluation"].update({
+        "context_markdown": "최초 응답 5개 항목에서 최종 응답 3개 항목만 남겨야 합니다.",
+        "provider_solution": "냉방병 예방 팁 3가지를 알려줘.",
+        "source_criteria": ["방법의 개수를 제한한다.", "3가지 조건을 반드시 포함한다."],
+    })
+
+    result = subject.evaluate(
+        exam_id="public-set-a", question=range_question,
+        answer="최초 음답에 대해서 3가지만 남겨줘.", confirm_media=False,
+    )
+
+    assert fake.assessment_calls == []
+    assert fake.text_calls == 1
+    assert result["context_alignment"]["aligned"] is True
+    assert result["source_criteria"] == range_question["evaluation"]["source_criteria"]
+
+
+def test_incomplete_but_recognizable_image_prompt_executes_for_scoring(tmp_path: Path):
+    fake = FakeClient()
+    fake.aligned = False
+    subject = evaluator(tmp_path, fake)
+    image_question = question("image")
+    image_question["prompt"] = "참고 이미지를 반영한 영어 이미지 생성 프롬프트를 작성하시오."
+    image_question["evaluation"]["source_criteria"] = ["흑백 사진 스타일을 포함한다."]
+
+    result = subject.evaluate(
+        exam_id="public-set-a", question=image_question,
+        answer="Create an image of a man in a hat reading with a dog.", confirm_media=True,
+    )
+
+    assert fake.assessment_calls == []
+    assert fake.image_calls == 1
+    assert fake.judge_calls
+    assert result["context_alignment"]["aligned"] is True

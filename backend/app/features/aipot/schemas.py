@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 QuestionType = Literal["multiple_choice", "multiple_select", "choice_bank", "short_answer", "practical_prompt"]
 ExamKind = Literal["source", "generated", "public"]
 EvaluationKind = Literal["text", "image", "code", "unavailable"]
+StudyMode = Literal["exam", "wrong_note"]
 
 
 class AipotExamSummary(BaseModel):
@@ -14,10 +15,11 @@ class AipotExamSummary(BaseModel):
     kind: ExamKind
     question_count: int = Field(ge=1)
     image_first: bool
+    study_mode: StudyMode = "exam"
 
 
 class AipotQuestion(BaseModel):
-    number: int = Field(ge=1, le=40)
+    number: int = Field(ge=1, le=100)
     type: QuestionType
     chapter: str
     topic: str
@@ -38,11 +40,7 @@ class AipotQuestion(BaseModel):
 class AipotChoiceFeedback(BaseModel):
     id: str
     text: str
-    definition: str
-    purpose: str
-    reason: str
-    similarities: str
-    differences: str
+    explanation: str
     correct: bool
 
 
@@ -87,6 +85,7 @@ class AipotEvaluationEvidence(BaseModel):
     judge_model: str
     criteria: list[AipotEvaluationCriterion]
     artifact: AipotEvaluationArtifact
+    source_criteria: list[str] = Field(default_factory=list)
     reference_solution: str | None = None
     reference_source: str | None = None
     context_alignment: AipotContextAlignment | None = None
@@ -94,7 +93,7 @@ class AipotEvaluationEvidence(BaseModel):
 
 
 class AipotImmediateFeedback(BaseModel):
-    number: int = Field(ge=1, le=40)
+    number: int = Field(ge=1, le=100)
     earned: float = Field(ge=0)
     possible: float = Field(gt=0)
     correct: bool
@@ -124,6 +123,12 @@ class AipotSubmissionRequest(BaseModel):
     client_submission_id: str = Field(min_length=8, max_length=128)
     elapsed_seconds: int = Field(ge=0, le=86_400)
     answers: dict[int, str] = Field(default_factory=dict)
+    # Practical answers are evaluated when the learner explicitly locks the
+    # question.  The final submission carries that immutable evidence ID so
+    # it can save the already-produced result without running paid media or
+    # re-evaluating a response.
+    practical_evaluation_ids: dict[int, str] = Field(default_factory=dict)
+    skip_practical_evaluation: bool = False
 
 
 class AipotQuestionReview(BaseModel):
@@ -136,6 +141,7 @@ class AipotQuestionReview(BaseModel):
     score: float = Field(ge=0)
     possible_score: float = Field(gt=0)
     result: str
+    is_unanswered: bool = False
     missing: list[str] = Field(default_factory=list)
     evaluation: AipotEvaluationEvidence | None = None
 
@@ -156,7 +162,7 @@ class AipotAttemptSummary(BaseModel):
     exam_title: str
     submitted_at: datetime
     score: float = Field(ge=0, le=100)
-    answered_count: int = Field(ge=0, le=40)
+    answered_count: int = Field(ge=0, le=100)
 
 
 class AipotAttemptDetail(AipotAttemptSummary):
@@ -168,6 +174,7 @@ class AipotAttemptDetail(AipotAttemptSummary):
 class AipotExamHistory(AipotExamSummary):
     attempts: int = Field(ge=0)
     last_attempt: AipotAttemptSummary | None = None
+    previous_attempts: list[AipotAttemptSummary] = Field(default_factory=list)
 
 
 class AipotWeakness(AipotChapterResult):

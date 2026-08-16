@@ -13,12 +13,16 @@ import { EmptyState, ErrorPanel, Skeleton } from "@/components/ui/state-panels";
 import { useModalFocus } from "@/hooks/use-modal-focus";
 import { clearDraft, pageForQuestion, questionsForPage, readDraft, unansweredQuestionNumbers, writeDraft } from "@/lib/aipot-draft";
 import { getAipotApi, type AipotAttempt, type AipotExam, type AipotHistory } from "@/lib/api/aipot";
-import { AipotPracticeSolver } from "./practice-solver";
+import { AipotPracticeSolver, learnerFacingPrompt, questionVisualAssets, scoreTone } from "./practice-solver";
 
 const PAGE_SIZE = 5;
 
 function studyDate(value: string): string {
   return new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" }).format(new Date(value));
+}
+
+export function previousAttemptLabel(attemptCount: number, index: number): string {
+  return `${attemptCount - index}회차 기존 응답 보기`;
 }
 
 function clock(seconds: number): string {
@@ -64,7 +68,7 @@ export function AipotDashboard() {
       />
       {error ? <ErrorPanel message={error} onRetry={() => void load()} /> : null}
       {!history && !error ? <DashboardSkeleton /> : null}
-      {history ? <><WeaknessPanel history={history} /><section aria-labelledby="exam-list-heading"><div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[rgb(var(--primary))]">{history.exams.length} sets · 40 questions each</p><h2 className="mt-1 text-xl font-extrabold tracking-tight" id="exam-list-heading">풀 세트 선택</h2></div><p className="text-sm text-muted">원본은 사진 기반 · 창작은 텍스트와 시각 자료 기반</p></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{history.exams.map((exam) => <ExamCard draftCount={drafts[exam.id] ?? 0} exam={exam} key={exam.id} />)}</div></section><p className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-6 text-[rgb(var(--foreground))]">개인 학습용 화면입니다. 로그인 기능이 없으므로 민감한 개인정보나 실제 업무 자료를 답안에 입력하지 마세요.</p></> : null}
+      {history ? <><WeaknessPanel history={history} /><section aria-labelledby="exam-list-heading"><div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[rgb(var(--primary))]">{history.exams.length} sets · 총 {history.exams.reduce((sum, exam) => sum + exam.question_count, 0)} questions</p><h2 className="mt-1 text-xl font-extrabold tracking-tight" id="exam-list-heading">풀 세트 선택</h2></div><p className="text-sm text-muted">원본은 사진 기반 · 창작은 텍스트와 시각 자료 기반</p></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{history.exams.map((exam) => <ExamCard draftCount={drafts[exam.id] ?? 0} exam={exam} key={exam.id} />)}</div></section><p className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-6 text-[rgb(var(--foreground))]">개인 학습용 화면입니다. 로그인 기능이 없으므로 민감한 개인정보나 실제 업무 자료를 답안에 입력하지 마세요.</p></> : null}
     </div>
   );
 }
@@ -80,7 +84,8 @@ function WeaknessPanel({ history }: { history: AipotHistory }) {
 
 function ExamCard({ exam, draftCount }: { exam: AipotHistory["exams"][number]; draftCount: number }) {
   const hasDraft = draftCount > 0;
-  return <Card className="flex min-h-56 flex-col border-t-4 border-t-[rgb(var(--primary))] transition hover:-translate-y-0.5 hover:shadow-lg"><div className="flex items-start justify-between gap-3"><span className="rounded-full bg-[rgb(var(--surface-muted))] px-2.5 py-1 text-xs font-bold text-[rgb(var(--muted))]">{exam.image_first ? "원본 사진" : "창작 모의"}</span><span className="text-xs font-semibold text-muted">{exam.question_count}문제</span></div><h3 className="mt-4 text-lg font-extrabold leading-7">{exam.title}</h3><div className="mt-3 text-sm leading-6 text-muted">{hasDraft ? `임시 답안 ${draftCount}/40` : exam.last_attempt ? `최근 ${studyDate(exam.last_attempt.submitted_at)} · ${exam.last_attempt.score.toFixed(1)}점` : "아직 제출한 기록이 없습니다."}</div><div className="mt-auto pt-5"><Link className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[rgb(var(--primary))] px-4 py-2 text-sm font-semibold text-[rgb(var(--primary-foreground))] shadow-sm transition hover:bg-[rgb(var(--primary-strong))]" href={`/aipot/solve/${exam.id}?page=1`}>{hasDraft ? "이어서 풀기" : "세트 시작"} <span aria-hidden="true">→</span></Link></div></Card>;
+  const previousAttempts = exam.previous_attempts ?? [];
+  return <Card className="flex min-h-56 flex-col border-t-4 border-t-[rgb(var(--primary))] transition hover:-translate-y-0.5 hover:shadow-lg"><div className="flex items-start justify-between gap-3"><span className="rounded-full bg-[rgb(var(--surface-muted))] px-2.5 py-1 text-xs font-bold text-[rgb(var(--muted))]">{exam.study_mode === "wrong_note" ? "개인 오답 노트" : exam.image_first ? "원본 사진" : "창작 모의"}</span><span className="text-xs font-semibold text-muted">{exam.question_count}문제</span></div><h3 className="mt-4 text-lg font-extrabold leading-7">{exam.title}</h3><div className="mt-3 text-sm leading-6 text-muted">{hasDraft ? `임시 답안 ${draftCount}/${exam.question_count}` : exam.last_attempt ? `${exam.attempts}회 풀이 · 최근 ${studyDate(exam.last_attempt.submitted_at)} · ${exam.last_attempt.score.toFixed(1)}점` : "아직 제출한 기록이 없습니다."}</div>{previousAttempts.length ? <div aria-label="기존 응답 보기" className="mt-3 flex flex-wrap gap-2">{previousAttempts.map((attempt, index) => <Link className="inline-flex min-h-11 items-center rounded-lg border px-3 py-2 text-xs font-semibold text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary-soft))/0.45]" href={`/aipot/attempts/${attempt.id}`} key={attempt.id}>{previousAttemptLabel(exam.attempts, index)}</Link>)}</div> : null}<div className="mt-auto pt-5"><Link className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[rgb(var(--primary))] px-4 py-2 text-sm font-semibold text-[rgb(var(--primary-foreground))] shadow-sm transition hover:bg-[rgb(var(--primary-strong))]" href={`/aipot/solve/${exam.id}?page=1`}>{hasDraft ? "이어서 풀기" : "세트 시작"} <span aria-hidden="true">→</span></Link></div></Card>;
 }
 
 export function AipotSolver() {
@@ -296,11 +301,12 @@ function OcrTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
 }
 
 function InlineOcrText({ text }: { text: string }) {
-  const pieces = text.split(/(`[^`]*`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|<br\s*\/?>)/gi);
+  const pieces = text.split(/(`[^`]*`|\*\*[^*]+\*\*|__[^_]+__|\[[^\]]+\]\([^)]+\)|<br\s*\/?>)/gi);
   return <>{pieces.map((piece, index) => {
     if (/^<br\s*\/?>$/i.test(piece)) return <br key={index} />;
     if (piece.startsWith("`") && piece.endsWith("`")) return <code className="rounded bg-[rgb(var(--surface-muted))] px-1 py-0.5 text-[0.92em]" key={index}>{piece.slice(1, -1)}</code>;
     if (piece.startsWith("**") && piece.endsWith("**")) return <strong key={index}>{piece.slice(2, -2)}</strong>;
+    if (piece.startsWith("__") && piece.endsWith("__")) return <u className="decoration-2 underline-offset-2" key={index}>{piece.slice(2, -2)}</u>;
     const link = piece.match(/^\[([^\]]+)\]\([^)]+\)$/);
     // OCR is untrusted content: retain the readable label, never create or
     // follow a URL, and never inject raw HTML into the page.
@@ -327,42 +333,79 @@ function AnswerDrawer({ open, exam, answers, onSelect, onClose }: { open: boolea
   return <div className="fixed inset-0 z-50 xl:hidden"><button aria-label="답안 보드 닫기" className="absolute inset-0 bg-slate-950/50" onClick={onClose} /><aside aria-label="답안 보드" aria-modal="true" className="absolute inset-y-0 right-0 w-[min(90vw,24rem)] overflow-y-auto bg-[rgb(var(--surface))] p-4 shadow-2xl" ref={panelRef} role="dialog" tabIndex={-1}><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-extrabold">답안 보드</h2><Button onClick={onClose} ref={closeRef} variant="secondary">닫기</Button></div><AnswerBoard answers={answers} exam={exam} onSelect={onSelect} /></aside></div>;
 }
 
-export function reviewTone(score: number, possibleScore: number): "correct" | "incorrect" {
-  return score >= possibleScore ? "correct" : "incorrect";
+export function reviewTone(score: number, possibleScore: number): "correct" | "partial" | "incorrect" {
+  const tone = scoreTone(score, possibleScore);
+  return tone === "complete" ? "correct" : tone === "partial" ? "partial" : "incorrect";
 }
 
-function ReviewItem({ review }: { review: AipotAttempt["reviews"][number] }) {
+export function reviewChoiceState(choiceId: string, submittedAnswer: string, correctAnswer: string | null | undefined) {
+  const answerIds = (answer: string | null | undefined) => new Set((answer ?? "").split("|").map((value) => value.trim()).filter(Boolean));
+  return { selected: answerIds(submittedAnswer).has(choiceId), correct: answerIds(correctAnswer).has(choiceId) };
+}
+
+export function belongsInWrongAnswerNotes(review: Pick<AipotAttempt["reviews"][number], "is_unanswered" | "score" | "possible_score">) {
+  return !review.is_unanswered && review.score < review.possible_score;
+}
+
+export function ReviewQuestion({ question, review }: { question: AipotExam["questions"][number]; review: AipotAttempt["reviews"][number] }) {
+  const choices = question.choices ?? [];
+  const choiceIds = question.choice_ids ?? [];
+  const prompt = learnerFacingPrompt(question.prompt, question.number, choices);
+  const visualAssets = questionVisualAssets(question);
+  const standaloneAssetUrl = question.asset_url && !visualAssets.some((asset) => asset.asset_url === question.asset_url) ? question.asset_url : null;
+  const hasChoices = ["multiple_choice", "multiple_select", "choice_bank"].includes(question.type) && choices.length > 0;
+  return <section aria-label={`Q${String(question.number).padStart(2, "0")} 문제와 선지`} className="mt-4 rounded-lg border bg-[rgb(var(--surface))/0.65] p-3"><p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">문제</p><OcrQuestionText text={prompt} visualAssets={visualAssets} />{standaloneAssetUrl ? <img alt={`${question.number}번 문제 자료`} className="mt-3 max-h-80 w-full rounded border object-contain" src={standaloneAssetUrl} /> : null}{hasChoices ? <ol className="mt-3 grid gap-2">{choices.map((choice, index) => { const id = choiceIds[index] ?? String(index + 1); const state = reviewChoiceState(id, review.submitted_answer, review.correct_answer); return <li className={`rounded-lg border px-3 py-2 text-sm ${state.correct ? "border-blue-500 bg-blue-500/10" : state.selected ? "border-red-500 bg-red-500/10" : "bg-[rgb(var(--surface))]"}`} key={id}><span><b className="mr-2">{id}.</b>{choice}</span><span className="ml-2 inline-flex flex-wrap gap-1">{state.selected ? <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-bold text-red-800 dark:text-red-200">내 선택</span> : null}{state.correct ? <span className="rounded bg-blue-500/15 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:text-blue-200">정답</span> : null}</span></li>; })}</ol> : null}</section>;
+}
+
+function ReviewItem({ review, question }: { review: AipotAttempt["reviews"][number]; question?: AipotExam["questions"][number] }) {
   const tone = reviewTone(review.score, review.possible_score);
+  const unanswered = review.is_unanswered;
   const correct = tone === "correct";
-  const classes = correct
+  const partial = tone === "partial";
+  const classes = unanswered
+    ? "border-slate-400 bg-slate-500/10 text-slate-950 dark:text-slate-100"
+    : correct
     ? "border-blue-500 bg-blue-500/10 text-blue-950 dark:text-blue-100"
+    : partial ? "border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-100"
     : "border-red-500 bg-red-500/10 text-red-950 dark:text-red-100";
 
   return <details className={`rounded-xl border-2 p-4 ${classes}`} key={review.number}>
-    <summary className="cursor-pointer font-bold"><span className={correct ? "text-blue-700 dark:text-blue-300" : "text-red-700 dark:text-red-300"}>Q{String(review.number).padStart(2, "0")} · {correct ? "정답" : "오답/보완 필요"}</span><span className="ml-2 text-sm font-normal opacity-80">{review.score.toFixed(1)}/{review.possible_score.toFixed(1)} · {review.topic}</span></summary>
-    <dl className="mt-4 grid gap-3 text-sm"><div><dt className="font-bold opacity-75">내 답안</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{review.submitted_answer || "미응답"}</dd></div>{review.correct_answer ? <div><dt className="font-bold opacity-75">정답</dt><dd className="mt-1 font-bold text-blue-700 dark:text-blue-300">{review.correct_answer}</dd></div> : null}{review.explanation ? <div><dt className="font-bold opacity-75">해설</dt><dd className="mt-1 leading-6">{review.explanation}</dd></div> : null}{review.missing?.length ? <div><dt className="font-bold opacity-75">보완할 요소</dt><dd className="mt-1">{review.missing.join(" · ")}</dd></div> : null}</dl>{review.evaluation ? <ReviewEvidence evaluation={review.evaluation} /> : null}
+    <summary className="cursor-pointer font-bold"><span className={unanswered ? "text-slate-700 dark:text-slate-300" : correct ? "text-blue-700 dark:text-blue-300" : partial ? "text-amber-700 dark:text-amber-300" : "text-red-700 dark:text-red-300"}>Q{String(review.number).padStart(2, "0")} · {unanswered ? "미응답" : correct ? "정답" : partial ? "부분 정답·보완 필요" : "오답/보완 필요"}</span><span className="ml-2 text-sm font-normal opacity-80">{review.score.toFixed(1)}/{review.possible_score.toFixed(1)} · {review.topic}</span></summary>
+    {question ? <ReviewQuestion question={question} review={review} /> : null}<dl className="mt-4 grid gap-3 text-sm"><div><dt className="font-bold opacity-75">내 답안</dt><dd className="mt-1 whitespace-pre-wrap font-semibold">{review.submitted_answer || "미응답"}</dd></div>{review.correct_answer ? <div><dt className="font-bold opacity-75">정답</dt><dd className="mt-1 font-bold text-blue-700 dark:text-blue-300">{review.correct_answer}</dd></div> : null}{review.explanation ? <div><dt className="font-bold opacity-75">해설</dt><dd className="mt-1 leading-6">{review.explanation}</dd></div> : null}{review.missing?.length ? <div><dt className="font-bold opacity-75">보완할 요소</dt><dd className="mt-1">{review.missing.join(" · ")}</dd></div> : null}</dl>{review.evaluation ? <ReviewEvidence evaluation={review.evaluation} /> : null}
   </details>;
 }
 
 function ReviewEvidence({ evaluation }: { evaluation: NonNullable<AipotAttempt["reviews"][number]["evaluation"]> }) {
   const artifact = evaluation.artifact;
-  return <section className="mt-4 rounded-lg border p-3 text-sm"><h3 className="font-extrabold">실제 실행 결과와 채점 근거</h3><p className="mt-1 text-xs text-muted">{evaluation.input_summary} · {evaluation.executor_model}</p>{evaluation.context_alignment ? <p className={`mt-2 rounded p-2 text-xs ${evaluation.context_alignment.aligned ? "bg-emerald-500/10" : "bg-red-500/10"}`}>문항 맥락 {evaluation.context_alignment.aligned ? "일치" : "불일치"}: {evaluation.context_alignment.rationale}</p> : null}{artifact.asset_url ? <img alt="프롬프트 실행 결과" className="mt-3 max-h-[32rem] w-full rounded border object-contain" src={artifact.asset_url} /> : null}{artifact.text ? <pre className="mt-3 max-h-64 overflow-auto rounded bg-slate-950 p-3 text-xs text-slate-50"><code>{artifact.text}</code></pre> : null}{artifact.stdout ? <pre className="mt-3 max-h-48 overflow-auto rounded bg-slate-950 p-3 text-xs text-slate-50"><code>{artifact.stdout}</code></pre> : null}<ul className="mt-3 space-y-2">{evaluation.criteria.map((criterion) => <li className="rounded border p-2" key={criterion.criterion}><strong>{criterion.met ? "O" : "×"} {criterion.criterion} · {criterion.earned}/{criterion.possible}</strong><p className="mt-1">{criterion.rationale}</p><p className="mt-1 text-xs text-muted">근거: {criterion.evidence}</p></li>)}</ul>{evaluation.reference_solution ? <details className="mt-3 rounded border p-2"><summary className="cursor-pointer font-bold">원문 답안 예시</summary>{evaluation.reference_source ? <p className="mt-1 text-xs text-muted">출처: {evaluation.reference_source}</p> : null}<pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-5"><code>{evaluation.reference_solution}</code></pre></details> : null}</section>;
+  return <section className="mt-4 rounded-lg border p-3 text-sm">
+    {evaluation.source_criteria?.length ? <section><h3 className="font-extrabold">PDF 원문 채점 기준</h3>{evaluation.reference_source ? <p className="mt-1 text-xs text-muted">출처: {evaluation.reference_source}</p> : null}<ul className="mt-2 list-disc space-y-1 pl-5 leading-5">{evaluation.source_criteria.map((criterion) => <li key={criterion}>{criterion}</li>)}</ul></section> : null}
+    <section className="mt-4"><h3 className="font-extrabold">채점 항목 · 각 1점</h3><ul className="mt-2 space-y-1">{evaluation.criteria.map((criterion) => { const tone = scoreTone(criterion.earned, criterion.possible); const classes = tone === "complete" ? "border-emerald-600 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100" : tone === "partial" ? "border-amber-600 bg-amber-500/10 text-amber-950 dark:text-amber-100" : "border-red-600 bg-red-500/10 text-red-950 dark:text-red-100"; const symbol = tone === "complete" ? "O" : tone === "partial" ? "△" : "×"; return <li className={`rounded border px-3 py-2 ${classes}`} key={criterion.criterion}><strong>{symbol} {criterion.criterion} · {criterion.earned}/{criterion.possible}점</strong></li>; })}</ul></section>
+    <section className="mt-4"><h3 className="font-extrabold">실행 결과</h3><p className="mt-1 text-xs text-muted">{evaluation.input_summary} · {evaluation.executor_model}</p>{evaluation.context_alignment ? <p className={`mt-2 rounded p-2 text-xs ${evaluation.context_alignment.aligned ? "bg-emerald-500/10" : "bg-red-500/10"}`}>문항 맥락 {evaluation.context_alignment.aligned ? "일치" : "불일치"}: {evaluation.context_alignment.rationale}</p> : null}{artifact.asset_url ? <img alt="프롬프트 실행 결과" className="mt-3 max-h-[32rem] w-full rounded border object-contain" src={artifact.asset_url} /> : null}{artifact.text ? <pre className="mt-3 max-h-64 overflow-auto rounded bg-slate-950 p-3 text-xs text-slate-50"><code>{artifact.text}</code></pre> : null}{artifact.stdout ? <pre className="mt-3 max-h-48 overflow-auto rounded bg-slate-950 p-3 text-xs text-slate-50"><code>{artifact.stdout}</code></pre> : null}</section>
+    {evaluation.reference_solution ? <details className="mt-3 rounded border p-2"><summary className="cursor-pointer font-bold">PDF 원문 답안 예시</summary><pre className="mt-2 whitespace-pre-wrap font-sans text-xs leading-5"><code>{evaluation.reference_solution}</code></pre></details> : null}
+  </section>;
 }
 
 export function AipotAttemptReview() {
   const params = useParams<{ attemptId: string }>();
   const [attempt, setAttempt] = useState<AipotAttempt | null>(null);
+  const [reviewExam, setReviewExam] = useState<AipotExam | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [onlyMissed, setOnlyMissed] = useState(false);
   const load = useCallback(async () => {
     setError(null);
-    try { setAttempt(await getAipotApi().getAttempt(params.attemptId)); }
+    setReviewExam(null);
+    try {
+      const nextAttempt = await getAipotApi().getAttempt(params.attemptId);
+      setAttempt(nextAttempt);
+      try { setReviewExam(await getAipotApi().getExam(nextAttempt.exam_id)); }
+      catch { setReviewExam(null); }
+    }
     catch (reason) { setError(reason instanceof Error ? reason.message : "제출 결과를 불러오지 못했습니다."); }
   }, [params.attemptId]);
 
   useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load]);
   if (error) return <ErrorPanel message={error} onRetry={() => void load()} />;
   if (!attempt) return <SolverSkeleton />;
-  const reviews = onlyMissed ? attempt.reviews.filter((review) => review.score < review.possible_score) : attempt.reviews;
-  return <div className="space-y-6"><PageHeader eyebrow="SUBMISSION REVIEW" title="채점 결과" description={`${attempt.answered_count}/40 응답 · ${Math.max(1, Math.round(attempt.elapsed_seconds / 60))}분 풀이`} actions={<Link className="inline-flex min-h-11 items-center rounded-lg bg-[rgb(var(--primary))] px-4 py-2 text-sm font-semibold text-[rgb(var(--primary-foreground))]" href={`/aipot/solve/${attempt.exam_id}?page=1`}>새로 다시 풀기</Link>} /><Card className="border-2 border-[rgb(var(--primary))] bg-[rgb(var(--primary-soft))/0.45] text-center"><p className="text-sm font-bold text-[rgb(var(--primary))]">총점</p><p className="mt-1 text-5xl font-extrabold tracking-tight">{attempt.score.toFixed(1)}<span className="ml-1 text-2xl">/ 100점</span></p><p className="mt-2 text-sm text-muted">이 제출과 답안은 프로젝트 학습 기록에 저장되었습니다.</p></Card><section aria-label="챕터별 분석" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{attempt.chapters.map((chapter) => <Card className={chapter.percent < 80 ? "border-amber-500/40" : ""} key={chapter.chapter}><p className="text-xs font-bold text-[rgb(var(--primary))]">{chapter.chapter}</p><p className="mt-2 text-3xl font-extrabold">{chapter.percent.toFixed(0)}%</p><p className="mt-2 text-sm font-semibold">{chapter.chapter_title}</p><p className="mt-2 text-xs leading-5 text-muted">{chapter.recommendation}</p></Card>)}</section><section aria-labelledby="review-heading"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[rgb(var(--primary))]">Answer review</p><h2 className="mt-1 text-xl font-extrabold" id="review-heading">내 답안과 정답</h2></div><Button onClick={() => setOnlyMissed((value) => !value)} variant="secondary">{onlyMissed ? "전체 보기" : "오답만 보기"}</Button></div><div className="space-y-3">{reviews.map((review) => <ReviewItem key={review.number} review={review} />)}</div>{!reviews.length ? <EmptyState title="표시할 오답이 없습니다" description="전체 문항을 다시 보거나 다음 세트에 도전해 보세요." /> : null}</section></div>;
+  const reviews = onlyMissed ? attempt.reviews.filter(belongsInWrongAnswerNotes) : attempt.reviews;
+  return <div className="space-y-6"><PageHeader eyebrow="SUBMISSION REVIEW" title="채점 결과" description={`${attempt.answered_count}/40 응답 · ${Math.max(1, Math.round(attempt.elapsed_seconds / 60))}분 풀이`} actions={<Link className="inline-flex min-h-11 items-center rounded-lg bg-[rgb(var(--primary))] px-4 py-2 text-sm font-semibold text-[rgb(var(--primary-foreground))]" href={`/aipot/solve/${attempt.exam_id}?page=1`}>새로 다시 풀기</Link>} /><Card className="border-2 border-[rgb(var(--primary))] bg-[rgb(var(--primary-soft))/0.45] text-center"><p className="text-sm font-bold text-[rgb(var(--primary))]">총점</p><p className="mt-1 text-5xl font-extrabold tracking-tight">{attempt.score.toFixed(1)}<span className="ml-1 text-2xl">/ 100점</span></p><p className="mt-2 text-sm text-muted">이 제출과 답안은 프로젝트 학습 기록에 저장되었습니다.</p></Card><section aria-label="챕터별 분석" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{attempt.chapters.map((chapter) => <Card className={chapter.percent < 80 ? "border-amber-500/40" : ""} key={chapter.chapter}><p className="text-xs font-bold text-[rgb(var(--primary))]">{chapter.chapter}</p><p className="mt-2 text-3xl font-extrabold">{chapter.percent.toFixed(0)}%</p><p className="mt-2 text-sm font-semibold">{chapter.chapter_title}</p><p className="mt-2 text-xs leading-5 text-muted">{chapter.recommendation}</p></Card>)}</section><section aria-labelledby="review-heading"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[rgb(var(--primary))]">Answer review</p><h2 className="mt-1 text-xl font-extrabold" id="review-heading">내 답안과 정답</h2></div><Button onClick={() => setOnlyMissed((value) => !value)} variant="secondary">{onlyMissed ? "전체 보기" : "오답만 보기"}</Button></div><div className="space-y-3">{reviews.map((review) => <ReviewItem key={review.number} question={reviewExam?.questions.find((question) => question.number === review.number)} review={review} />)}</div>{!reviews.length ? <EmptyState title="표시할 오답이 없습니다" description="전체 문항을 다시 보거나 다음 세트에 도전해 보세요." /> : null}</section></div>;
 }

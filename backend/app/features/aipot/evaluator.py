@@ -23,7 +23,7 @@ from app.core.errors import (
 from app.features.aipot.repository import AipotRepository
 
 MAX_ARTIFACT_BYTES = 15 * 1024 * 1024
-EVALUATOR_CONTRACT_VERSION = 2
+EVALUATOR_CONTRACT_VERSION = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,10 +188,12 @@ class OpenRouterClient:
                         "content": (
                             "You are the relevance gate for a Korean AI-POT practical question. "
                             "Use the provided Markdown and reference materials as authoritative. "
-                            "Decide whether the learner's answer is a prompt for this exact task, "
-                            "not whether it is generally well written. If it changes the task type, "
-                            "target, supplied data, or required result, set aligned=false. An unrelated "
-                            "image-generation prompt for a text task is false. Do not execute anything. "
+                            "Decide whether the learner is attempting a prompt for this exact task, "
+                            "not whether it is generally well written or fully correct. Missing required "
+                            "features, an incomplete format, or weak wording are scoring defects and must "
+                            "still set aligned=true so the answer can be executed and scored. Set aligned=false "
+                            "only when it clearly changes the task type, target, supplied data, or required result. "
+                            "An unrelated image-generation prompt for a text task is false. Do not execute anything. "
                             "Give concise Korean rationale and concrete evidence."
                         ),
                     },
@@ -374,6 +376,65 @@ class AipotPracticalEvaluator:
         return f"{prompt}\n\n---\n\n{supplemental}"
 
     @staticmethod
+    def _context_refinement_alignment(question: dict[str, Any], answer: str) -> dict[str, str | bool] | None:
+        """Allow an explicit refinement of a supplied initial result to execute.
+
+        Some range-limiting items deliberately show an initial response and ask
+        the learner to narrow it. Requiring a wholly independent replacement
+        prompt rejects this legitimate form before the text executor can test
+        whether it actually produces the requested result.
+        """
+        prompt = str(question.get("prompt", ""))
+        normalized = answer.replace(" ", "")
+        has_initial_and_target = "최초" in prompt and "최종" in prompt
+        narrows_existing_result = "최초" in normalized and any(token in normalized for token in ("남겨", "제한", "줄여", "추려"))
+        mentions_count = any(token in normalized for token in ("3개", "3가지", "세가지"))
+        if not (has_initial_and_target and narrows_existing_result and mentions_count):
+            return None
+        return {
+            "aligned": True,
+            "rationale": "제공된 최초 응답을 지정 개수로 좁히는 범위 한정 요청입니다.",
+            "evidence": "최초 응답 참조와 3개 제한을 함께 명시했습니다.",
+        }
+
+    @staticmethod
+    def _public_practical_alignment(exam_id: str, question: dict[str, Any], answer: str) -> dict[str, str | bool] | None:
+        """Public practical answers are always executed before they are scored.
+
+        A learner's imperfect prompt is the object being assessed. Blocking it
+        before execution turns missing requirements into a blanket zero and
+        prevents useful feedback. Image executions remain explicitly confirmed
+        by the learner; text and code tasks retain their normal execution path.
+        """
+        if exam_id not in {"public-set-a", "public-set-b"} or not 36 <= int(question.get("number", 0)) <= 40 or not answer.strip():
+            return None
+        return {
+            "aligned": True,
+            "rationale": "공개 실습 문항 답안은 실행 결과를 근거로 항목별 채점합니다.",
+            "evidence": "누락한 조건은 실행 전 차단이 아니라 실행 후 항목별 감점 대상입니다.",
+        }
+
+    @staticmethod
+    def _obvious_image_prompt_alignment(kind: str, answer: str) -> dict[str, str | bool] | None:
+        """Do not reject a recognizable image prompt merely for missing rubric details.
+
+        Image tasks need the media-confirmation step before they can execute. A
+        prompt that plainly asks for an image should reach that step; the judge
+        handles incomplete subjects, style, ratio, or sentence form afterward.
+        """
+        if kind != "image":
+            return None
+        normalized = answer.casefold()
+        image_intent = ("image", "photo", "photograph", "illustration", "picture", "이미지", "사진", "그림", "포스터")
+        if not any(word in normalized for word in image_intent):
+            return None
+        return {
+            "aligned": True,
+            "rationale": "이미지 생성 과제를 수행하려는 프롬프트입니다. 세부 조건 충족 여부는 실행 후 채점합니다.",
+            "evidence": "이미지 생성 의도와 이미지 내용 지시가 포함되어 있습니다.",
+        }
+
+    @staticmethod
     def _zero_criteria(rubric: list[dict[str, Any]], alignment: dict[str, str | bool]) -> list[dict[str, Any]]:
         rationale = f"문항 맥락 불일치: {alignment['rationale']}"
         evidence = str(alignment["evidence"])
@@ -448,7 +509,8 @@ class AipotPracticalEvaluator:
             context_markdown = self._context_markdown(question, spec)
             provider_solution = str(spec.get("provider_solution", "")).strip() or None
             reference_source = str(spec.get("reference_source", "")).strip() or None
-            alignment = self.client.assess_context(
+            source_criteria = [str(item) for item in spec.get("source_criteria", []) if str(item).strip()]
+            alignment = self._public_practical_alignment(exam_id, question, answer) or self._context_refinement_alignment(question, answer) or self._obvious_image_prompt_alignment(kind, answer) or self.client.assess_context(
                 context_markdown=context_markdown, answer=answer, provider_solution=provider_solution,
                 attachments=attachments,
             )
@@ -463,6 +525,7 @@ class AipotPracticalEvaluator:
                         "text": "실행하지 않음: 답안이 이 문항의 요구와 일치하지 않습니다.",
                         "stdout": None, "stderr": None, "exit_code": None,
                     },
+                    "source_criteria": source_criteria,
                     "reference_solution": provider_solution,
                     "reference_source": reference_source,
                     "context_alignment": alignment,
@@ -511,6 +574,7 @@ class AipotPracticalEvaluator:
                 "input_summary": input_summary, "executor_model": self.settings.aipot_image_model if kind == "image" else self.settings.aipot_text_model,
                 "judge_model": self.settings.aipot_judge_model, "criteria": criteria,
                 "artifact": artifact, "reference_solution": provider_solution,
+                "source_criteria": source_criteria,
                 "reference_source": reference_source,
                 "context_alignment": alignment, "cost_usd": execution.cost_usd,
             }
@@ -523,15 +587,24 @@ class AipotPracticalEvaluator:
             self.repository.abandon_evaluation(evaluation_id)
             raise
 
-    def completed(self, *, exam_id: str, question: dict[str, Any], answer: str) -> dict[str, Any] | None:
+    def completed(
+        self, *, exam_id: str, question: dict[str, Any], answer: str, evaluation_id: str | None = None,
+    ) -> dict[str, Any] | None:
         spec = question.get("evaluation")
         if not answer.strip() or not isinstance(spec, dict):
             return None
+        answer_hash = hashlib.sha256(answer.strip().encode("utf-8")).hexdigest()
+        if evaluation_id:
+            stored = self.repository.get_completed_evaluation_by_id(
+                evaluation_id=evaluation_id, exam_id=exam_id,
+                question_number=int(question["number"]), answer_hash=answer_hash,
+            )
+            if stored:
+                return stored.response
         question_hash = self._hash({
             "evaluator_contract_version": EVALUATOR_CONTRACT_VERSION,
             "prompt": question.get("prompt"), "rubric": question.get("rubric"), "evaluation": spec,
         })
-        answer_hash = hashlib.sha256(answer.strip().encode("utf-8")).hexdigest()
         stored = self.repository.get_completed_evaluation(
             exam_id=exam_id, question_number=int(question["number"]), answer_hash=answer_hash, question_hash=question_hash,
         )
