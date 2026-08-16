@@ -134,7 +134,7 @@ PLAYWRIGHT_BASE_URL=http://192.168.219.121:18080 pnpm test:e2e
 
 **Attempted**: `pnpm --dir frontend audit` after the AI-POT implementation checks.
 
-**Observed result**: The existing lockfile reports 19 advisories: 13 high and 6 moderate. These include Next.js `16.2.10` advisories patched in `16.2.11`, plus transitive `postcss`, `js-yaml`, `sharp`, and `brace-expansion` paths.
+**Observed result**: The existing lockfile reports 20 advisories: 14 high and 6 moderate. These include Next.js `16.2.10` advisories patched in `16.2.11`, plus transitive `postcss`, `js-yaml`, `sharp`, and `brace-expansion` paths.
 
 **Why skipped**: Updating dependencies changes the application supply chain and lockfile. The project policy and active task both require explicit approval before dependency changes, so no package or lockfile was modified.
 
@@ -144,7 +144,7 @@ PLAYWRIGHT_BASE_URL=http://192.168.219.121:18080 pnpm test:e2e
 
 ```bash
 cd /home/cgma/apps/web_service/frontend
-pnpm up next@16.2.11 postcss@8.5.18
+pnpm up next@16.2.11 postcss@8.5.23
 pnpm audit
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
@@ -348,3 +348,455 @@ evidence. The retained question list is enforced by
 The `aipot-level1-sample-questions/assets/` files are not copied into the live set. The supplied
 Markdown already transcribes every decision-relevant table/chart; adding those images would violate
 the focused-asset policy and duplicate learner-facing information.
+
+## 2026-08-07 AI-POT catalog reduction
+
+**Skipped actions**: None. The requested catalog removal required no browser, infrastructure, or
+deployment operation. Only the 17 learner-facing catalog manifests were moved to the local trash;
+OCR, asset, and source material remains available for a future restoration.
+
+## 2026-08-07 AI-POT response review browser regression
+
+**Attempted**: `pnpm --dir frontend test:e2e` after promoting the existing-response links and
+in-choice keyword explanations.
+
+**Observed**: All Chromium and mobile-Chromium cases stopped before execution because the Playwright
+Chromium executable is absent at `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/`.
+
+**Impact**: The inline per-choice placement is covered by a frontend component test, and live
+Caddy API checks passed, but this host has not visually exercised the flow in Chromium.
+
+**Manual command**:
+
+```bash
+cd /home/cgma/apps/web_service/frontend
+pnpm exec playwright install
+PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
+```
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-08 AI-POT Set 4 interactive recovery check
+
+**Skipped action**: Browser confirmation that submitting Set 4 after an answered C18 item reaches the result page.
+
+**Reason**: Playwright Chromium remains unavailable at `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell`. Backend regression coverage exercises an unknown chapter code, and the live Set 4 retrieval endpoint returned HTTP 200 after the scoped API deployment.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-08 unanswered-result browser check
+
+**Skipped action**: Playwright confirmation that unanswered questions show the `미응답` flag in a saved result and do not appear after selecting `오답만 보기`.
+
+**Reason**: The targeted Playwright run could not launch because the Chromium executable is absent at `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell`. Backend and frontend regression tests cover the flag, result label, and wrong-answer-note exclusion.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 confirmed-media and recovered-visual browser check
+
+**Skipped action**: Production-browser confirmation that a saved image answer reloads without a paid-media error, and visual inspection of A Q40 and B Q37 in the solve screen.
+
+**Reason**: Playwright Chromium is unavailable. A live image run would create a paid provider request and a persisted record. Unit coverage verifies the confirmation and saved-feedback guards; API asset requests are verified after deployment.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 practical-progress spinner browser check
+
+**Skipped action**: Production-browser confirmation of the spinner during a live text or image practical evaluation.
+
+**Reason**: A live practical run creates a paid provider request and persisted study record; Playwright Chromium is unavailable. Component coverage verifies the spinner status and busy button state.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 partial-score navigator browser check
+
+**Skipped action**: Production-browser confirmation that a 3/5 question number is amber in `문항 바로가기` and remains amber in previous-attempt review.
+
+**Reason**: Playwright Chromium is unavailable on this host. Unit coverage verifies the navigator's complete/partial/missed/unanswered state mapping and the review-card partial state.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 practical-score-colors browser check
+
+**Skipped action**: Production-browser confirmation of green full-credit, amber partial-credit, and red zero-credit practical criteria in the live and previous-attempt views.
+
+**Reason**: Playwright Chromium is unavailable on this host. Component regression tests cover all three score states and the partial-result label.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 public practical execution browser check
+
+**Skipped action**: Production-browser execution verification for all ten A/B Q36–Q40 prompts.
+
+**Reason**: The five image tasks require paid image generation and save artifacts; running all ten as test attempts would create paid, persistent study records. Parameterized backend regression tests instead prove every public practical route reaches its executor and judge.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 incomplete-image-prompt execution browser check
+
+**Skipped action**: Production-browser confirmation that Q37's incomplete but relevant image prompt reaches the media-confirmation and execution path.
+
+**Reason**: A live run creates an image and charges the configured image provider; browser automation is also unavailable because Playwright Chromium is not installed. Backend regression coverage proves the prompt reaches the image executor and judge without a relevance-gate call.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 per-question practical-retry browser check
+
+**Skipped action**: Production-browser confirmation that retrying Q36 keeps the locked answers and scores for Q35 and Q37 intact.
+
+**Reason**: Playwright Chromium is unavailable on this host. The unit regression test verifies that only the selected question key is removed, and frontend lint, typecheck, and production build pass.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 practical scoring compact-view browser check
+
+**Skipped action**: Production-browser confirmation that a Q36 practical result shows the PDF criteria first, five compact one-point rows, and the collapsed source answer.
+
+**Reason**: Playwright Chromium is unavailable on this host. Frontend unit coverage verifies the order and compact score rendering; backend coverage verifies that a Q36 initial-response refinement proceeds to execution rather than being context-blocked.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 Public A/B prompt and choice-bank browser check
+
+**Skipped action**: Visual browser confirmation of the rebuilt Public A/B tables and every expanded
+choice-bank explanation.
+
+**Reason**: Playwright Chromium remains unavailable on this host. Public content assertions verify
+the table relationships and require unique explanations for every Q31–Q35 bank entry; live API
+checks confirm the corrected payloads.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm aipot:public:check`
+
+## 2026-08-07 Public A/B final prompt-audit browser check
+
+**Skipped action**: Visual browser confirmation of the final A Q18 and B Q11/Q12 rebuilt tables.
+
+**Reason**: Playwright Chromium remains unavailable. The source assertions cover the table rows and
+a live public API request confirms all three repaired payloads.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm aipot:public:check`
+
+## 2026-08-07 Public A/B prompt-cleanup browser check
+
+**Skipped action**: Visual browser confirmation of all repaired A/B prompt wrapping and the unified
+Public A Q38 table on desktop and mobile.
+
+**Reason**: Playwright Chromium remains unavailable on this host. Static extraction checks validate
+all 80 prompts, and the live API verifies A Q37 placeholder removal and the Q38 parallel task table.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm aipot:public:check`
+
+## 2026-08-07 Public A/B exact-answer feedback browser check
+
+**Skipped action**: Visual browser confirmation that the locked short-answer panel shows `기대 정답`.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The component test renders the
+locked label, the production frontend is healthy, and the live API accepts the reviewed Q25 alias.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 previous-response question-context browser check
+
+**Skipped action**: Production-browser verification that a saved review expands with its original
+prompt, all choices, and the `내 선택`/`정답` markers on the matching cards.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The frontend component test covers
+the rendered prompt, options, and mismatched selected/correct markers.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 Public A/B browser check
+
+**Skipped action**: Production-browser verification of the restored Public A/B cards, Public A Q13's two-choice selection, and its locked inline feedback markers.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The API regression test covers the reversed `3|1` multiple-select answer and both correct markers; the public content check validates the catalog data.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 Public A/B evidence-rendering browser check
+
+**Skipped action**: Production-browser visual confirmation that Public A Q01 renders its focused concept diagram and the rebuilt Public A/B tables retain their columns on desktop and mobile.
+
+**Reason**: Playwright Chromium remains unavailable on this host. Content assertions and live Caddy payload checks cover the asset and Markdown delivery paths.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 Public A/B choice-explanation browser check
+
+**Skipped action**: Production-browser verification that every locked Public A/B option opens the rewritten keyword explanation in its own option card.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The public-set content check verifies all 409 explanation records and the frontend component already verifies the in-card placement.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 Public A Q06 combination-explanation browser check
+
+**Skipped action**: Production-browser confirmation that each Public A Q06 combination expands its own statement-level explanation.
+
+**Reason**: Playwright Chromium remains unavailable. The public content assertion and live feedback response verify all four Q06 explanations.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 public combination-question browser check
+
+**Skipped action**: Production-browser visual verification for the remaining combination questions A Q08/Q14 and B Q01/Q09.
+
+**Reason**: Playwright Chromium remains unavailable. The public-set validation asserts statement-level feedback for every discovered combination question.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 five-question page reset browser check
+
+**Skipped action**: Production-browser verification that moving from Q05 to Q06 lands at the top of the new page.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The frontend unit test verifies the exact top-of-document scroll request.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 no-generation practical submission browser check
+
+**Skipped action**: A production-browser confirmation of the new `생성 없이 답안 제출` dialog.
+
+**Reason**: The same host lacks the Playwright Chromium executable documented above. Unit tests cover
+the enablement rule, and backend tests prove the evaluator is not invoked for the no-generation
+submission flag.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 final practical-submission browser check
+
+**Skipped action**: Browser confirmation that a locked image answer reaches the final result without a second generation request.
+
+**Reason**: Playwright Chromium is unavailable on this host. Backend regression tests bind the saved evidence ID to the exact exam, question, and answer, while frontend unit tests verify the ID is included in final submission.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 image-based source Set 1 browser check
+
+**Skipped action**: Visual Playwright confirmation of all 40 image-based Set 1 questions, including crop replacement and the Google Flow choice bank.
+
+**Reason**: Playwright Chromium is unavailable on this host. The source validator checks every source image and declared crop; API tests verify the reviewed manifest overrides archival OCR.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-07 image-based source Set 2 live API check
+
+**Skipped action**: Live API confirmation that the running service lists and returns the new
+`source-round-02` 40-question learner manifest.
+
+**Reason**: `curl --fail --show-error http://127.0.0.1:18080/api/v1/aipot/exams/source-round-02`
+returned `curl: (7) Failed to connect to 127.0.0.1 port 18080`; no local application service was
+listening. Static source validation, frontend unit tests, and backend tests passed.
+
+**Manual command**: `HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production up --build -d --wait`
+
+**Verification command**: `curl --fail --show-error http://127.0.0.1:18080/api/v1/aipot/exams/source-round-02`
+
+## 2026-08-07 full AI-POT content check
+
+**Skipped action**: A passing all-set `pnpm aipot:content:check` verification after adding Set 2.
+
+**Reason**: The command reaches the Set 2 builder and validator successfully, then stops at the
+pre-existing `source-round-03.json` placeholder choices:
+`Placeholder choices remain in: source-round-03.json`. Set 3 is outside this Set 2 request and was
+not changed.
+
+**Manual command**: `node tools/repair-aipot-source-choice-placeholders.mjs`
+
+**Verification command**: `pnpm aipot:content:check`
+
+## 2026-08-07 frontend production dependency audit
+
+**Skipped action**: Remediation of production dependency audit findings while creating Set 2.
+
+**Reason**: `pnpm --dir frontend audit --prod` reports 12 existing findings (6 high, 6 moderate),
+including Next.js `<16.2.11`, PostCSS, and transitive sharp/libvips. Updating dependencies is outside
+this content-only change and requires a separately reviewed compatibility update.
+
+**Manual command**: `pnpm --dir frontend up next@16.2.11`
+
+**Verification command**: `pnpm --dir frontend audit --prod && pnpm --dir frontend lint && pnpm --dir frontend typecheck && pnpm --dir frontend test && pnpm --dir frontend build`
+
+## 2026-08-07 image-based source Set 4 live and browser check
+
+**Skipped action**: Live API and Playwright confirmation that the catalog returns the new
+`source-round-04` learner manifest and its Q37/Q39/Q40 reference crops.
+
+**Reason**: `curl --fail --show-error --max-time 5 http://127.0.0.1:18080/api/v1/aipot/exams/source-round-04`
+returned `curl: (7) Failed to connect to 127.0.0.1 port 18080`; no local application service is
+listening. Playwright Chromium is also unavailable on this host. The dedicated source validator and
+all-set content check confirm the manifest structure and assets without exposing original answer pages.
+
+**Manual command**: `HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production up --build -d --wait && cd frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm test:e2e`
+
+**Verification command**: `curl --fail --show-error http://127.0.0.1:18080/api/v1/aipot/exams/source-round-04 && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e`
+
+## 2026-08-07 AI-POT restart browser check
+
+**Skipped action**: Playwright confirmation that an in-progress AI-POT set opens the restart confirmation dialog and clears only its local draft after approval.
+
+**Reason**: The targeted command `pnpm --dir frontend exec playwright test e2e/flow.spec.ts --grep 'restart any in-progress set' --project=chromium` could not launch because the Playwright Chromium executable is absent at `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell`. The unit test covers availability in all in-progress phases, and lint, typecheck, unit tests, and production build pass.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && pnpm exec playwright test e2e/flow.spec.ts --grep 'restart any in-progress set' --project=chromium`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-08 AI-POT anytime-submission browser check
+
+**Skipped action**: Playwright confirmation that `시험 종료 및 답안 제출` is visible before the learner starts, during theory, and during practical work, and that a partial submission preserves unanswered flags.
+
+**Reason**: Playwright Chromium remains unavailable at `/home/cgma/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell`. Unit tests verify the always-available submission rule; backend tests verify partial submissions and unanswered flags.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `pnpm --dir frontend test:e2e`
+
+## 2026-08-08 Set 4 Q20 visual asset browser check
+
+**Skipped action**: Browser confirmation that the Q20 zero-shot/one-shot diagram is visible in the
+learner card after the API asset recovery.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The rebuilt API is healthy and
+the exact Q20 crop endpoint was verified through Caddy with HTTP 200 and an `image/jpeg` response.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e`
+
+## 2026-08-16 LAN access to public hostname
+
+**Skipped action**: End-to-end verification of `https://web.heybobma.dedyn.io/` from the same LAN
+using its public DNS address.
+
+**Reason**: A direct request from the origin to its own public IPv4 address timed out after eight
+seconds. In contrast, Caddy's public Let's Encrypt TLS-ALPN validation succeeded and local SNI
+HTTPS requests through `127.0.0.1` return HTTP 200. This is consistent with the router not
+supporting NAT loopback (hairpin NAT), an external-network condition that this workspace cannot
+change.
+
+**Impact**: Public clients should use the HTTPS hostname. A client on the same LAN may fail when
+resolving the hostname to the public address until the router enables NAT loopback or its local DNS
+maps `web.heybobma.dedyn.io` to `192.168.219.199`.
+
+**Manual command**: Enable router NAT loopback/hairpin NAT, or add a router split-DNS record:
+`web.heybobma.dedyn.io -> 192.168.219.121`.
+
+**Verification command**: From a LAN client, run
+`curl --resolve web.heybobma.dedyn.io:443:192.168.219.199 -I https://web.heybobma.dedyn.io/`; from
+an external network, run `curl -I https://web.heybobma.dedyn.io/`.
+
+## 2026-08-08 Wrong-note Set 1 browser check
+
+**Skipped action**: Browser confirmation of the review-mode navigator, Q100 keyboard interaction, and final submission.
+
+**Reason**: Playwright Chromium is absent on this host. No browser installation was attempted during this implementation pass.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e`
+
+**Verification command**: `PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm --dir frontend test:e2e`
+
+## 2026-08-08 Wrong-note Set 1 removal
+
+**Action**: Moved `/home/cgma/cgma_git/study/aipot/실전모의고사/data/web-exams/sample-set-01.json` to the Linux trash.
+
+**Reason**: The operator requested that only the current wrong-note Set 1 be removed before it is remade. The general review-mode structure and source records were retained.
+
+**Recovery command**: `gio list trash | rg 'sample-set-01'` then restore the matching file through the desktop trash interface or `gio move` to `data/web-exams/`.
+
+**Verification command**: `curl --fail --show-error http://192.168.219.130:18080/api/v1/aipot/exams | jq 'map(select(.id == "sample-set-01"))'`
+
+## 2026-08-08 Set 4 Q28 scenario-list browser check
+
+**Skipped action**: Browser confirmation that all four Q28 AI-ethics case facts are visible before
+the answer controls.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The scoped API was rebuilt and
+the Set 4 endpoint through Caddy was verified to contain all four case facts.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e`
+
+## 2026-08-08 Set 4 Q28 learner prompt rendering browser check
+
+**Skipped action**: Browser confirmation that Q28 displays `다음과 같은 문제점들이 발견되었다`
+and all four case facts before the answer controls after the frontend rendering recovery.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The frontend regression test
+preserves the same Q28-style scenario list, and the Set 4 API response through Caddy contains the
+introductory phrase.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e`
+
+## 2026-08-08 Set 5 Q04 underline browser check
+
+**Skipped action**: Browser confirmation that the Q04 `㉠` model marker is visibly underlined.
+
+**Reason**: Playwright Chromium remains unavailable on this host. The source-manifest and frontend
+renderer regression tests pass, and the live Set 5 endpoint includes the underline marker.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e`
+
+## 2026-08-08 Wrong-note Set 1 recreation browser check
+
+**Skipped action**: Browser confirmation of Q50 navigation, keyboard-answer entry, immediate feedback,
+and final submission for the recreated 50-question review set.
+
+**Reason**: Playwright Chromium is not installed on this host. Unit and API regressions cover the
+10-page/Q50 path, and the live API endpoint will be verified separately.
+
+**Manual command**: `cd /home/cgma/apps/web_service/frontend && pnpm exec playwright install chromium && PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm exec playwright test e2e/flow.spec.ts --project=chromium`
+
+**Verification command**: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e`

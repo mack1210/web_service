@@ -262,3 +262,378 @@ the PDF extraction and runs source assertions so a future set cannot regress to 
 `sample-set-01` is available through the mounted AI-POT content directory. It is generated from the
 provided Markdown source, uses the shared 100-point structure, and contains no redundant page-image
 attachments because every required table/chart was transcribed losslessly.
+
+## 2026-08-07 — AI-POT catalog reduction
+
+At the operator's request, 17 learner-facing catalog manifests were moved to the local trash from
+the mounted `data/web-exams` directory. The live API through Caddy now returns only
+`generated-mock-01`, titled `AI-POT 창작 실전 모의고사 01회` (40 questions). OCR transcriptions,
+image assets, generated source manifests, and the persisted `aipot_history` volume were preserved;
+no service, port, proxy, or container was changed.
+
+## 2026-08-07 — AI-POT response review and inline keywords
+
+The API now returns all prior attempts for each remaining exam, and the dashboard presents a
+numbered `기존 응답 보기` link for each one. The Q01–Q30 feedback contract was reduced from five
+verbose per-choice fields to one keyword-focused explanation. On answer lock, the frontend renders
+each explanation inside its own choice; it no longer moves to a separate all-choice panel.
+
+The retained `generated-mock-01` catalog manifest now contains 120 concise keyword explanations
+(four for each multiple-choice question). Only the API and frontend Compose services were rebuilt;
+Caddy, the sandbox, ports, mounted OCR/assets, and persisted history were not changed. The live
+Caddy API confirmed the history links and the new one-field feedback response.
+
+## 2026-08-07 — AI-POT no-generation practical submission
+
+Q36–Q40 now support an explicit `생성 없이 답안 제출` path once Q01–Q35 are locked and all five
+practical answers have been written. It persists the written answers while skipping the evaluator,
+image/chart generation, and code execution. The review labels each saved practical answer
+`제출됨 · 미평가`; its automatic score is 0, so it is never presented as an evaluated result.
+
+The submission request carries an opt-in `skip_practical_evaluation` flag. Its backend regression
+test proves the evaluator is not called. API and frontend services were rebuilt for this change;
+Caddy, the sandbox, ports, mounted assets, and history volume remain unchanged.
+
+## 2026-08-07 — AI-POT five-question page reset
+
+The previous/next five-question controls now reset the document scroll position to the top with no
+animation. This prevents a learner who completes the fifth card of a page from landing at the bottom
+of the next page. The change is frontend-only; no API, data, service topology, or persisted history
+was changed.
+
+## 2026-08-07 — AI-POT previous-response question context
+
+Saved-response reviews now load the retained exam alongside the attempt record. Each review card
+shows the original prompt, supplied visual material where applicable, and every original
+multiple-choice option. The learner's selection and the recorded correct answer are badged on the
+corresponding option cards. This frontend-only release does not alter the attempt, OCR/assets,
+catalog, API, Caddy, sandbox, ports, or persisted history.
+
+## 2026-08-07 — AI-POT Public A/B restoration and answer-key reconciliation
+
+`public-set-a` and `public-set-b` were restored from their recoverable learner manifests and rebuilt
+from the supplied reference PDF using the current AI-POT format. Both now use the one-field, inline
+choice-keyword feedback contract and the current practical-question context. Existing focused public
+assets are reused; no source OCR, original-round asset, or study-history data was removed.
+
+The supplied Public A answer page exposed a shifted legacy key after Q13. Direct question/answer-page
+comparison corrected A Q13 as the official multiple selection `1|3`, A Q14–Q35, and B Q19. The API
+now also recognizes reversed multiple-selection input order and marks every correct option in
+immediate feedback. A reproducible public-set check validates the 40-question/100-point structure,
+official keys, available choice IDs, practical references, and current choice-feedback shape.
+
+Only the API service was rebuilt and recreated for the multiple-selection feedback correction. The
+frontend remained healthy because it already supports `multiple_select`; Caddy, the sandbox, ports,
+mounted public assets, and persisted history were unchanged. Live Caddy checks returned the three
+active sets and accepted Public A Q13 answer `3|1` as correct with both official options marked.
+The same live check accepted Public A Q24's official Korean alias `시그모이드 함수`.
+
+## 2026-08-07 — AI-POT Public A/B evidence completion
+
+The Public A/B PDF was reviewed again for answer-critical evidence. The learner manifests now retain
+focused assets only for irreducibly visual material: A Q01's concept diagram, A's framework/workflow,
+watermark, video-setting, and reference-image items; B's framework/scatterplot, ComfyUI-setting, and
+before/after image items. Textual tables are represented as safe Markdown instead of opaque page
+screenshots. In particular, A Q02, Q14, Q15, and Q23 and B Q05, Q22, and Q25 now keep their row and
+column relationships, while A Q01 includes the original crop containing the otherwise missing `㉠`.
+
+Live Caddy requests confirmed A Q01 exposes its restricted source asset, A Q02 exposes the comparison
+table, A Q14 exposes complete paired option labels, and B Q05 exposes the DBSCAN step table. No new
+image was generated; only existing private PDF crops are used.
+
+## 2026-08-07 — AI-POT Public A/B choice-explanation rewrite
+
+The former restored feedback was mechanically derived and contained generic topic labels and leaked
+source-page text. All 217 Public A and 192 Public B options now use one concise, question-specific
+keyword explanation. The explanation identifies the relevant concept where the option names a tool
+or method and always relates that option to the stem's actual criterion. For example, A Q05 now
+distinguishes TensorFlow, PyTorch, scikit-learn, and Apache Spark instead of repeating a generic
+LLM label. The validation rejects the prior generic phrases and any `AI-POT ... 공개문제` source label.
+
+Combination choices now receive statement-level explanations. Public A Q06, for example, explains why
+㉠·㉢·㉣ form the correct LangChain combination and why each alternative fails through ㉡ or ㉤.
+
+The full public-catalog scan found the remaining combination-choice questions at A Q08/Q14 and B
+Q01/Q09. Their explanations now identify the membership or mapping error in every answer combination.
+
+## 2026-08-07 — Public A Q08 column restoration
+
+Public A Q08 has been rebuilt as a readable statement table, and every answer explicitly labels
+`사전 학습` and `미세 조정` on either side of `|`. `pnpm aipot:public:check` confirms that
+option 1 remains correct and rejects non-text or blank source prompts. The live public API also
+returns the reconstructed table and all four labelled choices without rebuilding a service.
+
+## 2026-08-07 — Public A/B short-answer exact policy
+
+Public A/B Q24–Q30 now document and enforce a finite exact-answer policy. They are scored locally
+against the canonical answer and only the reviewed aliases; Haiku cannot broaden a short-answer
+match. Public A Q25 accepts `k-fold cross-validation`, `K-fold validataion`, and `K-fold 교차검증`,
+but rejects `5-fold cross validation`. The immediate locked-answer panel now shows the canonical
+`기대 정답`.
+
+For Q36–Q40, Haiku continues to receive the original question, task context, learner answer, and
+provider reference solution before it evaluates the practical response. Regression tests assert all
+four inputs are supplied to the judge.
+
+The frontend service alone was rebuilt and recreated to publish the immediate `기대 정답` label.
+It reached healthy status, and the Public A solve route returned HTTP 200. API, Caddy, sandbox,
+mounted source assets, and persisted history were left running and unchanged.
+
+## 2026-08-07 — Public A/B prompt and choice-bank clarity
+
+The Public A PDF review rebuilt Q26–Q29 into faithful readable structures, including the Q27 CSV
+schema, the requested age-distribution pie chart, and the Q28 prompt/result relationship. The same
+audit identified a layout loss in Public B Q29; B Q26–Q29 have been structured consistently.
+
+Public A/B Q31–Q35 use shared choice banks. Rather than repeating the answer-key sentence beneath
+every option, each option now defines itself and then states its relation to the current blank. The
+live API verifies the corrected A stems and B item explanations. This is mounted study data only;
+no service was rebuilt or restarted.
+
+## 2026-08-07 — Public A/B prompt cleanup and unified task tables
+
+The Public A/B extraction path now removes trailing `( )` answer artifacts, redundant answer-line
+placeholders, invisible PDF control characters, and known PDF word-wrap splits. The answer UI is
+the sole answer entry point. Public A Q37's image-generation instructions now preserve `[이미지 생성]`
+and `동작` as complete readable text.
+
+Public A Q38 was corrected from two disconnected tables into one `구분 | 내용` table: dataset,
+prompt, and expected response are now parallel rows. Static checks cover all 80 prompts and the
+live API confirms the corrected A Q37/Q38 payload. This is mounted content only; no service restart
+was required.
+
+The same all-prompt scan found structural label loss in Public A Q18 and Public B Q11/Q12. A Q18 now
+has explicit remote-ratio, employment, experience, and education rows; B Q11 separates the added
+education request from the result, and B Q12 separates the masking request from its result. Live API
+requests confirm each repaired payload.
+
+## 2026-08-07 — Public A/B practical-answer scoring clarity
+
+PDF pages 58–59 were rechecked against the published practical tasks. Public A Q36's source answer
+example is exactly `냉방병 예방 팁 3가지를 알려줘.`; it is the only example printed for that item.
+The adjacent source explanation establishes that `3가지` is the required range limit, rather than
+requiring exact sentence reproduction.
+
+All Public A/B Q36–Q40 practical contexts now expose their source-PDF criteria. Feedback and
+historical reviews display those criteria first, followed by a concise one-point-per-item learning
+rubric and an expandable source answer. The prior duplicated context-mismatch rationale is removed.
+
+The evaluator now recognizes an answer that refines the question's displayed initial response to
+the required number of results as relevant context. Thus the Q36 answer form “최초 응답에서 3가지만
+남겨줘” reaches execution/evaluation rather than being blocked by the relevance precheck. API and
+frontend were rebuilt/recreated and became healthy; `GET /aipot/solve/public-set-a` returned HTTP
+200. Caddy was not restarted or modified.
+
+## 2026-08-07 — Practical retry scope
+
+Practical retry is deliberately per-question: it removes only the selected Q36–Q40 answer, lock,
+and feedback state. The separate in-progress whole-set reset controls were removed from the sidebar
+and results card. Other question answers, scores, timer state, and feedback are preserved.
+
+## 2026-08-07 — Practical relevance versus scoring
+
+The Q37 report exposed an incorrect relevance-gate behavior: a multi-sentence image prompt missing
+the black-and-white requirement was relevant but was prevented from executing. Relevance now means
+an attempt to perform the given task. Completeness, sentence form, style, ratio, and subject details
+are execution-and-judge scoring concerns rather than pre-execution blockers. Clearly unrelated tasks
+remain blocked. The evaluation contract version was bumped to invalidate stored mismatch results for
+the same answer.
+
+## 2026-08-07 — Public A/B practical execution audit
+
+The A/B public practical sets require learning feedback from imperfect answers, so Q36–Q40 are now
+always executed before their five one-point criteria are judged. The previous pre-execution relevance
+call cannot produce `not run: context mismatch` for these ten questions. Image questions still require
+the existing explicit media-generation confirmation. The evaluator contract version was advanced again
+to invalidate results stored under the former public gating behavior.
+
+The B Q38 execution context was also repaired: it now contains the Earth Day poster, child with globe,
+forest/clear sky, `Earth Day`, and 1:1 source conditions, rather than an unavailable-source claim.
+
+## 2026-08-07 — Practical partial-score visibility
+
+The solver and historical review now use the same score-state treatment. Full-credit criteria are
+green, nonzero partial-credit criteria are amber, and zero-credit criteria are red. A nonzero but
+non-perfect question score is also amber rather than being presented as a blanket wrong answer.
+
+The active answer navigator now gives a partially correct number the same amber state and a `부분 정답`
+accessibility label. Historical review cards retain the equivalent amber partial-score treatment.
+
+## 2026-08-07 — Practical execution progress
+
+Practical submission now visibly communicates the asynchronous work: the action button spins and
+changes to a text- or image-specific in-progress label, and a status row shows the same progress.
+The controls are disabled while the evaluator runs, preventing duplicate submissions.
+
+## 2026-08-07 — Media confirmation and public visual recovery
+
+The paid-media error was traced to saved image-practical feedback being refreshed without
+`confirm_media=true` after a reload or evaluator-contract change. Saved practical feedback is now
+preserved locally instead of re-executed. New image requests are guarded before the API call and the
+confirmation dialog remains open while its confirmed request runs. The server fallback message is
+now Korean and tells the learner exactly which confirmation action is needed.
+
+PDF crop review restored two missing learner visuals: Public A Q40's generated book-and-gavel image
+and Public B Q37's Earth Day poster. Public B Q36 was already attached; Q38–Q40 are source text or
+expected-response structures, not omitted reference images.
+
+## 2026-08-07 — Final submission keeps locked practical evidence
+
+Final submissions now carry the ID returned when each practical answer was locked. The API binds that
+ID to the exact exam, question, and answer hash, then saves the completed score and artifact directly.
+This prevents a later evaluator-contract change from blocking an already-confirmed image or text
+result. The legacy hash lookup remains as a recovery fallback only.
+
+## 2026-08-07 — Image-based private source Set 1
+
+The active catalog now includes `source-round-01`, built from 25 photographed source images: 21
+question pages and four answer/explanation pages. A source builder creates the learner manifest and
+a regression validator checks all 40 question structures, direct-solve answer mappings, required
+crops, and the original-photo inventory. The API deliberately treats this reviewed web manifest as
+authoritative instead of reapplying archival OCR choices.
+
+The creative `generated-mock-01` active/legacy manifests and its seven dedicated assets were moved
+to the Linux trash. Public A/B were not changed.
+
+## 2026-08-07 — Image-based private source Set 2
+
+`source-round-02` was added as a content-only learner manifest generated from 24 photographed
+source pages. Its dedicated builder and validator cover the 40-question, 100-point structure,
+official Q01–Q35 answers, Q04 multi-select restoration, source crops, practical rubrics, and
+unique option explanations. No API contract or deployment configuration changed.
+
+Frontend lint, typecheck, unit tests, production build; backend Ruff and pytest; root production
+dependency audit; and Compose validation passed. The frontend production audit reports existing
+Next.js·PostCSS·sharp findings and the full content command remains blocked by pre-existing
+`source-round-03` placeholder·생성기 오류; Set 2's dedicated content validation passed. The live endpoint was not
+checked because no service was listening on local port 18080; the retry command is in
+`docs/skipped-actions.md`.
+
+## 2026-08-07 — Image-based private source Set 4
+
+`source-round-04` was added as a content-only learner manifest generated from 26 photographed
+source pages. Its builder and validator cover the 40-question, 100-point structure, reviewed
+Q01–Q35 answer mapping, strict Q31–Q35 aliases, individual option feedback, and five one-point
+practical rubrics. The API exposes only Q37, Q39, and Q40 focused reference assets; raw pages and
+answer/example pages remain unavailable to learners. No API contract, Caddy, or Compose setting changed.
+
+## 2026-08-07 — AI-POT restart control deployment
+
+The frontend was rebuilt and the scoped `frontend` Compose service was recreated without changing
+the API, Caddy, or system Caddy. It is healthy and serves the restored full-set restart control:
+after a learner starts any AI-POT set, `처음부터 다시 풀기` appears beside the timer and opens a
+confirmation dialog before clearing local in-progress state.
+
+## 2026-08-08 — AI-POT any-time submission deployment
+
+The API and frontend Compose services were rebuilt and recreated to expose any-time submission for
+every AI-POT set, including Set 3 Q31–Q35. The learner can submit before starting or at any point in
+theory, practical, and results. Unanswered reviews now carry an explicit `is_unanswered` flag and
+`미응답` result; wrong-answer-note and weakness-topic aggregation exclude them. Caddy, the system
+Caddy, and `aipot-sandbox` were not restarted. Both recreated services reached healthy state, the
+publicly bound Caddy origin returned the Set 3 manifest, and `/health/ready` returned HTTP 200.
+
+## 2026-08-08 — AI-POT unanswered aggregation and Set 4 recovery
+
+The scoped `api` Compose service was rebuilt and recreated. Blank responses are now excluded from
+chapter-result numerators and denominators, so blank-only chapters are omitted instead of shown as
+0%. The server now safely uses an unknown source-set chapter code as its display title, resolving
+the Set 4 `KeyError: 'C18'` that prevented result submission. Caddy, system Caddy, frontend, and
+`aipot-sandbox` were not restarted. The recreated API reached healthy state; `/health/ready` and
+the Set 4 exam endpoint returned HTTP 200 through Caddy.
+
+## 2026-08-08 — Set 4 Q20 visual asset recovery
+
+The scoped `api` Compose service was rebuilt and recreated to serve corpus-declared visual crops
+from reviewed source manifests. The recreated API is healthy; `/health/ready` and
+`GET /api/v1/aipot/exams/source-round-04/assets/q20-visual-01.jpg` returned HTTP 200 through
+Caddy, with the latter served as `image/jpeg`. Caddy, system Caddy, frontend, and
+`aipot-sandbox` were not restarted.
+
+## 2026-08-08 — Set 4 Q28 scenario-list recovery
+
+The scoped `api` Compose service was rebuilt and recreated after the manifest sanitizer was changed
+to compare numbered terminal text with the actual UI choices before removing it. This retains Q28's
+four numbered case facts while still removing true duplicated choices. The recreated API is healthy,
+and the Set 4 endpoint through Caddy contains all four Q28 facts. Caddy, system Caddy, frontend,
+and `aipot-sandbox` were not restarted.
+
+## 2026-08-08 — Set 4 Q28 learner prompt rendering recovery
+
+The scoped `frontend` Compose service was rebuilt and recreated after its prompt renderer was
+changed to retain numbered terminal content unless it exactly matches the answer controls. This
+restores Q28's `다음과 같은 문제점들이 발견되었다` introduction and the four case facts in the
+learner card. The API response through Caddy was confirmed to contain that phrase. Caddy, system
+Caddy, API, and `aipot-sandbox` were not restarted.
+
+## 2026-08-08 — Set 5 Q04 underline recovery
+
+The reviewed Set 5 manifest was regenerated so Q04 exposes the source-photo underline as
+`__㉠__`. The deployed frontend renderer converts that marker to semantic underlined text. The
+live Set 5 endpoint was verified through Caddy to contain the marker; no Compose service needed
+recreation, and Caddy, API, and `aipot-sandbox` were not restarted.
+
+## 2026-08-08 — AI-POT wrong-note Set 1 prepared
+
+`sample-set-01` was generated as a 100-question, 100-point personal review set. Its provenance
+records the newest selected submission per allowed target set, excludes blank responses, and does
+not manufacture a Public B attempt. The scoped API and frontend were rebuilt/recreated and are
+healthy; the live API returns `study_mode: wrong_note`, 100 questions, and Q100. Caddy and
+`aipot_history` were not restarted or removed.
+
+## 2026-08-08 — AI-POT wrong-note Set 1 removed
+
+At the operator's request, only the active `sample-set-01` learner manifest was moved to the Linux trash. The general 100-question review-mode support and the regeneration tool remain in place for the next version. Caddy, API/frontend service topology, and `aipot_history` were preserved.
+
+## 2026-08-08 — AI-POT wrong-note Set 1 recreated
+
+`sample-set-01` has been regenerated as a 50-question, 100-point review set (two points each), using
+the newest submitted attempt per allowed target: Public A/B and source rounds 1–4. It is intentionally
+weighted by the learner's current error types rather than split evenly by round: A 13, B 4, round 1 0,
+round 2 6, round 3 2, and round 4 25. Public A Q38 is retained only as an excluded provenance record
+because its stored scoring criterion conflicts with the reviewed prompt and reference answer.
+
+The scoped API and frontend services were rebuilt/recreated and reached healthy state. Through Caddy,
+the live endpoint reports `study_mode: wrong_note`, 50 questions, 100 total points, a final Q50, and
+valid Q50 immediate feedback. Caddy, system Caddy, and `aipot_history` were not restarted or removed.
+
+## 2026-08-08 — Wrong-note navigator refinement
+
+The review-set navigator now shows only the question number rather than a `Q`-prefixed identifier and
+uses five controls per row. Screen readers retain the explicit `문항 {number} {status}` label. The
+scoped frontend was rebuilt/recreated and is healthy; the Set 1 solve route returned HTTP 200 through
+Caddy. API and Caddy were not restarted.
+
+## 2026-08-08 — Wrong-note descriptive-source exclusion
+
+Set 1 was regenerated directly in the mounted learner-content corpus. Its builder now permits source
+questions of type `multiple_choice` or `choice_bank` only; all `short_answer` and `practical_prompt`
+origins, including the former Q12/Q13 practical-derived items, are recorded as excluded provenance.
+The 50-question, 100-point set remains available through the live API without a service restart.
+
+## 2026-08-08 — Wrong-note duplicate repair
+
+Set 1 was regenerated with distinct, concept-specific scenario wording for every repeated source concept;
+no rendered question fingerprint is duplicated. The validator now rejects a repeated type, normalized
+prompt, and choice-set combination before the set can ship. The mounted content update is live without
+restarting API, frontend, or Caddy.
+
+## 2026-08-16 — `web.heybobma.dedyn.io` public HTTPS route
+
+The existing system Caddy now owns the public hostname and reverse-proxies it to this project's
+Caddy ingress at `127.0.0.1:18080`. Caddy's Let's Encrypt TLS-ALPN validation was received from
+public validation addresses and completed successfully; the certificate was downloaded at
+2026-08-16 13:14 KST. A subsequent local SNI request to `https://web.heybobma.dedyn.io/` returned
+HTTP 200, and `/health/ready` returned the API readiness JSON through both Caddy layers.
+
+The project Caddy keeps its loopback ingress for system-Caddy HTTPS and, with the optional
+`compose.lan.yaml` overlay, also binds the explicitly requested LAN test address
+`192.168.219.199:18080`, rather than all interfaces.
+
+The active direct-LAN test endpoint is `http://192.168.219.199:18080/`. Start or retain that
+listener with `docker compose -f compose.yaml -f compose.lan.yaml --profile production up -d
+--wait caddy`; the default Compose file alone intentionally leaves only the loopback ingress.
+The system Caddy, API, frontend, sandbox, and `aipot_history` volume were preserved. The origin's
+attempt to reach its own public IP timed out, which is consistent with absent NAT loopback; this
+does not affect external HTTPS reachability, but local-LAN hostname access needs router hairpin NAT
+or a split-DNS override.

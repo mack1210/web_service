@@ -1,372 +1,199 @@
 # Overnight Web Agent Kit
 
-An operational workspace for finding a sample, inspecting its details, and running one safe validation action. It uses a Next.js frontend, a FastAPI backend, generated OpenAPI TypeScript types, and Docker Compose with Caddy as the only ingress.
+Next.js와 FastAPI로 만든 내부 운영 워크스페이스입니다. 기본 업무 흐름은
+`Overview → Collection → Detail → Validate`이고, `/aipot`에서는 개인용 AI-POT
+모의고사를 풀고 이전 풀이를 복습할 수 있습니다. Docker Compose에서는 Caddy만 외부
+진입점이며, 프런트엔드와 API는 내부 Docker 네트워크에서 통신합니다.
 
-The main user journey is:
+## 현재 AI-POT 구성
 
-```text
-Overview → Collection → Detail → Validate → result → return to filtered collection
-```
+`/aipot` 카탈로그에는 다음 세트만 활성화되어 있습니다.
 
-The additional personal-study journey is:
+- `source-round-01`: 원본 촬영 사진 25장으로 검증해 만든 개인 원본문제 Set 1
+- `public-set-a`, `public-set-b`: 제공된 공개 자료에서 복원·검증한 세트
 
-```text
-AI-POT 학습 → 세트 선택 → 5문제씩 풀이 → 마지막 페이지 제출 → 정답·약점 복습
-```
+원본 사진, OCR, corpus와 필요한 crop은 외부 AI-POT 학습 자료에 보존합니다. 학습자에게는
+문제를 푸는 데 필요한 crop만 제공하며, 원본 전체 페이지나 정답 페이지는 노출하지
+않습니다. 창작 세트 `generated-mock-01`과 전용 asset은 Linux 휴지통으로 이동했지만,
+근거 자료와 제출 이력은 삭제하지 않았습니다.
 
-## AI-POT private study
+다음 세트를 만들 때는 [AI-POT 제작·검증 플레이북](docs/aipot-next-set-playbook.md)을
+정본으로 사용하세요. 원본 분류, 답안 직접 검증, 보기별 해설, 단답형 허용 표기, 실기형
+채점 기준, 출고 체크리스트를 모두 담고 있습니다.
 
-`/aipot` discovers every source round and generated mock held in the local study workspace.
-Each 40-question set is split into eight pages of five. Source-round Q01–Q35 use reviewed OCR
-transcription; visual-dependent prompts expose only declared, focused assets. Practical prompts
-can now be evaluated from the learner's submitted prompt and the generated execution result:
+## 구성 안내
 
-- Text prompts are executed and judged against a question-specific rubric.
-- Image prompts require an explicit confirmation before a paid generation request; the generated
-  image is retained as evidence.
-- Before either execution, Haiku applies a **question-context relevance gate**. It receives the
-  reviewed Markdown task context plus any supplied text/image material. A polished prompt for a
-  different task is locked as zero without an execution or media-generation charge.
-- The final judge receives the same context and materials with the actual execution result. Where
-  a provider example answer was recoverable from the private source, it is a calibration reference
-  rather than an exact-string key and is revealed only after the answer is locked.
-- Code prompts are generated first, then run in an internal, network-isolated Unix-socket runner
-  with bounded CPU, memory, files, and output.
-- Missing required source material and unavailable evaluation configuration fail closed: the
-  answer is not scored as correct and the UI reports the actionable failure.
-
-Submitted attempts and evaluator evidence are stored transactionally in SQLite in this Compose
-project's local `aipot_history` volume. The site has no login, so do not put sensitive or real
-work data in an answer.
-
-The production API receives the source material through a read-only Compose mount at
-`/aipot-content`. It deliberately returns neither answer keys nor source solution images until
-after a submission is scored. The deployed project expects the study material at:
-
-```text
-/home/cgma/cgma_git/study/aipot/실전모의고사
-```
-
-For host-run API development, set the same location explicitly before starting FastAPI:
-
-```bash
-AIPOT_CONTENT_ROOT=/home/cgma/cgma_git/study/aipot/실전모의고사 \
-  uv --directory backend run uvicorn app.main:app --reload --port 8000
-```
-
-### Practical evaluator configuration
-
-The evaluator is intentionally a separate backend capability, not browser-side scoring. It needs
-an OpenRouter key in an ignored `.env` file or a deployment secret manager:
-
-```bash
-OPENROUTER_API_KEY=your-secret
-```
-
-The defaults use `anthropic/claude-haiku-4.5` for text execution and rubric judging, and
-`openai/gpt-image-1` for image execution. Override `AIPOT_JUDGE_MODEL`, `AIPOT_TEXT_MODEL`, or
-`AIPOT_IMAGE_MODEL` only when the selected model supports the required structured output or image
-operation. Without a configured key, practical evaluation returns a clear 503 response rather
-than silently awarding a keyword-match score. Do not commit keys, generated learner artifacts, or
-the `aipot_history` volume.
-
-### Source-question rendering contract
-
-Every photographed source round uses one rendering contract, which new sets must follow:
-
-- `data/web-exams/` is the learner-facing question text and answer data.
-- `corpus/source-round-*.json` is the single source of truth for reviewed image segments: marker,
-  crop filename, alt text, and whether the image replaces the next Markdown block.
-- Source text is parsed into safe headings, lists, tables, fenced code blocks, and inline code.
-  Markdown quote markers are removed before rendering; links remain readable labels rather than
-  executable links; raw HTML is never injected.
-- For question 1, omit the photographed test-cover title, timing guidance, and section heading;
-  begin at the actual question stem. If a final numbered/circled choice run is also supplied in
-  `choices`, omit that run from the stem so each choice appears exactly once, in the answer
-  controls. This rule applies to every source and generated set.
-- The reviewed OCR transcription is the source of truth for source-round choices. Never substitute
-  a label such as `선택지 1 (원본 페이지 참조)`. After changing OCR or source-round learner data,
-  run `pnpm aipot:content:check`; the checked-in repair tool derives any missing source choices
-  from the final OCR choice block and fails if a placeholder remains.
-- Use a declared visual segment for diagrams, screenshots, and quote-image material. Do not append
-  a generic “source” caption, expose whole photographed pages, or duplicate an image as a raw
-  Markdown table. For example, source round 01 Q16 replaces its concept-diagram table with the
-  reviewed diagram and retains the explanatory callout as normal text.
-- Never expose OCR workflow notes or local source paths (for example, `보기 계속:` or
-  `../../assets/...`) in learner text. If the material is needed to answer a question, declare and
-  show only its reviewed crop through the visual-segment metadata.
-- When a reviewed visual crop is attached, do not repeat its OCR-generated image/expected-result
-  description in the learner prompt. Keep the task instruction and constraints, and let the image
-  be the visual evidence the learner inspects.
-- Keep formulas as plain, escaped LaTeX source unless a reviewed math renderer is deliberately
-  introduced. Do not insert untrusted HTML or an unreviewed rendering library to display math.
-
-### Public-set PDF extraction contract
-
-`tools/extract-aipot-public-question-text.mjs` reads the supplied book PDF as the single source for
-Public A/B Q01–Q40 learner text. It replaces a full-page crop with safe Markdown whenever every
-fact required to solve the item can be represented as text; answer choices continue to render only
-in the choice controls. It retains a crop only for irreducibly visual evidence such as diagrams,
-UI pipelines, and before/after transformations. The companion assertion test checks, among other
-things, that Public A Q38 contains the complete dataset, its `㉠` cell, and expected output but no
-crop. Run `pnpm aipot:content:check` after any source-PDF or public-set change.
-
-When adding a source question, add its crop declaration to the corpus manifest first, then add the
-learner-facing prompt to the web manifest. Add a frontend rendering test when a new Markdown form
-or replacement rule is introduced, and an API test when a new segment field is added.
-
-### Practical-question evaluation context
-
-`tools/enrich-aipot-practical-context.mjs` is the single maintained source for public-set practical
-contexts, specific rubrics, evaluation kind, and post-submission reference answers. It transcribes
-the public A/B Q36–Q40 answer examples from the supplied book and the original-round Q36–Q40
-examples from their photographed answer pages. Run it after changing those source facts, then run
-`pnpm aipot:content:check`. It deliberately keeps `evaluation.provider_solution` in the backend-only
-manifest: it is not sent with `AipotQuestion` and appears with its source citation in evaluation
-evidence only after an answer has been locked. All practical questions fall back to their reviewed
-learner-facing Markdown and declared input assets if no supplemental context is needed. If a reviewed
-crop is shown, do not duplicate it as `[이미지: ...]` prose in the learner prompt.
-
-### Supplied Markdown sample-set contract
-
-`tools/import-aipot-provided-sample-set.mjs` builds `sample-set-01` from
-`aipot-level1-sample-questions/AI-POT-1급-테스트-제공문제.md`. That supplied Markdown is the only
-source for its stems, choice text, answer grounds, practical-context references, and dictionary
-links. Its readable charts and tables are rendered as safe Markdown, not exposed as page images;
-the corresponding sample assets remain unnecessary unless a future revision contains information
-that cannot be represented losslessly as text. The importer normalizes the document's Q35 practical
-exercise into a PEST 3-point short answer so every set retains the official 100-point structure:
-30 multiple-choice questions, five short-answer questions, and Q36–Q40 as five 5-point practical
-evaluations. Run `pnpm aipot:content:check` after editing the supplied package or its importer.
-
-## What Changed Recently
-
-This project was improved without replacing its framework, routes, API paths, or representative workflow.
-
-- Mobile detail pages no longer create hidden horizontal page overflow.
-- Navigation drawer, mobile filters, and confirmation dialogs now keep keyboard focus inside, close with `Escape`, restore focus to their opener, and prevent background scrolling.
-- Controls have a consistent visual system, visible focus, 44px touch targets, and accessible border contrast.
-- Search is debounced while keeping filters in the URL; result counts are announced to assistive technology.
-- Validation actions cannot be started twice while one is already running.
-- Missing items have a recoverable browser screen; copy feedback reports failure honestly.
-- The API rejects unexpected action fields, documents its real error envelopes, validates reflected request IDs, and disables the demo failure query in production.
-- Caddy now sends basic browser security headers; the app has an icon, `robots.txt`, and an intentional no-index policy.
-- The dependency audit is checked before handoff; see `docs/skipped-actions.md` for the current upgrade decision when advisories require dependency changes.
-
-For detailed evidence, see [the improvement report](docs/production-improvement-report.md).
-
-## Terms in Plain English
-
-| Term | Meaning here |
-| --- | --- |
-| **Frontend** | The visible Next.js web app: pages, navigation, filters, dialogs, and theme. |
-| **Backend / API** | The FastAPI service that provides sample data and validation results. |
-| **OpenAPI contract** | The API's machine-readable description. FastAPI generates it; the frontend generates TypeScript types from it so both sides agree on data shapes. |
-| **Mock mode** | The local frontend can use fixed sample fixtures without starting the backend. |
-| **HTTP mode** | The frontend calls the FastAPI service through the same `/api/*` origin. Docker production uses this mode. |
-| **Caddy ingress** | The single web-facing proxy. It sends page requests to Next.js and `/api/*` or `/health/*` requests to FastAPI. |
-| **High port** | A port other than normal web ports 80/443. This app currently uses `18080` because a different system Caddy already owns 80/443. |
-| **LAN-only** | Reachable only by devices on the same private network, such as home Wi-Fi. |
-| **Publicly reachable** | Reachable from another network, for example mobile 5G with Wi-Fi disabled. This is not the same as having HTTPS or authentication. |
-| **HTTPS** | Encrypted browser traffic, normally served on port 443 with a trusted domain/certificate. The current high-port service is plain HTTP. |
-| **Health check** | A small endpoint used by Docker and operators to confirm that the service is alive and ready. |
-
-## Current Access and Security Status
-
-The running Compose service publishes Caddy on port `18080`:
-
-- Current local-LAN mode: `http://192.168.219.130:18080` (including `/settings`). This address is set in the ignored local `.env` file.
-- In this LAN-bound mode, `127.0.0.1:18080` intentionally does not listen. Use the LAN URL even from the host machine.
-- The supplied `.env.example` remains loopback-only for the future Cloudflare Tunnel path. Before enabling the Cloudflare profile, change the local `HOST_BIND_ADDRESS` back to `127.0.0.1`.
-
-Important: the direct LAN origin has **no HTTPS and no login/access-control layer**. Do not enter sensitive or real user data, and do not treat it as a secure public production site. Cloudflare Tunnel supplies the planned public HTTPS path, but an approved authentication design is still required before handling sensitive data. The system Caddy on ports 80/443 is unrelated and is not managed by this Compose project.
-
-## Module Guide
-
-| Path | Role | When to use it |
+| 경로/서비스 | 역할 | 사용할 때 |
 | --- | --- | --- |
-| `frontend/` | Next.js App Router UI, Tailwind styles, browser tests, generated types | Page, component, UX, or frontend contract work |
-| `backend/` | FastAPI/Pydantic API, service logic, backend tests | API behavior, validation, health, or error-contract work |
-| `/aipot` | Korean-first private AI-POT set selector, solver, answer board, and review | Personal exam practice and weakness analysis |
-| `infra/caddy/Caddyfile` | Reverse-proxy and response-header policy | Ingress routing or browser-header work |
-| `compose*.yaml` | Development and production Docker topology | Local containers, build, restart, or deployment work |
-| `docs/` | UX, preflight, deployment, limitations, and verification evidence | Operations and product handoff |
-| `AGENTS.md` | Project development policy | Read before making changes or delegating work |
+| `frontend/` | Next.js App Router UI, Tailwind, Vitest/Playwright, 생성된 API 타입 | 화면·UX·프런트 계약 수정 |
+| `backend/` | FastAPI, Pydantic 모델, AI-POT 평가와 제출 이력, pytest | API·채점·검증 로직 수정 |
+| Compose 서비스 `aipot-sandbox` | 네트워크가 없는 코드 실행 runner | Q36–Q40 코드 실기 평가 |
+| `infra/caddy/Caddyfile` | `/api/*`·`/health/*`는 API, 그 외는 Next.js로 프록시 | ingress·응답 헤더 확인 |
+| `compose*.yaml` | 개발, production, 선택적 Cloudflare Tunnel Compose overlay | 컨테이너 실행·배포 |
+| `tools/` | AI-POT 원본 복원, 답안 매핑, 콘텐츠 검사 도구 | 세트 생성·정답/asset 검증 |
+| `docs/` | 출고 기준, 운영·배포 기록, 제한 사항 | 다음 세트 제작·운영 인수인계 |
 
-## Requirements
+주요 경로는 `/`, `/items`, `/items/[id]`, `/aipot`, `/aipot/solve/[examId]`,
+`/aipot/attempts/[attemptId]`입니다. API는 `/health/*`, `/api/v1/*`,
+`/api/v1/aipot/*`에 있습니다. FastAPI/OpenAPI가 계약의 원본이며, frontend는
+`frontend/src/lib/api/generated.ts`를 생성해 사용합니다.
 
-- Node.js 24+ and pnpm 11+
-- Python 3.13+ and uv
-- Docker Engine plus Docker Compose for container runs
+## 요구 사항
 
-## Local Setup
+- Node.js 24+ 및 pnpm 11+
+- Python 3.13+ 및 uv
+- Docker Engine과 Docker Compose (컨테이너 실행 시)
+- AI-POT 콘텐츠를 사용할 경우:
+  `/home/cgma/cgma_git/study/aipot/실전모의고사`
 
-From the project root:
+## 로컬 설정
+
+프런트엔드와 백엔드는 각각의 manifest와 lockfile을 사용합니다.
 
 ```bash
+# Frontend: frontend/package.json + frontend/pnpm-lock.yaml
 pnpm --dir frontend install --frozen-lockfile
+
+# Backend: backend/pyproject.toml + backend/uv.lock
 uv --directory backend sync --locked --group dev
 ```
 
-The frontend and backend have separate dependency sources of truth:
-
-- Frontend: `frontend/package.json` and `frontend/pnpm-lock.yaml`
-- Backend: `backend/pyproject.toml` and `backend/uv.lock`
-
-## Run Locally
-
-Run the API and UI in separate terminals:
+수동으로 가상환경을 만들 경우에는 backend에서 다음 순서를 사용합니다.
 
 ```bash
-# Terminal 1 — FastAPI
-uv --directory backend run uvicorn app.main:app --reload --port 8000
+cd backend
+uv venv
+source .venv/bin/activate
+uv sync --locked --group dev
+```
 
-# Terminal 2 — Next.js using fixtures by default
+## 실행
+
+### 로컬 개발 서버
+
+두 터미널에서 실행합니다.
+
+```bash
+# Terminal 1: FastAPI
+AIPOT_CONTENT_ROOT=/home/cgma/cgma_git/study/aipot/실전모의고사 \
+  uv --directory backend run uvicorn app.main:app --reload --port 8000
+
+# Terminal 2: Next.js (기본은 mock data)
 pnpm --dir frontend dev
 ```
 
-Open `http://localhost:3000`.
-
-To make the local UI use the FastAPI service instead of fixtures:
+브라우저에서 `http://localhost:3000`을 엽니다. 프런트엔드를 FastAPI와 연결하려면 다음처럼
+HTTP 모드로 실행합니다.
 
 ```bash
 NEXT_PUBLIC_DATA_SOURCE=http NEXT_API_ORIGIN=http://localhost:8000 \
   pnpm --dir frontend dev
 ```
 
-## Docker Development
+### Docker 개발
 
-Docker development publishes only loopback ports, so it does not expose the app to your network:
-
-```bash
-docker compose -f compose.yaml -f compose.dev.yaml up --build
-```
-
-Open `http://127.0.0.1:3000`. Stop only this development stack with:
+개발 overlay는 API와 frontend만 loopback 포트로 엽니다.
 
 ```bash
-docker compose -f compose.yaml -f compose.dev.yaml down
+pnpm dev
+# 또는: docker compose -f compose.yaml -f compose.dev.yaml up --build
 ```
 
-Do not add `-v` unless you intentionally want to discard this project's Docker volumes.
+접속 주소는 `http://127.0.0.1:3000`이며 API는 `http://127.0.0.1:8000`입니다. 중지는
+volume을 제거하지 않는 다음 명령을 사용합니다.
 
-## Docker: Build, Run, and Verify the Deployed Module
+```bash
+pnpm dev:down
+```
 
-The production Compose profile starts three services: `api`, `frontend`, and `caddy`. Only Caddy publishes a host port.
+### Docker production 경로
+
+`.env.example`을 복사해 로컬 `.env`를 준비합니다. 기본값은 loopback의 `18080`이며,
+production profile에서 Caddy만 host port를 공개합니다.
 
 ```bash
 cp .env.example .env
-HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production up --build -d --wait
-HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production ps
+pnpm prod:up
+docker compose -f compose.yaml -f compose.prod.yaml --profile production ps
 curl --fail --show-error http://127.0.0.1:18080/health/ready
 curl --fail --show-error http://127.0.0.1:18080/api/v1/meta
 ```
 
-To recreate the running project after a code/image update, without touching system Caddy or ports 80/443:
+`aipot_history` volume에는 제출 이력과 SQLite 평가 증거가 저장됩니다. `down -v`를
+사용하지 마세요. 이 Compose 프로젝트는 시스템 Caddy가 이미 사용하는 80/443을 관리하지
+않으며, 이를 중지·교체·재시작해서는 안 됩니다.
+
+선택적 Cloudflare Tunnel은 `compose.cloudflare.yaml`의 `cloudflare` profile을 사용합니다.
+토큰은 추적하지 않는 `.env` 또는 비밀 관리 도구에만 두고, 공개 HTTPS와 별개로 인증 정책은
+승인 후 결정해야 합니다. 현재 direct origin은 로그인 없는 개인 학습용이므로 민감한 자료를
+입력하지 마세요.
+
+## AI-POT 콘텐츠와 평가
+
+Compose의 API는 학습 자료를 읽기 전용으로 `/aipot-content`에 mount합니다. learner
+manifest는 `data/web-exams/`에 있고, 원본 corpus/OCR는 감사·복원 자료입니다. Source Set 1은
+`tools/build-aipot-source-round-01.mjs`가 manifest를 만들며, Public A/B는 PDF 추출·정답
+매핑 도구가 유지합니다.
+
+학습 화면의 주요 계약은 다음과 같습니다.
+
+- 객관식은 답을 확정하면 모든 보기의 설명을 해당 보기 카드 안에서 보여 줍니다.
+- 이전 풀이에는 문제, 모든 선택지, 내 선택과 정답을 함께 보여 줍니다.
+- 단답형은 기대 답과 검토된 허용 표기를 엄격히 매칭합니다.
+- Q36–Q40은 원문 기준을 1점씩 채점합니다. 이미지 생성은 명시적 유료 미디어 확인 후에만
+  실행하며, 이미 lock된 평가 결과는 최종 제출에서 재생성하지 않습니다.
+- `생성 없이 답안 제출`은 실행·이미지 생성·자동평가 없이 실기 답안을 보관하는 fallback이며,
+  해당 문항은 `미평가`, 자동 0점으로 남습니다.
+- 시작 전·이론·실습·결과 어느 단계에서나 현재 답안을 제출할 수 있습니다. 미응답은
+  `미응답` flag와 0점으로 저장되며 오답노트·약점 주제·챕터별 정오답 집계의 분자와 모수에는
+  포함하지 않습니다. 따라서 미응답만 있는 챕터를 0%로 표시하지 않습니다.
+
+실기 평가에는 ignored `.env` 또는 비밀 관리 도구의 `OPENROUTER_API_KEY`가 필요합니다.
+기본 모델은 Haiku 텍스트/채점 모델과 이미지 모델이며, 키가 없으면 평가를 정답으로
+추정하지 않고 오류를 반환합니다.
+
+## 검사와 테스트
+
+콘텐츠를 바꾼 뒤에는 먼저 다음을 실행합니다.
 
 ```bash
-HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production up --build -d --wait
+pnpm aipot:content:check
 ```
 
-Inspect only this project's logs:
+이 명령은 Source Set 1 원본/asset/답안, Public A/B 텍스트·표·실기 기준·보기별 설명·정답
+매핑, 다음 세트 플레이북, 세트 제작 가이드의 필수 항목을 검사합니다. 개별 확인에는
+`pnpm aipot:playbook:check` 또는 `pnpm aipot:create-set:check`를 사용합니다.
 
-```bash
-HOST_PORT=18080 docker compose -f compose.yaml -f compose.prod.yaml --profile production logs --tail=100
-```
-
-See [deployment-report.md](docs/deployment-report.md) for the deployed state and [skipped-actions.md](docs/skipped-actions.md) for the public-security limitations.
-
-## Cloudflare Deployment
-
-This application has a server-rendered Next.js frontend **and** a FastAPI API behind the same `/api/*` origin. The supported no-rewrite path is Cloudflare Tunnel in front of the existing Docker stack: Cloudflare supplies the public hostname and HTTPS, while `cloudflared` reaches Caddy over the internal Docker network. The application code and the `/api/*` contract remain unchanged.
-
-Do not deploy only `frontend/` to Cloudflare Workers or Pages as a substitute for this command: that would leave the current FastAPI API unavailable. Cloudflare supports Next.js through OpenNext and FastAPI through Python Workers, but converting this two-runtime service into independently deployed Workers would add dependencies and change the deployment topology; it is intentionally not part of this stabilization project.
-
-### Cloudflare “Set up your application” screen
-
-The **Build command** and **Deploy command** fields on that screen belong to Cloudflare Workers Builds. They do not run this Docker Compose application or a persistent Tunnel, so this is not the correct Cloudflare product for the current full-stack deployment.
-
-| Field | Value for this project |
-| --- | --- |
-| Build command | Leave unset; do not connect this repository as a Workers Build. |
-| Deploy command | Leave unset; do not use the Workers Builds deployment flow. |
-
-If the screen requires either value, go back and create a **Cloudflare Zero Trust → Networks → Tunnels** remotely managed tunnel instead. The Docker commands in the next section run on the application host or its CI runner; they are **not** values to paste into the Workers Builds screen.
-
-### Tunnel setup
-
-1. In Cloudflare Zero Trust, create a **remotely managed** tunnel and public hostname. Set its service to `http://caddy:18080` because `cloudflared` and Caddy share Docker's `app_net` network.
-2. Copy `.env.example` to `.env`; set `CLOUDFLARE_TUNNEL_TOKEN` to the tunnel token. It is a secret and must never be committed.
-3. Change the local `.env` value to `HOST_BIND_ADDRESS=127.0.0.1` before activating the Tunnel profile so the origin cannot be reached directly from the network.
-
-### Build command for the application host or CI runner
-
-```bash
-HOST_BIND_ADDRESS=127.0.0.1 HOST_PORT=18080 \
-  docker compose -f compose.yaml -f compose.prod.yaml -f compose.cloudflare.yaml \
-  --profile production --profile cloudflare build
-```
-
-### Deploy command for the application host or CI runner
-
-```bash
-HOST_BIND_ADDRESS=127.0.0.1 HOST_PORT=18080 \
-  docker compose -f compose.yaml -f compose.prod.yaml -f compose.cloudflare.yaml \
-  --profile production --profile cloudflare up -d --wait
-```
-
-### Verification
-
-```bash
-curl --fail --show-error http://127.0.0.1:18080/health/ready
-curl --fail --show-error --max-time 15 https://app.example.com/health/ready
-docker compose -f compose.yaml -f compose.prod.yaml -f compose.cloudflare.yaml \
-  --profile production --profile cloudflare ps
-```
-
-No Cloudflare account, tunnel token, or hostname is stored in this repository, so the public-Tunnel command cannot be run until those are supplied. Cloudflare's current [Tunnel setup guide](https://developers.cloudflare.com/tunnel/setup/) documents the tunnel token flow; its [Next.js Workers guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/nextjs/) and [FastAPI Python Workers guide](https://developers.cloudflare.com/workers/languages/python/packages/fastapi/) explain the separate migration path that is intentionally deferred here.
-
-## Test and Verify
-
-Run these before handing off a change:
+코드 변경 전 handoff 검사입니다.
 
 ```bash
 pnpm --dir frontend lint
 pnpm --dir frontend typecheck
 pnpm --dir frontend test
-
-pnpm aipot:content:check
 pnpm --dir frontend build
-pnpm --dir frontend audit
 
 uv --directory backend run ruff check .
 uv --directory backend run pytest
 
-uv --directory backend run python -m app.openapi
-pnpm --dir frontend generate:api
 docker compose -f compose.yaml -f compose.prod.yaml --profile production config --quiet
+git diff --check
 ```
 
-For browser coverage, first install a local Chromium browser if needed:
+Playwright 브라우저가 설치된 환경에서는 다음도 실행합니다.
 
 ```bash
 pnpm --dir frontend exec playwright install chromium
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 pnpm --dir frontend test:e2e
 ```
 
-If a local Playwright browser is unavailable, use the existing container fallback against a running ingress:
+현재 호스트의 브라우저 실행 제한과 의존성 감사 결과는
+[skipped actions](docs/skipped-actions.md)에 기록합니다. 의존성 추가·업데이트는 사전 승인
+없이는 하지 않습니다.
 
-```bash
-docker run --rm --entrypoint /bin/sh --network host \
-  -v "$PWD/frontend:/work" -w /work \
-  -e PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 \
-  -e PLAYWRIGHT_CHROMIUM_EXECUTABLE=/ms-playwright/chromium-1232/chrome-linux64/chrome \
-  mcr.microsoft.com/playwright/mcp:latest -lc './node_modules/.bin/playwright test'
-```
+## OpenAPI 계약
 
-## OpenAPI Contract Workflow
-
-FastAPI is the source of truth. After changing an API model or route:
+FastAPI가 API 계약의 원본입니다. API model이나 route를 바꾼 뒤에는 생성 파일 두 개를
+함께 갱신하고 커밋합니다.
 
 ```bash
 uv --directory backend run python -m app.openapi
@@ -374,11 +201,9 @@ pnpm --dir frontend generate:api
 git diff -- backend/openapi.json frontend/src/lib/api/generated.ts
 ```
 
-Commit both generated files with the API change. The frontend aliases generated schemas in `frontend/src/lib/api/types.ts`; it does not redefine the API contract.
+## 의존성 관리
 
-## Dependency Management
-
-Use the existing package manager for the component you are changing:
+lockfile을 직접 수정하지 말고 해당 생태계의 도구를 사용합니다.
 
 ```bash
 # Frontend
@@ -393,17 +218,14 @@ uv --directory backend remove <package>
 uv --directory backend lock
 ```
 
-Adding a dependency needs explicit approval. Do not hand-edit lockfiles; use pnpm or uv so manifests and lockfiles stay synchronized.
+새 의존성이나 기존 의존성 업데이트는 먼저 승인받아야 합니다.
 
-## Development Policy
+## 참고 문서
 
-Read [AGENTS.md](AGENTS.md) before changing code. In short: preserve routes/contracts and unrelated user work, use pnpm and uv, add tests for behavior changes, regenerate OpenAPI types with API changes, avoid destructive Docker/Git commands, and keep deployment documentation accurate.
-
-## Further Documentation
-
-- [UX contract](docs/ux-contract.md)
-- [Improvement report](docs/production-improvement-report.md)
-- [Preflight](docs/preflight.md)
-- [Deployment report](docs/deployment-report.md)
-- [Skipped actions and limitations](docs/skipped-actions.md)
-- [Morning handoff](MORNING.md)
+- [AI-POT 다음 세트 제작·검증 플레이북](docs/aipot-next-set-playbook.md)
+- [AI-POT 운영 상태](MORNING.md)
+- [배포 기록](docs/deployment-report.md)
+- [사전 점검](docs/preflight.md)
+- [보류 작업·제한 사항](docs/skipped-actions.md)
+- [UX 계약](docs/ux-contract.md)
+- [프로젝트 개발 정책](AGENTS.md)
