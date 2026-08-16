@@ -490,6 +490,7 @@ Captured: 2026-07-10T22:25:41+09:00
 - [ ] `pnpm --dir frontend audit --prod` reports 14 existing production advisories (8 high, 6
   moderate), including Next.js `16.2.10` and PostCSS/sharp transitive paths. No remediation was
   made because it needs a separately approved dependency-update pass.
-- [ ] A Cloudflare account build must provide `NEXT_PUBLIC_DATA_SOURCE=http` and an approved,
-  public HTTPS `NEXT_API_ORIGIN` that is distinct from the Worker hostname. Docker-only origins
-  cannot be used from the Cloudflare runtime.
+- [x] Cloudflare builds use `NEXT_PUBLIC_DATA_SOURCE=http` and the approved public HTTPS API
+  origin `https://web.heybobma.dedyn.io`, distinct from the Worker hostname. The origin's
+  `/health/ready` and `/api/v1/meta` endpoints returned HTTP 200 before configuration; the local
+  Workers runtime then proxied both same-origin paths with HTTP 200.

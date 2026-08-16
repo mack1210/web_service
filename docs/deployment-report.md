@@ -651,10 +651,12 @@ uses root `wrangler.jsonc` to reinstall the isolated frontend dependency graph w
 install and generate the OpenNext Worker before upload. `pnpm cloudflare:deploy` remains the
 equivalent explicit local command using the pinned frontend toolchain.
 
-The Worker needs `NEXT_PUBLIC_DATA_SOURCE=http` and an approved public HTTPS
-`NEXT_API_ORIGIN` in Cloudflare Build Variables and secrets. That API origin must not be the same
-hostname routed to this Worker, or Next's `/api/*` rewrite would loop. Selecting/exposing that
-origin and its authentication boundary remains an operator security decision.
+The Worker sets `NEXT_PUBLIC_DATA_SOURCE=http` and
+`NEXT_API_ORIGIN=https://web.heybobma.dedyn.io` in its tracked build/runtime configuration. This
+is the approved public HTTPS ingress for the existing Docker API, and it is distinct from the
+Worker hostname, so Next's `/api/*` rewrite does not loop. Its `/health/ready` and `/api/v1/meta`
+endpoints returned HTTP 200 before this configuration was applied, and the local Workers runtime
+subsequently returned HTTP 200 for both same-origin proxy paths.
 
 The follow-up production dependency audit reports 14 pre-existing advisories (8 high and 6
 moderate), including Next.js `16.2.10` and transitive PostCSS/sharp paths. The Cloudflare adapter

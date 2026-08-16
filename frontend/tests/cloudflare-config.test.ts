@@ -37,6 +37,10 @@ describe("Cloudflare Workers deployment configuration", () => {
         cwd: "frontend",
         command: "pnpm install --frozen-lockfile && pnpm cloudflare:build",
       },
+      vars: {
+        NEXT_PUBLIC_DATA_SOURCE: "http",
+        NEXT_API_ORIGIN: "https://web.heybobma.dedyn.io",
+      },
     });
   });
 
@@ -51,6 +55,9 @@ describe("Cloudflare Workers deployment configuration", () => {
     });
     expect(manifest.scripts["cloudflare:deploy"]).toBe(
       "pnpm cloudflare:build && opennextjs-cloudflare deploy",
+    );
+    expect(manifest.scripts["cloudflare:build"]).toBe(
+      "NEXT_PUBLIC_DATA_SOURCE=http NEXT_API_ORIGIN=https://web.heybobma.dedyn.io opennextjs-cloudflare build",
     );
 
     const workspaceManifest = JSON.parse(
