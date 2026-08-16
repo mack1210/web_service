@@ -10,6 +10,8 @@
     "frontend:typecheck": "pnpm --dir frontend typecheck",
     "frontend:test": "pnpm --dir frontend test",
     "frontend:build": "pnpm --dir frontend build",
+    "cloudflare:deploy": "pnpm --dir frontend install --frozen-lockfile && pnpm --dir frontend cloudflare:deploy",
+    "cloudflare:preview": "pnpm --dir frontend install --frozen-lockfile && pnpm --dir frontend cloudflare:preview",
     "aipot:source:check": "node tools/build-aipot-source-round-01.mjs --check && node tools/test-aipot-source-round-01.mjs && node tools/build-aipot-source-round-02.mjs --check && node tools/test-aipot-source-round-02.mjs && node tools/build-aipot-source-round-03.mjs --check && node tools/test-aipot-source-round-03.mjs && node tools/build-aipot-source-round-04.mjs --check && node tools/test-aipot-source-round-04.mjs && node tools/build-aipot-source-round-05.mjs --check && node tools/test-aipot-source-round-05.mjs",
     "aipot:content:check": "pnpm aipot:source:check && node tools/repair-aipot-source-choice-placeholders.mjs --check && pnpm aipot:public:check && node tools/rewrite-aipot-choice-keywords.mjs --check && pnpm aipot:playbook:check && pnpm aipot:create-set:check && pnpm aipot:wrong-note:set1:check",
     "aipot:keywords:check": "node tools/rewrite-aipot-choice-keywords.mjs --check",

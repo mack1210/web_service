@@ -473,3 +473,20 @@ Captured: 2026-07-10T22:25:41+09:00
 - [x] Caddy logs confirm successful Let's Encrypt TLS-ALPN validation and certificate issuance. Local SNI HTTPS requests to `/` and `/health/ready` returned HTTP 200.
 - [x] The project Caddy retains `127.0.0.1:18080` for system-Caddy HTTPS and, with the optional LAN overlay, also listens on the explicitly requested direct-test address `192.168.219.199:18080`; its Compose configuration validated and its scoped recreation reached healthy status.
 - [ ] The host cannot verify the public hostname from its own LAN because its public-IP connection times out. The router's NAT-loopback/split-DNS decision is recorded in `docs/skipped-actions.md`.
+
+## 2026-08-16 Cloudflare Workers build preflight
+
+- [x] `frontend/wrangler.jsonc` targets the OpenNext worker at `.open-next/worker.js`, serves
+  `.open-next/assets`, and enables `nodejs_compat`.
+- [x] `@opennextjs/cloudflare@1.20.1` and `wrangler@4.123.0` are pinned in the frontend pnpm
+  lockfile; `workerd` is explicitly allowed to run its postinstall binary setup.
+- [x] `pnpm --dir frontend exec vitest run tests/cloudflare-config.test.ts` passed (2 tests), and
+  `pnpm --dir frontend cloudflare:build` generated the Worker and static assets successfully.
+  `wrangler deploy --dry-run` validated the Worker plus 29 assets; local `wrangler dev` returned
+  HTTP 200 for `/` at `127.0.0.1:8787`.
+- [ ] `pnpm --dir frontend audit --prod` reports 14 existing production advisories (8 high, 6
+  moderate), including Next.js `16.2.10` and PostCSS/sharp transitive paths. No remediation was
+  made because it needs a separately approved dependency-update pass.
+- [ ] A Cloudflare account build must provide `NEXT_PUBLIC_DATA_SOURCE=http` and an approved,
+  public HTTPS `NEXT_API_ORIGIN` that is distinct from the Worker hostname. Docker-only origins
+  cannot be used from the Cloudflare runtime.

@@ -13,6 +13,9 @@
 node_modules/
 frontend/node_modules/
 frontend/.next/
+frontend/.open-next/
+frontend/.wrangler/
+frontend/cloudflare-env.d.ts
 frontend/tsconfig.tsbuildinfo
 frontend/coverage/
 frontend/playwright-report/

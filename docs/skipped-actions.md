@@ -733,6 +733,53 @@ maps `web.heybobma.dedyn.io` to `192.168.219.199`.
 `curl --resolve web.heybobma.dedyn.io:443:192.168.219.199 -I https://web.heybobma.dedyn.io/`; from
 an external network, run `curl -I https://web.heybobma.dedyn.io/`.
 
+## 2026-08-16 Cloudflare Workers account deployment
+
+**Skipped action**: Deploying the new OpenNext Worker to the Cloudflare account and assigning a
+public hostname/API origin.
+
+**Reason**: The workspace has no Cloudflare account credential or approved separate public HTTPS
+FastAPI origin. The existing Docker service name and `localhost` are not routable from Workers;
+using the eventual Worker hostname as `NEXT_API_ORIGIN` would create a rewrite loop. Choosing a
+separate origin and its authentication boundary is an account/security decision.
+
+**Impact**: The repository now produces the required Worker and static assets, but Cloudflare has
+not received a deployment and the deployed Worker cannot yet serve live API-backed flows.
+
+**Manual command**: In Workers Builds for this repository, set the deploy command to
+`pnpm cloudflare:deploy`. Add Build Variables and secrets
+`NEXT_PUBLIC_DATA_SOURCE=http` and `NEXT_API_ORIGIN=https://<approved-api-origin>`; then trigger a
+deployment. Keep the API origin distinct from the Worker custom domain.
+
+**Verification command**: After deployment, run
+`curl --fail --show-error https://<worker-hostname>/health/ready` and
+`curl --fail --show-error https://<worker-hostname>/api/v1/meta`, then exercise a dynamic detail
+route and an AI-POT submission with the approved auth policy in place.
+
+## 2026-08-16 Cloudflare dependency-audit remediation
+
+**Skipped action**: Updating the existing frontend application dependencies reported by
+`pnpm --dir frontend audit --prod`.
+
+**Observed result**: 14 production advisories remain (8 high, 6 moderate). Next.js `16.2.10` is
+affected by the listed Next.js advisories and has fixes at `16.2.11`; the audit also reports the
+existing PostCSS and sharp transitive paths.
+
+**Why skipped**: This task approved adding the pinned OpenNext/Wrangler tooling. Updating Next.js
+or other application dependencies is a separate compatibility and supply-chain change that needs
+explicit approval.
+
+**Impact**: The Cloudflare Worker build is reproducible, but it is not a dependency-security
+remediation. Do not describe the deployment as security-remediated until the upgrade is tested.
+
+**Manual command**: After approval, run
+`pnpm --dir frontend up next@16.2.11 postcss@8.5.23`, then review any remaining sharp resolution
+and run the full frontend test/build and Cloudflare Worker dry-run.
+
+**Verification command**: `pnpm --dir frontend audit --prod && pnpm --dir frontend lint && pnpm
+--dir frontend typecheck && pnpm --dir frontend test && pnpm --dir frontend cloudflare:build &&
+pnpm --dir frontend exec wrangler deploy --dry-run`.
+
 ## 2026-08-08 Wrong-note Set 1 browser check
 
 **Skipped action**: Browser confirmation of the review-mode navigator, Q100 keyboard interaction, and final submission.
