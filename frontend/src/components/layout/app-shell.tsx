@@ -11,6 +11,7 @@ import { ThemeControl } from "./theme-control";
 
 const navigation = [
   { href: "/", label: "Overview", symbol: "◫" },
+  { href: "/aipot", label: "AI-POT 학습", symbol: "✦" },
   { href: "/items", label: "Collection", symbol: "≡" },
   { href: "/settings", label: "Settings", symbol: "⚙" },
 ];

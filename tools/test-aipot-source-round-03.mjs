@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+const manifest = JSON.parse(readFileSync(resolve(root, "data/web-exams/source-round-03.json"), "utf8"));
+const corpus = JSON.parse(readFileSync(resolve(root, "corpus/source-round-03.json"), "utf8"));
+const ocr = readFileSync(resolve(root, "corpus/ocr/source-round-03.md"), "utf8");
+const assetRoot = resolve(root, "assets/source-round-03");
+const answers = ["2", "2", "2", "4", "1", "3", "1", "3", "2", "3", "4", "2", "1", "3", "4", "3", "2", "1", "4", "1", "1", "2", "4", "1", "3", "4", "1", "2", "3", "4"];
+function fail(message) { throw new Error(`Set 3 source validation failed: ${message}`); }
+if (manifest.id !== "source-round-03" || manifest.source_kind !== "private_photographed_book") fail("manifest identity");
+if (manifest.questions.length !== 40 || manifest.questions.reduce((sum, question) => sum + question.points, 0) !== 100) fail("40-question, 100-point structure");
+if (readdirSync(resolve(root, "3회/images")).filter((name) => /\.jpe?g$/iu.test(name)).length !== 27) fail("27 photographed source pages");
+manifest.questions.forEach((question, index) => { const number = index + 1; if (question.number !== number || !question.prompt?.trim() || /판독불가|원본 3회 문항/u.test(question.prompt)) fail(`Q${number} learner prompt`); if (number <= 30) { if (question.type !== "multiple_choice" || question.points !== 2 || question.choices?.length !== 4 || question.answer !== answers[index]) fail(`Q${number} multiple-choice mapping`); const explanations = question.choices.map((choice) => choice.feedback?.explanation ?? ""); if (explanations.some((value) => !value.trim()) || new Set(explanations).size !== 4 || explanations.some((value) => /관련 개념 또는 그럴듯한 표현|정의와 적용 범위를 대조하세요/u.test(value))) fail(`Q${number} choice feedback`); } else if (number <= 33) { if (question.type !== "short_answer" || question.points !== 3 || !question.accepted_answers?.length || !/^\d+$/u.test(question.answer) || !question.prompt.includes("보기:")) fail(`Q${number} source-number short answer`); } else if (number <= 35) { const explanations = question.choices?.map((choice) => choice.feedback?.explanation ?? "") ?? []; if (question.type !== "choice_bank" || question.points !== 3 || question.choices?.length !== 25 || explanations.some((value) => !value.trim()) || new Set(explanations).size !== 25 || explanations.some((value) => /다른 기능 또는 기술/u.test(value))) fail(`Q${number} choice bank feedback`); } else if (question.type !== "practical_prompt" || question.points !== 5 || question.rubric?.length !== 5 || question.rubric.some((item) => item.points !== 1) || question.evaluation?.availability !== "available" || !question.evaluation.provider_solution || !question.evaluation.source_criteria?.length) fail(`Q${number} practical evaluation`); });
+for (const question of corpus.questions) for (const visual of question.visuals ?? []) if (!existsSync(resolve(assetRoot, visual.file))) fail(`missing visual ${visual.file}`);
+for (const number of [36, 39]) if (!existsSync(resolve(assetRoot, manifest.questions[number - 1].asset.split("/").at(-1)))) fail(`Q${number} reference asset`);
+if (manifest.questions[2].choices[1].text !== "Bootstrap Aggregating") fail("Q03 bagging answer text");
+if (manifest.questions[10].choices[3].text !== "언어 이해 · 언어 생성 · 언어 번역" || JSON.stringify(manifest.questions[10]).includes("판독불가")) fail("Q11 NLP mapping table");
+if (!manifest.questions[29].prompt.includes("유형 X")) fail("Q30 security classification table");
+const sourceNumberAnswers = [[31, "17", "⑰", "AI 오디오 오버뷰"], [32, "9", "⑨", "보고서"], [33, "22", "㉒", "슬라이드 자료"]];
+for (const [number, answer, circledAnswer, feature] of sourceNumberAnswers) { const question = manifest.questions[number - 1]; if (question.answer !== answer || JSON.stringify(question.accepted_answers) !== JSON.stringify([answer, circledAnswer]) || !question.prompt.includes(feature) || !question.explanation.includes(`${answer}번`) || !ocr.includes(`| ${String(number).padStart(2, "0")} | ${circledAnswer}`) || !ocr.includes("보기에서 골라 번호로 작성하시오")) fail(`Q${number} source answer number mapping`); }
+if (!manifest.questions[35].rubric[0].criterion.includes("한글 완성 문장형") || !manifest.questions[38].rubric[0].criterion.includes("한글 키워드형") || !manifest.questions[37].rubric[4].criterion.includes("완성 문장형") || !manifest.questions[39].rubric[4].criterion.includes("완성 문장형")) fail("practical source format criteria");
+console.log("Validated all 40 image-based Set 3 questions, answer mapping, assets, and practical rubrics.");

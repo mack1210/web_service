@@ -1,0 +1,6 @@
+# Optional direct-LAN test ingress. Keep compose.yaml's loopback listener so
+# the system Caddy can continue to serve public HTTPS on 80/443.
+services:
+  caddy:
+    ports:
+      - "${HOST_LAN_BIND_ADDRESS:?Set HOST_LAN_BIND_ADDRESS in .env}:${HOST_PORT:-18080}:18080"

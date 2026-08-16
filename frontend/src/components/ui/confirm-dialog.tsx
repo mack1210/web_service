@@ -11,6 +11,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = "Cancel",
   loading = false,
   onCancel,
   onConfirm,
@@ -19,6 +20,7 @@ export function ConfirmDialog({
   title: string;
   description: string;
   confirmLabel: string;
+  cancelLabel?: string;
   loading?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -42,7 +44,7 @@ export function ConfirmDialog({
         <h2 className="text-lg font-bold" id="confirm-dialog-title">{title}</h2>
         <p className="mt-2 text-sm leading-6 text-muted" id="confirm-dialog-description">{description}</p>
         <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <Button disabled={loading} onClick={onCancel} variant="secondary">Cancel</Button>
+          <Button disabled={loading} onClick={onCancel} variant="secondary">{cancelLabel}</Button>
           <Button loading={loading} onClick={onConfirm} ref={confirmRef}>{confirmLabel}</Button>
         </div>
       </section>
