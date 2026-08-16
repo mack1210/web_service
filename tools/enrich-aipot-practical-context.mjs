@@ -24,6 +24,10 @@ const publicContexts = {
       kind: "text",
       prompt: prompt("36. 범위 한정", `다음 최초 질문에 대한 결과를 **지정한 세 가지 팁만** 포함하도록 만드는 ㉠ 프롬프트를 작성하시오.\n\n최초 질문: \`요즘 냉방병이 너무 심한데, 간단하게 조심할 수 있는 팁을 알려줘.\`\n\n최종 결과에 남겨야 할 항목:\n\n1. 적절한 온도 조절\n2. 규칙적인 환기\n3. 적절한 복장\n\n다른 팁을 추가하지 말고, 간단한 문장으로 출력되도록 범위를 한정하시오.`),
       solution: "냉방병 예방 팁 3가지를 알려줘.",
+      sourceCriteria: [
+        "범위 한정 기법으로 방법의 개수를 제한한다.",
+        "응답결과에 냉방병 예방 팁 3가지가 나타나도록 `3가지` 조건을 반드시 포함한다.",
+      ],
       rubric: ["지정한 세 가지 팁으로 범위 한정", "다른 팁 제외", "간결한 문장 출력", "냉방병 예방 주제 유지", "프롬프트 문장 완성"],
     },
     37: {
@@ -31,6 +35,7 @@ const publicContexts = {
       kind: "image",
       prompt: prompt("37. 참고 이미지를 분석한 영어 이미지 프롬프트", `첨부된 참고 이미지를 분석하여 눈에 보이는 특징을 **5개 이상** 포함한 한 문장의 영어 이미지 생성 프롬프트를 작성하시오.\n\n이미지 생성 탭에는 영어 프롬프트만 입력한다고 가정한다. 참고 이미지의 핵심 피사체, 구도, 실내 요소, 흑백 사진 스타일을 반영하시오.`),
       solution: "Create a black and white, 1:1 square ratio image of a man wearing a hat sitting in a chair reading a book with a dog sitting next to him, and a picture labeled 'H' hanging on the wall behind them.",
+      sourceCriteria: ["흑백·1:1 비율·H 그림·모자를 쓴 남성·책·강아지 등 제시된 특징을 5개 이상 포함한다."],
       rubric: ["참고 이미지의 핵심 피사체 반영", "보이는 특징 5개 이상", "영어 한 문장", "이미지 생성 목적 명확", "흑백 사진 스타일 반영"],
       image: true,
     },
@@ -39,6 +44,7 @@ const publicContexts = {
       kind: "text",
       prompt: prompt("38. 수치 변환", `다음 자료를 사용하여 수치를 천 단위로 환산하고 소수 둘째 자리까지 표시하는 ㉠ 프롬프트를 작성하시오.\n\n| 과일 | 값 |\n| --- | ---: |\n| 수박 | 12,486 |\n| 포도 | 9,342 |\n| 사과 | 15,289 |\n| 복숭아 | 11,917 |\n\n출력 순서는 복숭아, 사과, 수박, 포도이며 각 줄에 과일명과 환산값만 표시한다.`),
       solution: "데이터셋의 각 과일의 값을 소수점 둘째 자리에서 반올림한 뒤, 과일명을 가나다순으로 정렬해서 ‘과일: 수치’ 형식으로 한 줄씩 출력해 줘.",
+      sourceCriteria: ["각 수치를 소수 둘째 자리에서 반올림한다.", "과일명을 가나다순으로 정렬한다.", "`과일: 수치` 형식으로 한 줄씩 출력한다."],
       rubric: ["제공된 수치 사용", "천 단위 환산", "소수 둘째 자리 반올림", "지정된 출력 순서", "간결한 줄 단위 출력"],
     },
     39: {
@@ -46,6 +52,7 @@ const publicContexts = {
       kind: "text",
       prompt: prompt("39. 파일 자료를 JSON으로 구조화", `첨부한 \`제품.txt\`에는 다음 정보가 있다.\n\n- 제품명: NeoFit\n- 가격: 159,000원\n- 색상: 블랙\n- 주요기능: 심박수 측정\n- 할인 정보: 없음\n\n파일을 근거로 JSON만 출력하도록 ㉠ 프롬프트를 작성하시오. 키는 \`제품명\`, \`가격\`, \`색상\`, \`주요기능\`, \`할인율(%)\`을 사용한다. 가격은 숫자만, 할인 정보가 없으면 \`null\`을 사용한다.`),
       solution: "[39번_텍스트.txt] 첨부된 파일의 내용을 JSON 형식으로 출력하시오.\n- JSON의 key는 “제품명”, “가격”, “색상”, “주요기능”, “할인율(%)”로 구성할 것\n- 없는 항목의 값은 null로 표시할 것\n- 가격은 쉼표를 제거하고 숫자형으로만 표시할 것\n- JSON은 반드시 들여쓰기 된 형태로만 출력할 것",
+      sourceCriteria: ["지정된 JSON key 5개를 사용한다.", "없는 항목은 null, 가격은 쉼표 없는 숫자형으로 표현한다.", "들여쓰기 된 JSON만 출력한다."],
       rubric: ["첨부 파일만 근거로 사용", "필수 JSON 키 5개", "가격 숫자형 변환", "할인율 null 처리", "JSON 외 설명 제외"],
     },
     40: {
@@ -53,6 +60,7 @@ const publicContexts = {
       kind: "text",
       prompt: prompt("40. 업로드 이미지의 이중 언어 키워드", `첨부 이미지를 분석하여 이미지의 핵심 대상 키워드를 영어로, 대표 색상을 한국어로 출력하게 하는 ㉠ 프롬프트를 작성하시오.\n\n출력은 다음 두 범주만 사용한다.\n\n- English objects: \`law, book, gavel\`\n- Korean colors: \`갈색, 백색, 금\`\n\n설명문이나 다른 범주는 추가하지 않는다.`),
       solution: "영어 : {키워드1}, {키워드2}, {키워드3}\n한글 : {색상1}, {색상2}, {색상3}",
+      sourceCriteria: ["영어 줄에는 이미지의 주요 오브젝트·주제 키워드를 나열한다.", "한글 줄에는 색상 정보를 요약해 나열한다."],
       rubric: ["첨부 이미지 분석 지시", "영어 대상 키워드", "한국어 색상 키워드", "지정된 두 범주", "불필요한 설명 제외"],
     },
   },
@@ -63,6 +71,7 @@ const publicContexts = {
       visualEvidence: true,
       prompt: prompt("36. 참고 이미지의 장면 변환", `첨부된 전후 참고 이미지를 바탕으로 해변 일러스트를 목표 장면처럼 변환하는 프롬프트를 작성하시오.\n\n해변, 바다, 모래, 파라솔, 해변 인물, 야자수의 일러스트 분위기는 유지하고, 전경의 SUV/지프 차량은 제거한다. 목표 이미지의 구도와 요소를 반영하시오.`),
       solution: "Create an illustration of a sunny beach scene. The beach is filled with people enjoying the sun, some sitting on red lounge chairs under colorful umbrellas. Palm trees are scattered around, and the ocean is calm with gentle waves. The sky is blue with a few fluffy clouds. The overall mood is cheerful and relaxed.",
+      sourceCriteria: ["전후 참고 이미지의 해변·바다·모래·파라솔·인물·야자수 요소를 반영하고 SUV/지프 차량은 제거한다."],
       rubric: ["전후 참고 이미지 반영", "SUV/지프 제거", "해변 핵심 요소 유지", "야자수와 목표 구도 반영", "일러스트 변환 목적 명확"],
       image: true,
     },
@@ -71,14 +80,16 @@ const publicContexts = {
       kind: "image",
       prompt: prompt("37. 지구의 날 포스터", `다음 조건을 모두 포함한 한국어 이미지 생성 프롬프트를 작성하시오.\n\n- 지구의 날 캠페인 포스터 일러스트\n- 지구본을 안고 있는 아이\n- 숲과 맑은 파란 하늘\n- \`Earth Day\` 텍스트\n- 1:1 비율`),
       solution: "지구의 날 캠페인 포스터를 위한 일러스트를 만들어 주세요. 아이가 지구를 껴안고 있고, 숲과 맑은 하늘 함께 어우러져 있는 모습을 보여주세요. 이미지의 사이즈는 1:1로 만들고 “Earth Day”라는 캠페인 문구도 넣어주세요.",
+      sourceCriteria: ["지구의 날 포스터·아이·지구·숲·맑은 하늘·Earth Day·1:1 조건을 포함한다."],
       rubric: ["지구의 날 포스터 목적", "지구본을 안은 아이", "숲과 맑은 파란 하늘", "Earth Day 텍스트", "1:1 비율"],
       image: true,
     },
     38: {
       topic: "영어 이미지 프롬프트 변환",
       kind: "text",
-      prompt: prompt("38. 영어 프롬프트 변환", `제공 페이지의 한국어 이미지 생성 문장을 의미 손실 없이 한 문장의 영어 이미지 프롬프트로 변환하시오.\n\n원문 문장이 현재 학습 자료에서 판독되지 않으므로, 페이지에 보이는 원문을 그대로 근거로 사용하고 추측으로 새 요소를 추가하지 않는 프롬프트를 작성하시오.`),
+      prompt: prompt("38. 영어 프롬프트 변환", `다음 한국어 이미지 생성 요청을 의미 손실 없이 한 문장의 영어 이미지 프롬프트로 변환하시오.\n\n- 지구의 날 캠페인 포스터 일러스트\n- 지구본을 안고 있는 아이\n- 숲과 맑은 파란 하늘\n- \`Earth Day\` 텍스트\n- 1:1 비율\n\n위 다섯 조건을 모두 유지하고, 새 요소를 추측해 추가하지 마시오.`),
       solution: "Please create an illustration for the Earth Day campaign poster. Show a child hugging the earth, with the forest and clear sky blending together. Make the image size 1:1 and include the campaign text “Earth Day”",
+      sourceCriteria: ["37번의 필수 조건을 의미 손실 없이 한 문장의 영어 프롬프트로 변환한다."],
       rubric: ["제공 원문 근거 사용", "영어로 변환", "한 문장 이미지 프롬프트", "의미 손실 방지", "새 요소 추측 금지"],
     },
     39: {
@@ -86,6 +97,7 @@ const publicContexts = {
       kind: "text",
       prompt: prompt("39. 파일을 근거로 두 줄 요약", `첨부한 \`추출.txt\`의 내용만 사용하여 다음 두 줄을 만드는 ㉠과 ㉡ 프롬프트를 작성하시오.\n\n자료 핵심: 한국은 2025년 AI 산업을 국가 전략 산업으로 선정하고 10조 원을 투자한다. 교육으로 AI 전문 인력을 양성하고, 2030년까지 세계 AI 시장 점유율 10% 이상을 목표로 한다.\n\n1. 한국어로 2025년 AI 산업 전략과 10조 원 투자를 요약한다.\n2. 파일에서 수치 \`2025\`, \`10조 원\`, \`2030\`, \`10%\`를 추출한다.`),
       solution: "첨부한 파일을 기반으로 아래 작업을 수행해 줘\n㉠. 파일의 핵심 내용을 짧게 요약해 줘\n㉡. 파일에 등장하는 숫자정보를 모두 추출해 줘",
+      sourceCriteria: ["첨부 파일의 핵심을 요약하고, 파일의 숫자 정보를 모두 추출하는 두 작업을 지시한다."],
       rubric: ["첨부 파일만 근거로 사용", "2025년 전략 요약", "10조 원 투자 포함", "지정 수치 4개 추출", "두 줄 번호 형식"],
     },
     40: {
@@ -93,6 +105,7 @@ const publicContexts = {
       kind: "text",
       prompt: prompt("40. 가족 경주 여행 일정", `가족을 위한 경주 2박 3일 여행 일정을 Markdown으로 출력하게 하는 프롬프트를 작성하시오.\n\n- 1일차부터 3일차까지 구분\n- 매일 아침, 점심, 오후, 저녁을 모두 포함\n- 경주의 관광지를 활용\n- 가족 여행에 맞는 이동·식사·휴식 흐름\n- 제목과 목록을 이용한 Markdown 형식`),
       solution: "가족들과 경주 여행을 가려고 한다. 아래 필수조건을 고려해서 일정을 만들어줘\n필수조건 : 오전, 점심, 오후, 저녁, 경주, 관광지, 가족, 2박 3일",
+      sourceCriteria: ["오전·점심·오후·저녁·경주·관광지·가족·2박 3일의 필수 조건을 포함한다."],
       rubric: ["경주 가족 2박 3일", "1~3일차 구분", "매일 네 시간대", "관광·식사·휴식 흐름", "Markdown 제목과 목록"],
     },
   },
@@ -157,6 +170,7 @@ function applyPublic(id, exam) {
       input_assets: context.visualEvidence && question.asset ? [path.basename(question.asset)] : [],
       context_markdown: context.prompt,
       provider_solution: context.solution,
+      source_criteria: context.sourceCriteria ?? [],
       reference_source: referenceSources[id],
       ...(context.image ? { options: { quality: "low" } } : {}),
     };
@@ -189,8 +203,14 @@ function removePracticalImageDescriptions(exam) {
 
 let changed = false;
 const validationErrors = [];
-for (const id of ["public-set-a", "public-set-b", "source-round-01", "source-round-02", "source-round-03", "source-round-04", "source-round-05"]) {
+// Image-based source rounds are built and audited by their own source-photo
+// pipeline. This public-set enrichment must not overwrite their reviewed
+// prompt context with a generic source-round template.
+for (const id of ["public-set-a", "public-set-b"]) {
   const filename = path.join(examRoot, `${id}.json`);
+  // The learner catalog may intentionally contain only a subset of the
+  // source manifests. Keep the public-set validation usable in that mode.
+  if (!fs.existsSync(filename)) continue;
   const original = fs.readFileSync(filename, "utf8");
   const exam = JSON.parse(original);
   if (id.startsWith("public-set-")) applyPublic(id, exam);

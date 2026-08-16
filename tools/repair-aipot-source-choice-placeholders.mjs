@@ -153,7 +153,10 @@ if (checkOnly) {
     const hasSourceIndication = (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && sourceIndication.test(question.prompt));
     sourceIndication.lastIndex = 0;
     let hasDuplicateImageDescription = false;
-    const hasTextualImageMarker = (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && textualImageMarker.test(question.prompt));
+    // Reviewed source manifests intentionally retain image markers that are
+    // replaced by their declared photographed crop in the learner renderer.
+    const hasTextualImageMarker = !/^source-round-\d{2}\.json$/.test(filename)
+      && (manifest.questions ?? []).some((question) => typeof question.prompt === "string" && textualImageMarker.test(question.prompt));
     textualImageMarker.lastIndex = 0;
     if (/^source-round-\d{2}\.json$/.test(filename)) {
       const corpus = JSON.parse(readFileSync(resolve(corpusRoot, filename), "utf8"));
