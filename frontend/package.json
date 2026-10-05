@@ -19,7 +19,7 @@
     "cloudflare:typecheck": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "next": "16.2.10",
+    "next": "16.3.6",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
@@ -35,13 +35,13 @@
     "@vitejs/plugin-react": "5.0.2",
     "autoprefixer": "10.4.21",
     "eslint": "9.35.0",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.3.6",
     "jsdom": "26.1.0",
     "openapi-typescript": "7.8.0",
-    "postcss": "8.5.17",
+    "postcss": "8.5.23",
     "tailwindcss": "3.4.17",
     "typescript": "5.9.2",
-    "vitest": "3.2.6",
-    "wrangler": "4.123.0"
+    "vitest": "4.1.11",
+    "wrangler": "4.147.0"
   }
 }

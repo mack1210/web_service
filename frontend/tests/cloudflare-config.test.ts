@@ -51,7 +51,7 @@ describe("Cloudflare Workers deployment configuration", () => {
 
     expect(manifest.devDependencies).toMatchObject({
       "@opennextjs/cloudflare": "1.20.1",
-      wrangler: "4.123.0",
+      wrangler: "4.147.0",
     });
     expect(manifest.scripts["cloudflare:deploy"]).toBe(
       "pnpm cloudflare:build && opennextjs-cloudflare deploy",

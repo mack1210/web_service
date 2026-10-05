@@ -1,6 +1,6 @@
 # Morning Handoff
 
-2026-10-05 홈 이전: AI-POT bind source를 `~/study/aipot/실전모의고사`로 변경하고 `create_host_path: false`를 적용했습니다. API를 재생성한 뒤 ready 200과 시험 목록 응답을 확인했습니다. 변경 테스트는 통과했으며 기존 dependency audit 미통과는 `docs/skipped-actions.md`에 기록했습니다.
+2026-10-05 홈 이전: AI-POT bind source를 `~/study/aipot/실전모의고사`로 변경하고 `create_host_path: false`를 적용했습니다. API ready 200과 시험 목록 응답을 확인했습니다. 보안 패치를 적용한 frontend를 다시 빌드·교체해 실제 Next 16.3.6, healthy와 `/aipot` 200을 확인했습니다. production audit는 0개이며 패치가 미출시된 개발 의존성 braces 1개는 `docs/skipped-actions.md`에 기록했습니다.
 
 **DEVELOPMENT_STATUS:** COMPLETE — the deployed AI-POT private-study tab now provides the active Source Set 1 and Public A/B sets, immediate locked-answer feedback, Korean choice explanations, 40/20 active-time phases, browser drafts, final review, and local weakness history. Frontend lint/typecheck/unit/build and backend pytest/OpenAPI checks pass.
 

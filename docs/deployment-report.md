@@ -2,6 +2,8 @@
 
 2026-10-05 홈 이전: 기존 Compose 프로젝트와 데이터 볼륨을 유지하고 API의 AI-POT read-only bind를 `/home/cgma/study/aipot/실전모의고사`로 전환했습니다. `create_host_path: false`로 잘못된 경로의 빈 디렉터리 생성을 방지합니다. API만 재생성했으며 `/health/ready` 200과 시험 목록 응답을 확인했습니다. 시스템 Caddy의 설정은 유지됩니다.
 
+같은 날 기존 취약 의존성을 갱신한 frontend Docker 이미지를 다시 빌드하고 frontend만 교체했습니다. 실행 이미지 `sha256:450c2c26152a910d6f19b276688bd742f05d0cfddf6b01fa8d9c10de13a8b538`에서 Next 16.3.6을 직접 확인했고 frontend healthy, 기존 Caddy 경유 `/health/ready` 및 `/aipot` 200을 확인했습니다. 새 direct dependency는 추가하지 않았습니다. 개발 의존성 감사의 미출시 패치 1건은 아래 운영 제한과 별도로 skipped-actions에 기록합니다.
+
 Reviewed: 2026-07-12 (Asia/Seoul); migration status amended: 2026-07-13 (Asia/Seoul)
 Deployment status: **healthy LAN-bound origin deployment**
 External reachability: **Cloudflare Tunnel pending account token and public hostname**

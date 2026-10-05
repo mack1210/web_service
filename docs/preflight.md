@@ -2,6 +2,10 @@
 
 2026-10-05 홈 이전 검증: `node --test tools/test-home-migration.mjs` 2개, frontend lint/typecheck/unit 55개/build, backend Ruff/pytest 52개, OpenAPI 계약 diff 없음, Compose config를 확인했습니다. 배포 후 API health와 콘텐츠 응답을 점검했습니다. 기존 lockfile의 audit 결과는 skipped-actions의 해당 날짜 항목에 기록했습니다.
 
+보안 갱신 후 Vitest 4.1.11의 55개 unit, lint/typecheck/build, 계약 생성 diff 없음과 Docker frontend 재빌드를 확인했습니다. `pnpm --dir frontend audit --prod`는 취약점 0개입니다. 전체 감사는 공식 수정 버전이 없는 braces 3.0.3 1건으로 실패하므로 전체 검증 완료로 보고하지 않습니다.
+
+Chromium의 collection-detail-action, missing-item 복귀, 전역 404 복귀 3개를 로컬 mock 모드와 `PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080`의 실제 배포 HTTP 모드에서 각각 통과했습니다. 기존 설치된 Chromium 실행 파일을 사용했으며 브라우저 의존성을 추가하지 않았습니다.
+
 Captured: 2026-07-10T22:25:41+09:00
 
 ## Host and access
