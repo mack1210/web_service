@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const manifest = JSON.parse(readFileSync(resolve(contentRoot, "data/web-exams/source-round-01.json"), "utf8"));
 
 for (const question of manifest.questions.filter((item) => ["multiple_choice", "choice_bank"].includes(item.type))) {

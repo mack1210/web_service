@@ -6,7 +6,7 @@ import { publicAcceptedAnswers, publicAnswerKeys } from "./aipot-public-answer-k
 
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const checkOnly = process.argv.includes("--check");
 let stale = false;
 

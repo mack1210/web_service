@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 const checkOnly = process.argv.includes("--check");
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const webExamRoot = resolve(contentRoot, "data/web-exams");
 const ocrRoot = resolve(contentRoot, "corpus/ocr");
 const corpusRoot = resolve(contentRoot, "corpus");

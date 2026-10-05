@@ -83,6 +83,16 @@ test("mobile overlays retain focus and restore the opener", async ({ page }, tes
 
 test("a missing item presents a recoverable not-found state", async ({ page }) => {
   await page.goto("/items/missing");
+  // Mock mode renders the client empty state; HTTP mode can return Next's 404 boundary.
+  await expect(page.getByRole("heading", { name: /^(This item is unavailable|We could not find that item)$/ })).toBeVisible();
+  const returnLink = page.getByRole("link", { name: /^(Back|Return) to collection$/ });
+  await expect(returnLink).toHaveAttribute("href", "/items");
+  await returnLink.click();
+  await expect(page.getByRole("heading", { name: /Find an item/i })).toBeVisible();
+});
+
+test("an unknown route offers the global not-found recovery", async ({ page }) => {
+  await page.goto("/missing-route");
   await expect(page.getByRole("heading", { name: "We could not find that item" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Return to collection" })).toHaveAttribute("href", "/items");
 });

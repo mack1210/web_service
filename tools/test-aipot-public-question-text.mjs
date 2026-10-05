@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const root = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const load = (id) => JSON.parse(readFileSync(resolve(root, "data/web-exams", `${id}.json`), "utf8"));
 const find = (exam, number) => exam.questions.find((question) => question.number === number);
 

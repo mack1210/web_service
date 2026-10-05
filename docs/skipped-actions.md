@@ -1,5 +1,13 @@
 # Skipped or Deferred Actions
 
+## 2026-10-05 기존 의존성 보안 감사
+
+최초 `pnpm --dir frontend audit --prod`에서 21개, 개발 의존성을 포함한 추가 감사에서 34개를 발견했습니다. 기존 Next와 ESLint 설정을 16.3.6, PostCSS를 8.5.23, Wrangler를 4.147.0, Vitest를 4.1.11로 갱신하고 잠금된 전이 의존성을 갱신했습니다. Redocly가 고정한 js-yaml 4.2.0은 동일 v4 API의 4.3.2로 범위를 한정해 override하고 계약 생성 diff가 없음을 확인했습니다. 새 direct dependency는 추가하지 않았습니다.
+
+최종 production 감사는 0개입니다. 전체 `pnpm --dir frontend audit`는 **braces 3.0.3의 high 1건**으로 종료 코드 1이 남습니다. [공식 GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)은 수정 버전이 없다고 명시하고 npm registry 최신도 3.0.3입니다. 감사 응답이 제안한 3.0.4 설치는 `ERR_PNPM_NO_MATCHING_VERSION`으로 실패해 해당 override를 제거했습니다. Tailwind/ESLint의 개발 도구 경로에 남아 있으며 감사 제외나 취약점 숨김은 적용하지 않았습니다. 패치 출시 또는 별도 생태계 변경 후 재검증 명령은 `pnpm --dir frontend audit`입니다. 전체 검증 완료로 보고하지 않습니다.
+
+frontend lint/typecheck/55개 unit/build와 backend Ruff/52개 pytest, 계약·Compose·배포 health 검증은 통과했습니다. 브라우저 검사에서 기존 mock 모드의 missing-item 상태와 HTTP 모드의 404 경계가 다름을 확인해 양쪽의 실제 복귀 링크를 검증하도록 회귀 검사를 보강하고 전역 없는 경로의 404 검사도 추가했습니다.
+
 Reviewed: 2026-07-12 (Asia/Seoul)
 
 Each entry records the attempted step, observed result, reason for not proceeding, impact, and exact follow-up verification. None of these items stopped application development, test execution, Docker packaging, or the isolated review deployment. An earlier deployment was reported reachable over 5G on 2026-07-13; after relocation to `/home/cgma/apps/web_service`, the operator requested the Compose origin be LAN-bound at `192.168.219.121:18080`. Cloudflare Tunnel activation remains the intended public-HTTPS path.
@@ -793,7 +801,7 @@ pnpm --dir frontend exec wrangler deploy --dry-run`.
 
 ## 2026-08-08 Wrong-note Set 1 removal
 
-**Action**: Moved `/home/cgma/cgma_git/study/aipot/실전모의고사/data/web-exams/sample-set-01.json` to the Linux trash.
+**Action**: Moved `/home/cgma/study/aipot/실전모의고사/data/web-exams/sample-set-01.json` to the Linux trash.
 
 **Reason**: The operator requested that only the current wrong-note Set 1 be removed before it is remade. The general review-mode structure and source records were retained.
 

@@ -1,5 +1,7 @@
 # Overnight Web Agent Kit
 
+관리 저장소: [mack1210/web_service](https://github.com/mack1210/web_service). 로컬 위치는 `~/apps/web_service`입니다.
+
 Next.js와 FastAPI로 만든 내부 운영 워크스페이스입니다. 기본 업무 흐름은
 `Overview → Collection → Detail → Validate`이고, `/aipot`에서는 개인용 AI-POT
 모의고사를 풀고 이전 풀이를 복습할 수 있습니다. Docker Compose에서는 Caddy만 외부
@@ -44,7 +46,7 @@ Next.js와 FastAPI로 만든 내부 운영 워크스페이스입니다. 기본 �
 - Python 3.13+ 및 uv
 - Docker Engine과 Docker Compose (컨테이너 실행 시)
 - AI-POT 콘텐츠를 사용할 경우:
-  `/home/cgma/cgma_git/study/aipot/실전모의고사`
+  `/home/cgma/study/aipot/실전모의고사`
 
 ## 로컬 설정
 
@@ -75,7 +77,7 @@ uv sync --locked --group dev
 
 ```bash
 # Terminal 1: FastAPI
-AIPOT_CONTENT_ROOT=/home/cgma/cgma_git/study/aipot/실전모의고사 \
+AIPOT_CONTENT_ROOT=/home/cgma/study/aipot/실전모의고사 \
   uv --directory backend run uvicorn app.main:app --reload --port 8000
 
 # Terminal 2: Next.js (기본은 mock data)

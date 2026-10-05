@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const manifest = JSON.parse(readFileSync(resolve(root, "data/web-exams/source-round-03.json"), "utf8"));
 const corpus = JSON.parse(readFileSync(resolve(root, "corpus/source-round-03.json"), "utf8"));
 const ocr = readFileSync(resolve(root, "corpus/ocr/source-round-03.md"), "utf8");

@@ -19,7 +19,12 @@ services:
       AIPOT_TEXT_MODEL: ${AIPOT_TEXT_MODEL:-anthropic/claude-haiku-4.5}
       AIPOT_IMAGE_MODEL: ${AIPOT_IMAGE_MODEL:-openai/gpt-image-1}
     volumes:
-      - ../../cgma_git/study/aipot/실전모의고사:/aipot-content:ro
+      - type: bind
+        source: ../../study/aipot/실전모의고사
+        target: /aipot-content
+        read_only: true
+        bind:
+          create_host_path: false
       - aipot_history:/app/data
       - aipot_sandbox_socket:/aipot-sandbox
     restart: unless-stopped

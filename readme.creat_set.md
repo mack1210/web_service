@@ -33,7 +33,7 @@ AI-POT의 새 40문항 세트를 원본 근거와 함께 학습자 화면에 추
 pnpm install --frozen-lockfile
 uv --directory backend sync --locked
 
-export AIPOT_CONTENT_ROOT=/home/cgma/cgma_git/study/aipot/실전모의고사
+export AIPOT_CONTENT_ROOT=/home/cgma/study/aipot/실전모의고사
 test -d "$AIPOT_CONTENT_ROOT/data/web-exams"
 ```
 
