@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const contentRoot = process.env.AIPOT_CONTENT_ROOT ?? "/home/cgma/cgma_git/study/aipot/실전모의고사";
+const contentRoot = process.env.AIPOT_CONTENT_ROOT ?? "/home/cgma/study/aipot/실전모의고사";
 const path = resolve(contentRoot, "data/web-exams/sample-set-01.json");
 const allowAbsent = process.argv.includes("--allow-absent");
 

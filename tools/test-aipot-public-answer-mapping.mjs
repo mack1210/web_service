@@ -6,7 +6,7 @@ import { publicAcceptedAnswers, publicAnswerKeys } from "./aipot-public-answer-k
 
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const load = (id) => JSON.parse(readFileSync(resolve(contentRoot, "data/web-exams", `${id}.json`), "utf8"));
 const choiceTypes = new Set(["multiple_choice", "multiple_select", "choice_bank"]);
 

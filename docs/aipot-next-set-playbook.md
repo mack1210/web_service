@@ -11,19 +11,19 @@
   `public-set-a`, `public-set-b`다.
 - `source-round-01`은 PDF가 아니라 원본 촬영 사진 25장(문제 21장, 정답·해설
   감사용 4장)에서 만든 개인 원본문제 Set 1이다. 활성 manifest는
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/data/web-exams/source-round-01.json`이며,
+  `/home/cgma/study/aipot/실전모의고사/data/web-exams/source-round-01.json`이며,
   생성기는 `tools/build-aipot-source-round-01.mjs`다.
 - 원본 사진, OCR, corpus, 필요한 crop은 보존한다. 전체 원본 페이지는 감사 자료이며
   학습자 화면에 그대로 노출하지 않는다. 문제를 푸는 데 꼭 필요한 그림·표·UI 상태만
   선언한 crop으로 제공한다.
 - `source-round-02`는 원본 촬영 사진 24장(문제 20장, 정답·해설 4장)에서 만든
   개인 원본문제 Set 2다. 활성 manifest는
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/data/web-exams/source-round-02.json`이며,
+  `/home/cgma/study/aipot/실전모의고사/data/web-exams/source-round-02.json`이며,
   생성기와 검증기는 각각 `tools/build-aipot-source-round-02.mjs`,
   `tools/test-aipot-source-round-02.mjs`다.
 - `source-round-03`은 원본 촬영 사진 27장(문제 22장, 정답·해설 5장)에서 만든
   개인 원본문제 Set 3이다. 활성 manifest는
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/data/web-exams/source-round-03.json`이며,
+  `/home/cgma/study/aipot/실전모의고사/data/web-exams/source-round-03.json`이며,
   생성기와 검증기는 각각 `tools/build-aipot-source-round-03.mjs`,
   `tools/test-aipot-source-round-03.mjs`다.
 - 이전 창작 세트 `generated-mock-01`의 활성/레거시 manifest와 전용 이미지 7개는
@@ -271,7 +271,7 @@ PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ## 세트 2 — 2026-08-07
 
 - 원본: 촬영 사진 24장(`2회/images/`), 검토 OCR·corpus·정답표는
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/`에 보존했다.
+  `/home/cgma/study/aipot/실전모의고사/`에 보존했다.
 - learner manifest: `source-round-02`; 생성기
   `tools/build-aipot-source-round-02.mjs`, validator
   `tools/test-aipot-source-round-02.mjs`.
@@ -293,7 +293,7 @@ PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ## 세트 3 — 2026-08-07
 
 - 원본: 촬영 사진 27장(`3회/images/`), 검토 OCR·corpus·정답표는
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/`에 보존했다.
+  `/home/cgma/study/aipot/실전모의고사/`에 보존했다.
 - learner manifest: `source-round-03`; 생성기
   `tools/build-aipot-source-round-03.mjs`, validator
   `tools/test-aipot-source-round-03.mjs`.
@@ -317,7 +317,7 @@ PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ## 세트 5 — 2026-08-07
 
 - 원본: 촬영 사진 28장(문제 24장, 정답·해설 4장),
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/5회/images`에 보존.
+  `/home/cgma/study/aipot/실전모의고사/5회/images`에 보존.
 - learner manifest: `source-round-05`,
   `tools/build-aipot-source-round-05.mjs`와
   `tools/test-aipot-source-round-05.mjs`로 생성·검증.
@@ -349,7 +349,7 @@ PLAYWRIGHT_BASE_URL=http://192.168.219.130:18080 pnpm test:e2e
 ## 세트 4 — 2026-08-07
 
 - 원본: 촬영 사진 26장(문제 21장, 정답·해설/예시 5장), 검토 OCR·corpus·답안 예시는
-  `/home/cgma/cgma_git/study/aipot/실전모의고사/`에 보존했다.
+  `/home/cgma/study/aipot/실전모의고사/`에 보존했다.
 - learner manifest: `source-round-04`; 생성기
   `tools/build-aipot-source-round-04.mjs`, validator
   `tools/test-aipot-source-round-04.mjs`.

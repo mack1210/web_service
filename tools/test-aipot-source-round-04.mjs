@@ -3,7 +3,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const manifest = JSON.parse(readFileSync(resolve(root, "data/web-exams/source-round-04.json"), "utf8"));
 const assetRoot = resolve(root, "assets/source-round-04");
 const directAnswers = ["4", "3", "1", "3", "2", "2", "1", "3", "4", "4", "3", "1", "2", "1", "3", "4", "2", "1", "3", "4", "4", "2", "2", "1", "3", "3", "4", "1", "4", "2"];

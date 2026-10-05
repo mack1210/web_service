@@ -1,5 +1,7 @@
 # Deployment Preflight
 
+2026-10-05 홈 이전 검증: `node --test tools/test-home-migration.mjs` 2개, frontend lint/typecheck/unit 55개/build, backend Ruff/pytest 52개, OpenAPI 계약 diff 없음, Compose config를 확인했습니다. 배포 후 API health와 콘텐츠 응답을 점검했습니다. 기존 lockfile의 audit 결과는 skipped-actions의 해당 날짜 항목에 기록했습니다.
+
 Captured: 2026-07-10T22:25:41+09:00
 
 ## Host and access
@@ -79,7 +81,7 @@ Captured: 2026-07-10T22:25:41+09:00
 ## 2026-08-03 AI-POT study integration
 
 - The existing Compose app was extended at `/aipot`; no host port, Caddy route, firewall, DNS, or unrelated container was changed.
-- Compose mounts the local AI-POT study workspace read-only into the API. The source directory must remain at `/home/cgma/cgma_git/study/aipot/실전모의고사` for deployed source-photo questions and generated mocks to load.
+- Compose mounts the local AI-POT study workspace read-only into the API. The source directory must remain at `/home/cgma/study/aipot/실전모의고사` for deployed source-photo questions and generated mocks to load.
 - A new Compose-owned `aipot_history` volume contains personal submitted-attempt JSON state. It is not version-controlled and must not be removed with `down -v`.
 - Only the API and frontend services were rebuilt/recreated. Caddy stayed running and healthy on `192.168.219.121:18080`.
 

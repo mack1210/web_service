@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const manifest = JSON.parse(readFileSync(resolve(contentRoot, "data/web-exams/source-round-05.json"), "utf8"));
 const corpus = JSON.parse(readFileSync(resolve(contentRoot, "corpus/source-round-05.json"), "utf8"));
 const imageRoot = resolve(contentRoot, "5회/images");

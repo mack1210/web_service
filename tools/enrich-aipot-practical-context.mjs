@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const contentRoot = "/home/cgma/cgma_git/study/aipot/실전모의고사";
+const contentRoot = "/home/cgma/study/aipot/실전모의고사";
 const examRoot = path.join(contentRoot, "data", "web-exams");
 const checkOnly = process.argv.includes("--check");
 

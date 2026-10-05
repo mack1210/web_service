@@ -14,7 +14,7 @@ import process from "node:process";
 const checkOnly = process.argv.includes("--check");
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const book = process.env.AIPOT_REFERENCE_PDF
   ? resolve(process.env.AIPOT_REFERENCE_PDF)
   : resolve(contentRoot, "..", "AI-POT AI프롬프트활용능력 1급 기본서_구매인증자료.pdf");

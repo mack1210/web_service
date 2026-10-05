@@ -11,7 +11,7 @@ import { resolve } from "node:path";
 const checkOnly = process.argv.includes("--check");
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const corpusPath = resolve(contentRoot, "corpus/source-round-01.json");
 const ocrPath = resolve(contentRoot, "corpus/ocr/source-round-01.md");
 const outputPath = resolve(contentRoot, "data/web-exams/source-round-01.json");

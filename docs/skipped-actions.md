@@ -1,5 +1,9 @@
 # Skipped or Deferred Actions
 
+## 2026-10-05 기존 의존성 보안 감사
+
+시도: `pnpm --dir frontend audit --prod`. 결과: 현재 잠금 의존성에서 21개 취약점(7 moderate, 11 high, 3 critical)으로 종료 코드 1. 홈 이전은 의존성과 lockfile을 변경하지 않았으며 이 감사 실패는 기존 버전의 별도 문제입니다. frontend lint/typecheck/55개 unit/build와 backend Ruff/52개 pytest, 계약·Compose·배포 health 검증은 통과했습니다. 해결 후 재검증 명령은 `pnpm --dir frontend audit --prod`입니다. 버전 업그레이드와 영향 검증이 남아 있습니다.
+
 Reviewed: 2026-07-12 (Asia/Seoul)
 
 Each entry records the attempted step, observed result, reason for not proceeding, impact, and exact follow-up verification. None of these items stopped application development, test execution, Docker packaging, or the isolated review deployment. An earlier deployment was reported reachable over 5G on 2026-07-13; after relocation to `/home/cgma/apps/web_service`, the operator requested the Compose origin be LAN-bound at `192.168.219.121:18080`. Cloudflare Tunnel activation remains the intended public-HTTPS path.
@@ -793,7 +797,7 @@ pnpm --dir frontend exec wrangler deploy --dry-run`.
 
 ## 2026-08-08 Wrong-note Set 1 removal
 
-**Action**: Moved `/home/cgma/cgma_git/study/aipot/실전모의고사/data/web-exams/sample-set-01.json` to the Linux trash.
+**Action**: Moved `/home/cgma/study/aipot/실전모의고사/data/web-exams/sample-set-01.json` to the Linux trash.
 
 **Reason**: The operator requested that only the current wrong-note Set 1 be removed before it is remade. The general review-mode structure and source records were retained.
 

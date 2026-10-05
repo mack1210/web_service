@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const checkOnly = process.argv.includes("--check");
-const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+const root = process.env.AIPOT_CONTENT_ROOT ? resolve(process.env.AIPOT_CONTENT_ROOT) : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const corpusPath = resolve(root, "corpus/source-round-04.json");
 const ocrPath = resolve(root, "corpus/ocr/source-round-04.md");
 const outputPath = resolve(root, "data/web-exams/source-round-04.json");

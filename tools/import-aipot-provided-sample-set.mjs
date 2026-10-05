@@ -12,7 +12,7 @@ import process from "node:process";
 const checkOnly = process.argv.includes("--check");
 const contentRoot = process.env.AIPOT_CONTENT_ROOT
   ? resolve(process.env.AIPOT_CONTENT_ROOT)
-  : resolve(process.cwd(), "../../cgma_git/study/aipot/실전모의고사");
+  : resolve(process.cwd(), "../../study/aipot/실전모의고사");
 const source = process.env.AIPOT_SAMPLE_QUESTIONS_SOURCE
   ? resolve(process.env.AIPOT_SAMPLE_QUESTIONS_SOURCE)
   : resolve(process.cwd(), "aipot-level1-sample-questions/AI-POT-1급-테스트-제공문제.md");
